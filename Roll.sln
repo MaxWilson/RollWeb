@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Roll", "Roll\Roll.fsproj", "{57A12FE3-9E19-4AF7-8C28-90666569153D}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Roll.Tests", "Roll.Tests\Roll.Tests.fsproj", "{3B5AB9B6-6AAF-449E-89B4-8CC1BB61167C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{57A12FE3-9E19-4AF7-8C28-90666569153D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57A12FE3-9E19-4AF7-8C28-90666569153D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57A12FE3-9E19-4AF7-8C28-90666569153D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57A12FE3-9E19-4AF7-8C28-90666569153D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B5AB9B6-6AAF-449E-89B4-8CC1BB61167C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B5AB9B6-6AAF-449E-89B4-8CC1BB61167C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B5AB9B6-6AAF-449E-89B4-8CC1BB61167C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B5AB9B6-6AAF-449E-89B4-8CC1BB61167C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
