@@ -1,4 +1,4 @@
-namespace Roll
+namespace mdw.Roll
 
 open WebSharper
 open WebSharper.JavaScript
@@ -6,6 +6,7 @@ open WebSharper.JQuery
 open WebSharper.UI.Next
 open WebSharper.UI.Next.Notation
 open WebSharper.UI.Next.Client
+open mdw
 
 [<JavaScript>]
 module Client =    
@@ -17,7 +18,7 @@ module Client =
         static member Create(descr, value) =
             { Key = Key.Fresh(); Description = descr; Value = value}
     let Rolls =
-        ListModel.FromSeq<RollRecord> [ RollRecord.Create("2d6", 7)]
+        ListModel.FromSeq<RollRecord> [ ]
         
     let renderItem m =
         tr [
@@ -40,7 +41,9 @@ module Client =
             // Once the user clicks the submit button...
             Doc.Button "Submit" [] (fun _ ->
                 // We construct a new ToDo item
-                let todo = RollRecord.Create (Var.Get rvInput, 12)
+                let spec = Var.Get rvInput
+                let result = Parser.Parse spec |> Dice.Instance.Resolve
+                let todo = RollRecord.Create (spec, result)
                 // This is then added to the collection, which automatically
                 // updates the presentation.
                 Rolls.Add todo)
@@ -51,7 +54,8 @@ module Client =
             RollForm
             table [
                 tbody [
-                    ListModel.View rolls
+                    ListModel.View rolls 
+                    |> Seq.sortBy (fun i -> i.Description)
                     |> Doc.ConvertBy (fun i -> i.Key) renderItem                    
                 ]
             ]

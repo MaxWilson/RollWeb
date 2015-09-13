@@ -1,6 +1,7 @@
-﻿module Roll.Tests
+﻿module mdw.Roll.Tests
 open Xunit
 open FsCheck
+open mdw
 open DataDefs
 open Dice
 
