@@ -59,15 +59,3 @@ module Client =
     let Main =
         JQuery.Of("#main").Empty().Ignore
         renderRolls Rolls |> Doc.RunById "main"
-//        let nextRoll = Var.Create ""
-//        IndexTemplate.Main.Doc(
-//            ListContainer =
-//                (ListModel.View Rolls |> Doc.Convert (fun (count, roll, result) ->
-//                    IndexTemplate.ListItem1.Doc(LastRoll = View.Const roll, Result = View.Const (result.ToString())))
-//                ),
-//            NextRoll = nextRoll,
-//            Roll = (fun e ->
-//                Rolls.Add((NextCount(), "2d6", Roller.Instance.Resolve((2,6))))
-//                Var.Set nextRoll "")
-//        )
-//        |> Doc.RunById "main"

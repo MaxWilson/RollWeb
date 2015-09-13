@@ -66,6 +66,9 @@
     <None Include="Script.fsx" />
     <None Include="packages.config" />
     <None Include="app.config" />
+    <None Include="Scripts\load-references.fsx" />
+    <None Include="Scripts\load-project.fsx" />
+    <None Include="Scripts\Script1.fsx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Roll\Roll.fsproj">
