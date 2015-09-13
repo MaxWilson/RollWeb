@@ -46,7 +46,8 @@ module Client =
                 let todo = RollRecord.Create (spec, result)
                 // This is then added to the collection, which automatically
                 // updates the presentation.
-                Rolls.Add todo)
+                Rolls.Set(Seq.append [todo] Rolls.Value)
+                )
         ]
     let renderRolls rolls =
         div [        
@@ -55,7 +56,7 @@ module Client =
             table [
                 tbody [
                     ListModel.View rolls 
-                    |> Seq.sortBy (fun i -> i.Description)
+                    // How to do |> List.rev here?
                     |> Doc.ConvertBy (fun i -> i.Key) renderItem                    
                 ]
             ]
