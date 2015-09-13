@@ -31,4 +31,5 @@ let Rolling() =
 
 [<Fact>]
 let Average() =
-    Assert.Equal(10.5, Dice.Instance.Average(Simple(3,6)))
+    Assert.Equal(3.5, Dice.Instance.Average(Single(Simple(1,6))))
+    Assert.Equal(10.5, Dice.Instance.Average(Single(Simple(3,6))))

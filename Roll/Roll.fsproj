@@ -101,6 +101,7 @@
     </VisualStudio>
   </ProjectExtensions>
   <ItemGroup>
+    <Compile Include="Util.fs" />
     <Compile Include="DataDefs.fs" />
     <Compile Include="Parser.fs" />
     <Compile Include="Dice.fs" />

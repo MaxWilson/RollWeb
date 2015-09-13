@@ -18,6 +18,8 @@ type Resolver(?random) =
         | Single(cmd) -> this.Resolve(cmd)
         | Plus(single, rest) -> this.Resolve(single) + this.Resolve(rest)
     member this.Average cmd =
-        10.5
+        match cmd: Compound with
+        | Single(Simple(n, d)) -> (float n) * (float (d + 1))/2.
+        | _ -> Util.nomatch()
 let Instance = Resolver()
 
