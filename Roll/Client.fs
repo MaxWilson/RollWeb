@@ -5,31 +5,69 @@ open WebSharper.JavaScript
 open WebSharper.JQuery
 open WebSharper.UI.Next
 open WebSharper.UI.Next.Notation
+open WebSharper.UI.Next.Client
 
 [<JavaScript>]
 module Client =    
-    let [<Literal>] TemplateHtmlPath = __SOURCE_DIRECTORY__ + "/index.html"
+    open System.Web.UI.WebControls
+    open WebSharper.UI.Next.Html
 
-    type IndexTemplate = Templating.Template<TemplateHtmlPath> 
-
+    type RollRecord = 
+        { Key : Key; Description : string; Value: int}
+        static member Create(descr, value) =
+            { Key = Key.Fresh(); Description = descr; Value = value}
     let Rolls =
-        ListModel.FromSeq [
-            "2d6+3", 7
+        ListModel.FromSeq<RollRecord> [ RollRecord.Create("2d6", 7)]
+        
+    let renderItem m =
+        tr [
+            td [
+                Doc.TextNode m.Description
+            ]
+            td [
+                Doc.TextNode <| m.Value.ToString()
+            ]
         ]
-
+    let RollForm =
+        // We make a variable to contain the new to-do item.
+        let rvInput = Var.Create ""
+        form [
+            div [
+                label [Doc.TextNode "New entry: "]
+                // Here, we make the Input box, backing it by the reactive variable.
+                Doc.Input [] rvInput
+            ]
+            // Once the user clicks the submit button...
+            Doc.Button "Submit" [] (fun _ ->
+                // We construct a new ToDo item
+                let todo = RollRecord.Create (Var.Get rvInput, 12)
+                // This is then added to the collection, which automatically
+                // updates the presentation.
+                Rolls.Add todo)
+        ]
+    let renderRolls rolls =
+        div [        
+            Doc.Element "h1" [] [Doc.TextNode "Recent rolls"]
+            RollForm
+            table [
+                tbody [
+                    ListModel.View rolls
+                    |> Doc.ConvertBy (fun i -> i.Key) renderItem                    
+                ]
+            ]
+        ]
     let Main =
         JQuery.Of("#main").Empty().Ignore
-
-        let nextRoll = Var.Create ""
-
-        IndexTemplate.Main.Doc(
-            ListContainer =
-                (ListModel.View Rolls |> Doc.Convert (fun (roll, result) ->
-                    IndexTemplate.ListItem.Doc(LastRoll = View.Const roll, Result = View.Const (result.ToString())))
-                ),
-            NextRoll = nextRoll,
-            Roll = (fun e ->
-                Rolls.Add(("2d6", Roller.Instance.Resolve((2,6))))
-                Var.Set nextRoll "")
-        )
-        |> Doc.RunById "main"
+        renderRolls Rolls |> Doc.RunById "main"
+//        let nextRoll = Var.Create ""
+//        IndexTemplate.Main.Doc(
+//            ListContainer =
+//                (ListModel.View Rolls |> Doc.Convert (fun (count, roll, result) ->
+//                    IndexTemplate.ListItem1.Doc(LastRoll = View.Const roll, Result = View.Const (result.ToString())))
+//                ),
+//            NextRoll = nextRoll,
+//            Roll = (fun e ->
+//                Rolls.Add((NextCount(), "2d6", Roller.Instance.Resolve((2,6))))
+//                Var.Set nextRoll "")
+//        )
+//        |> Doc.RunById "main"
