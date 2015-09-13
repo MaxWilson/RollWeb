@@ -19,7 +19,10 @@ let ``Test rolls by property``() =
     
 [<Fact>]
 let Parsing() =
-    Assert.Equal(Simple(3,6), Parser.Parse "3d6")
+    Assert.Equal(Single(Simple(3,6)), Parser.Parse "3d6")
+    Assert.Equal(Single(Simple(1,8)), Parser.Parse "d8")
+    Assert.Equal(Single(Simple(4,6)), Parser.Parse "4d")
+    Assert.Equal(Single(Simple(11,1)), Parser.Parse "11")
 
 [<Fact>]
 let Rolling() =
