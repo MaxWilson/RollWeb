@@ -36,7 +36,7 @@ module Client =
             div [
                 label [Doc.TextNode "New entry: "]
                 // Here, we make the Input box, backing it by the reactive variable.
-                Doc.Input [] rvInput
+                Doc.Input [attr.autofocus "autofocus"] rvInput
             ]
             // Once the user clicks the submit button...
             Doc.Button "Submit" [] (fun _ ->
