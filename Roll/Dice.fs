@@ -23,11 +23,14 @@ type Resolver(?random) =
         match cmd : Compound with
         | Single(cmd) -> this.Resolve(cmd)
         | Sum(lhs, rhs) -> this.Resolve(lhs) + this.Resolve(rhs)
+        | MultByConstant(k, rhs) -> k * this.Resolve(rhs)
         | Repeat(n, rhs) -> Seq.sum [for _ in 1..n do yield this.Resolve(rhs)]
     member this.Average cmd =
         match cmd: Compound with
         | Single(Simple(n, d)) -> (float n) * (float (d + 1))/2.
         | Repeat(n, inner) -> (float n) * (this.Average(inner))
+        | MultByConstant(k, rhs) -> (float k) * (this.Average(rhs))
+        | Sum(lhs, rhs) -> this.Average(lhs) + this.Average(rhs)
         | _ -> Util.nomatch()
 let Instance = Resolver()
 

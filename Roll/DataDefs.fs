@@ -9,6 +9,7 @@ type Simple =
 type Compound = 
 | Single of Simple 
 | Sum of Compound * Compound
+| MultByConstant of int * Compound
 | Repeat of int * Compound
 
  
