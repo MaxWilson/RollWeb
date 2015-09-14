@@ -48,7 +48,7 @@ let ``Complete-ish list of example roll specs``(input: string, expectedAverage: 
     Assert.Equal(expectedAverage, Dice.Instance.Average(spec))
     Dice.Instance.Resolve(spec) |> ignore // must not throw
 
-[<Fact(Skip="Not implemented)")>]
+[<Fact>]
 let ``Sums should be left-associative``() =
     Assert.Equal(65., Parser.Parse "20d6-d4-d4" |> Dice.Instance.Average)
 

@@ -59,16 +59,29 @@ module Impl =
             Some(Repeat(n, v), next)
         | SumSimplesExpression(v, next) -> Some(v, next)
         | _ -> None
-    and (|SumSimplesExpression|_|) = function
-        | SimpleExpression(lhs, next) ->
-            match next with
-            | Next('+', (SumSimplesExpression(rhs, next))) ->
-                Some(Sum(Single(lhs), rhs), next)
-            | Next('-', (SumSimplesExpression(rhs, next))) ->
-                let reverseFirst clause = MultByConstant(-1, clause)
-                Some(Sum(Single(lhs), reverseFirst rhs), next)
-            | _ ->
-                Some(Single(lhs), next)
+    and (|SumSimplesExpression|_|) input = 
+        // Use helper for recursion so sum can be left-associative
+        let rec (|Helper|_|) positive = function
+            | SimpleExpression(lhs, next) ->
+                let lhs = Single(lhs)
+                let lhs = if positive then lhs
+                          else MultByConstant(-1, lhs)
+                match next with
+                | Next('+', Helper true (rhs : Compound list, next : string * int)) ->
+                    Some(lhs :: rhs, next)
+                | Next('-', Helper false (rhs, next)) ->
+                    Some(lhs :: rhs, next)
+                | _ ->
+                    Some([lhs], next)
+            | _ -> None
+        match input with
+        | Helper true (terms, next) ->
+            let node = 
+                match terms with 
+                | [term] -> term
+                | head::tail -> tail |> List.fold (fun lhs rhs -> Sum(lhs, rhs)) head
+                | _ -> Util.nomatch()
+            Some(node, next)
         | _ -> None
     and (|SimpleExpression|_|) = function
         | Next('d', Number(dieSize, next)) -> Some (Simple(1,dieSize), next)
