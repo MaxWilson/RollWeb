@@ -14,7 +14,7 @@ module Client =
     open WebSharper.UI.Next.Html
 
     type RollRecord = 
-        { Key : Key; Description : string; Value: int}
+        { Key : Key; Description : string; Value: string}
         static member Create(descr, value) =
             { Key = Key.Fresh(); Description = descr; Value = value}
     let Rolls =
@@ -26,7 +26,7 @@ module Client =
                 Doc.TextNode m.Description
             ]
             td [
-                Doc.TextNode <| m.Value.ToString()
+                Doc.TextNode m.Value
             ]
         ]
     let RollForm =
@@ -42,7 +42,7 @@ module Client =
             Doc.Button "Submit" [] (fun _ ->
                 // We construct a new ToDo item
                 let spec = Var.Get rvInput
-                let result = Parser.Parse spec |> Dice.Instance.Resolve
+                let result = Parser.ParseCommand spec |> Dice.Instance.Resolve
                 let todo = RollRecord.Create (spec, result)
                 // This is then added to the collection, which automatically
                 // updates the presentation.
@@ -51,7 +51,7 @@ module Client =
         ]
     let renderRolls rolls =
         div [        
-            Doc.Element "h1" [] [Doc.TextNode "Recent rolls"]
+            Doc.Element "h1" [] [Doc.TextNode "Recent rolls:"]
             RollForm
             table [
                 tbody [

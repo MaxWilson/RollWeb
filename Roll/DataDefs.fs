@@ -12,4 +12,6 @@ type Compound =
 | MultByConstant of int * Compound
 | Repeat of int * Compound
 
- 
+type Command =
+| Roll of Compound
+| Average of Compound

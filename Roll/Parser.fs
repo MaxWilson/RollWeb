@@ -36,6 +36,21 @@ module Impl =
     let sub (s: string, i0) (_, i1) =
         s.Substring(i0, i1-i0)
 
+    let (|NextWord|_|) (word : string) input =
+        let letters = word |> List.ofSeq
+        let rec (|NextChar|_|) letters = function
+            | Next(x, rest) when x = List.head letters ->
+                match List.tail letters with
+                | [] -> Some rest
+                | letters -> 
+                    match rest with
+                    | NextChar letters rest -> Some rest
+                    | _ -> None
+            | _ -> None
+        match input with
+        | NextChar letters rest -> Some rest
+        | _ -> None
+
     let rec (|Number|_|) = function
         | Chars numeric i1 as i0 -> (System.Int32.Parse(sub i0 i1), i1) |> Some
         | _ -> None
@@ -65,11 +80,21 @@ module Impl =
         | Number (n, Next('d', next)) -> Some (Simple(n, 6), next)
         | Number (n, next) -> Some (Simple(n, 1), next)
         | _ -> None
+    and (|CommandExpression|_|) = function
+        | NextWord "avg." (CompoundExpression(v, next)) -> Some (Average(v), next)
+        | CompoundExpression(v, next) -> Some (Roll(v), next)
+        | _ -> None
         
     let parseCompound txt =
         match (txt, 0) with
         | CompoundExpression(cmd, Empty) -> cmd
         | _ -> failwithf "failed to parse '%s'" txt
 
+    let parseCommand txt =
+        match (txt, 0) with
+        | CommandExpression(cmd, Empty) -> cmd
+        | _ -> failwithf "failed to parse '%s'" txt
+
 let Parse txt = 
     parseCompound txt
+let ParseCommand = parseCommand
