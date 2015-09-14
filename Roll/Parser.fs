@@ -13,6 +13,7 @@ module Impl =
     *)
     let alpha = Set<char>['A'..'Z'] + Set<char>['a'..'z']
     let numeric = Set<char>['0'..'9']
+    let arithmeticOperators = Set<_>['+'; '-']
     let alphanumeric = alpha + numeric
 
     let (|Next|Empty|) = function
@@ -36,6 +37,10 @@ module Impl =
         s.Substring(i0, i1-i0)
 
     let rec (|CompoundExpression|_|) = function
+        | Number(n, Next('.', CompoundExpression(v, next))) -> 
+            Some(Repeat(n, v), next)
+        | CompoundExpression(lhs, Chars arithmeticOperators (CompoundExpression(rhs, next))) ->
+            Some(Sum(lhs, rhs), next)
         | SimpleExpression(v, next) -> Some(Single(v), next)
         | _ -> None
     and (|SimpleExpression|_|) = function
