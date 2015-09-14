@@ -69,10 +69,6 @@ module Impl =
                 Some(Sum(Single(lhs), reverseFirst rhs), next)
             | _ ->
                 Some(Single(lhs), next)
-        | SimpleExpression(lhs, Next('-', (SumSimplesExpression(rhs, next)))) ->
-            Some(Sum(Single(lhs), rhs), next)
-        | SimpleExpression(lhs, next) ->
-            Some(Single(lhs), next)
         | _ -> None
     and (|SimpleExpression|_|) = function
         | Next('d', Number(dieSize, next)) -> Some (Simple(1,dieSize), next)
