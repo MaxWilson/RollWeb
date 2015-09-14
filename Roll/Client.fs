@@ -46,7 +46,7 @@ module Client =
                 let todo = RollRecord.Create (spec, result)
                 // This is then added to the collection, which automatically
                 // updates the presentation.
-                Rolls.Set(Seq.append [todo] Rolls.Value)
+                Rolls.Add todo
                 )
         ]
     let renderRolls rolls =
@@ -56,7 +56,7 @@ module Client =
             table [
                 tbody [
                     ListModel.View rolls 
-                    // How to do |> List.rev here?
+                    |> View.Map (List.ofSeq >> List.rev >> Seq.ofList)
                     |> Doc.ConvertBy (fun i -> i.Key) renderItem                    
                 ]
             ]
