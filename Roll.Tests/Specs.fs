@@ -48,6 +48,19 @@ let ``Complete-ish list of example roll specs``(input: string, expectedAverage: 
     Assert.Equal(expectedAverage, Dice.Instance.Average(spec))
     Dice.Instance.Resolve(spec) |> ignore // must not throw
 
+[<Fact(Skip="Not implemented)")>]
+let ``Sums should be left-associative``() =
+    Assert.Equal(65., Parser.Parse "20d6-d4-d4" |> Dice.Instance.Average)
+
+[<Theory>]
+[<InlineData("3d6", null)>]
+[<InlineData("avg.3d6", "10.5")>]
+let ``Complete-ish list of example command specs``(input: string, expectedOutput: string) =
+    let spec = Parser.ParseCommand(input)
+    let output = Dice.Instance.Resolve(spec)
+    if(expectedOutput <> null) then
+        Assert.Equal<string>(expectedOutput, output)
+
 [<Theory(Skip="Incomplete")>]
 [<InlineData("1d2+", 1.75)>]
 [<InlineData("1d2-", 1.25)>]
