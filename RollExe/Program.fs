@@ -15,11 +15,11 @@ let main argv =
     let rec loop() =
         printf ">"
         match System.Console.ReadLine().Trim() with
-        | StringMatch [""] true -> printfn "Eh?"; loop()
+        | StringMatch [""] true -> printfn "Enter a command, e.g. avg.2d9+3."; loop()
         | StringMatch ["q"; "quit"] true -> ()
         | v -> 
             try
-                printfn "%d" (mdw.Parser.Parse v |> mdw.Dice.Instance.Resolve)
+                printfn "%s" (mdw.Parser.ParseCommand v |> mdw.Dice.Instance.Resolve)
             with e -> printfn "%s" (e.Message)
             loop()
     loop()
