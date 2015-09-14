@@ -1,5 +1,5 @@
 ﻿[<WebSharper.Core.Attributes.JavaScript>]
-module Util
+module mdw.Util
 
 let nomatch() =
     failwith "Not implemented yet"

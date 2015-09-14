@@ -37,3 +37,8 @@ let Rolling() =
 let Average() =
     Assert.Equal(3.5, Dice.Instance.Average(Single(Simple(1,6))))
     Assert.Equal(10.5, Dice.Instance.Average(Single(Simple(3,6))))
+
+[<Theory>]
+[<InlineData("3d6", 10.5)>]
+let ParsedAverages(input: string, expectedAverage: float) =
+    Assert.Equal(expectedAverage, Dice.Instance.Average(Parser.Parse(input)))

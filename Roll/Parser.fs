@@ -1,11 +1,10 @@
-﻿namespace mdw
-open WebSharper
-[<JavaScript>]
-module Parser =
+﻿[<WebSharper.Core.Attributes.JavaScript>]
+module mdw.Parser 
 
-    open DataDefs
+open DataDefs
 
-
+[<AutoOpen>]
+module Impl =
     (* Throughout this file we use string * int as a data type for parse inputs,
     representing a string and a position within it. I can't figure out how to get
     the type inference to work with type aliases though so I'm just using a raw
@@ -48,13 +47,11 @@ module Parser =
     and (|Number|_|) = function
         | Chars numeric i1 as i0 -> (System.Int32.Parse(sub i0 i1), i1) |> Some
         | _ -> None
-    //
-    //let parse txt =
-    //    match (txt, 0) with
-    //    | CompoundExpression(cmd, Empty) -> cmd
-    //    | _ -> failwithf "failed to parse '%s'" txt
-
-    let Parse txt = 
+        
+    let parseCompound txt =
         match (txt, 0) with
         | CompoundExpression(cmd, Empty) -> cmd
         | _ -> failwithf "failed to parse '%s'" txt
+
+let Parse txt = 
+    parseCompound txt
