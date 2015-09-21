@@ -42,11 +42,14 @@ module Client =
             Doc.Button "Submit" [] (fun _ ->
                 // We construct a new ToDo item
                 let spec = Var.Get rvInput
-                let result = Parser.ParseCommand spec |> Dice.Instance.Resolve
-                let todo = RollRecord.Create (spec, result)
-                // This is then added to the collection, which automatically
-                // updates the presentation.
-                Rolls.Add todo
+                try
+                    let result = Parser.ParseCommand spec |> Dice.Instance.Resolve
+                    let todo = RollRecord.Create (spec, result)
+                    // This is then added to the collection, which automatically
+                    // updates the presentation.
+                    Rolls.Add todo
+                with e ->
+                    JS.Alert (sprintf "Error: %s. Try a simple expression like '2d6' or 'avg.5d4+2'." (e.Message))
                 )
         ]
     let renderRolls rolls =
