@@ -45,6 +45,8 @@ let Average() =
 [<InlineData("10.3d6-2", 85.)>]
 [<InlineData("1d2A", 1.75)>]
 [<InlineData("1d2D", 1.25)>]
+[<InlineData("20.18?", 3.)>]
+[<InlineData("20.18?20?", 4.)>]
 let ``Complete-ish list of example roll specs``(input: string, expectedAverage: float) =
     let spec = Parser.Parse(input)
     Assert.Equal(expectedAverage, Dice.Instance.Average(spec))
@@ -64,7 +66,6 @@ let ``Complete-ish list of example command specs``(input: string, expectedOutput
         Assert.Equal<string>(expectedOutput, output)
 
 [<Theory(Skip="Incomplete")>]
-[<InlineData("20.18?", 3.)>]
 [<InlineData("20.18A?", 0.2775)>]
 [<InlineData("20.18D?", 0.0225)>]
 [<InlineData("20.18A?100", 27.75)>]

@@ -11,7 +11,7 @@ type Compound =
 | Sum of Compound * Compound
 | MultByConstant of int * Compound
 | Repeat of int * Compound
-| Check of roll : Compound * target: int * result : Compound * critResult : Compound
+| Check of roll : Compound * resultSpecs : (int * Compound) list * fallbackResult : int
 
 type Command =
 | Roll of Compound

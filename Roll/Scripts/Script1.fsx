@@ -10,3 +10,46 @@ open mdw.DataDefs
 open mdw.Parser.Impl
 let spec = Parser.Parse("d2+") |> Dice.Instance.Average
 makeRoll 1 2 ("d2+", 2)
+
+// enumerate the die pool, represented as a sequence of value/count pairs
+let enumerateSimple = function
+    | Simple(n, 1) -> [(n,1)] // primitive case
+    | Simple(n, d) ->
+        let add range dieSize =   
+            let min = 1 + (Seq.map fst >> Seq.min) range  
+            let max = dieSize + (Seq.map fst >> Seq.max) range      
+            [for x in min..max ->
+                (x, range |> Seq.sumBy (fun (n, count) ->
+                    let roll = x - n
+                    if 1 <= roll && roll <= dieSize then
+                        count
+                    else
+                        0
+                ))
+            ] 
+        Seq.fold (fun range _ -> add range d) [(0,1)] [1..n]
+    | _ -> Util.nomatch()
+let rec enumerate = function
+| Single(simple) -> enumerateSimple simple
+| Sum(lhs, rhs) -> 
+    let sum = [for (n0, c0) in enumerate lhs do
+                    for (n1, c1) in enumerate rhs do
+                        yield (n0 + n1), (c0 + c1)
+                ]
+                |> Seq.groupBy fst
+                |> Seq.map (fun (n, terms) -> (n, terms |> Seq.sumBy snd))
+    sum |> List.ofSeq
+| _ -> Util.nomatch()
+
+let lhs = enumerateSimple (Simple(2, 6))
+let rhs = enumerateSimple (Simple(8, 1))
+let cross = Seq.zip lhs rhs
+    [for (n0, c0) in lhs do
+                    for (n1, c1) in rhs do
+                        yield (n0 + n1), (c0 + c1)
+                ]
+                |> Seq.groupBy fst
+                |> Seq.map (fun (n, terms) -> (n, terms |> Seq.sumBy snd))
+enumerate (Sum(Single(Simple(8, 1)), Single(Simple(2,6))))
+
+enumerate (Sum(Single(Simple(8, 1)), Single(Simple(2,6))))
