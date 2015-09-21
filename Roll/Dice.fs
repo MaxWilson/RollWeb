@@ -35,15 +35,19 @@ type Resolver(?random) =
             match inner with
             | Simple(n, d) -> (float n) * (float (d + 1))/2.
             | Adv(n, d) -> 
-                [for x in 1..d do
-                    for y in 1..d do
-                        yield max x y]
-                |> Seq.sum |> float |> (*) (float n)
+                let sum = 
+                    [for x in 1..d do
+                        for y in 1..d do
+                            yield max x y]
+                    |> Seq.sum |> float 
+                sum * (float n) / (float (d*d))
             | Disadv(n, d) -> 
-                [for x in 1..d do
-                    for y in 1..d do
-                        yield min x y]
-                |> Seq.sum |> float |> (*) (float n)
+                let sum = 
+                    [for x in 1..d do
+                        for y in 1..d do
+                            yield min x y]
+                    |> Seq.sum |> float 
+                sum * (float n) / (float (d*d))
         | Repeat(n, inner) -> (float n) * (this.Average(inner))
         | MultByConstant(k, rhs) -> (float k) * (this.Average(rhs))
         | Sum(lhs, rhs) -> this.Average(lhs) + this.Average(rhs)
