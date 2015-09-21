@@ -8,8 +8,11 @@ open WebSharper
 
 type Resolver(?random) =
     let r = defaultArg random (new Random())    
+    // sum up a probability distribution
+    let sumTerms = Seq.groupBy fst
+                   >> (Seq.map (fun (n, terms) -> (n, terms |> Seq.sumBy snd)))
     // enumerate the die pool, represented as a sequence of value/count pairs
-    let enumerateSimple = function
+    let rec enumerateSimple = function
         | Simple(n, 1) -> [(n,1)] // primitive case
         | Simple(n, d) ->
             let add range dieSize =   
@@ -25,16 +28,38 @@ type Resolver(?random) =
                     ))
                 ] 
             Seq.fold (fun range _ -> add range d) [(0,1)] [1..n]
-        | _ -> Util.nomatch()
+        | Adv(n, d) ->
+            let sum = [ for (n0, c0) in enumerateSimple (Simple(n,d)) do
+                            for (n1, c1) in enumerateSimple (Simple(n,d)) do
+                                yield
+                                    if n1 > n0 then
+                                        (n1, c0 + c1)
+                                    else
+                                        (n0, c0 + c1)
+                      ] |> sumTerms
+                        // make it (unnecessarily) prettier by eliminating 2, which is a common factor
+                        |> Seq.map (fun (n, x) -> (n, x / 2)) // will always be even because adv is symmetric
+            sum |> List.ofSeq
+        | Disadv(n, d) ->
+            let sum = [ for (n0, c0) in enumerateSimple (Simple(n,d)) do
+                            for (n1, c1) in enumerateSimple (Simple(n,d)) do
+                                yield
+                                    if n1 < n0 then
+                                        (n1, c0 + c1)
+                                    else
+                                        (n0, c0 + c1)
+                      ] |> sumTerms
+                        // make it (unnecessarily) prettier by eliminating 2, which is a common factor
+                        |> Seq.map (fun (n, x) -> (n, x / 2)) // will always be even because adv is symmetric
+            sum |> List.ofSeq
     let rec enumerate = function
         | Single(simple) -> enumerateSimple simple
         | Sum(lhs, rhs) -> 
-            let sum = [for (n0, c0) in enumerate lhs do
+            let sum = [ for (n0, c0) in enumerate lhs do
                             for (n1, c1) in enumerate rhs do
                                 yield (n0 + n1), (c0 + c1)
-                        ]
-                        |> Seq.groupBy fst
-                        |> Seq.map (fun (n, terms) -> (n, terms |> Seq.sumBy snd))
+                      ]
+                      |> sumTerms
             sum |> List.ofSeq
         | _ -> Util.nomatch()
     let sumBy spec sumCalculator = 
@@ -78,20 +103,11 @@ type Resolver(?random) =
         | Single(inner) -> 
             match inner with
             | Simple(n, d) -> (float n) * (float (d + 1))/2.
-            | Adv(n, d) -> 
-                let sum = 
-                    [for x in 1..d do
-                        for y in 1..d do
-                            yield max x y]
-                    |> Seq.sum |> float 
-                sum * (float n) / (float (d*d))
-            | Disadv(n, d) -> 
-                let sum = 
-                    [for x in 1..d do
-                        for y in 1..d do
-                            yield min x y]
-                    |> Seq.sum |> float 
-                sum * (float n) / (float (d*d))
+            | _ -> 
+                let dist = enumerateSimple inner
+                let total = dist |> Seq.sumBy snd
+                let sum = dist |> Seq.sumBy (fun (n, count) -> n * count)
+                (float sum) / (float total)
         | Repeat(n, inner) -> (float n) * (this.Average(inner))
         | MultByConstant(k, rhs) -> (float k) * (this.Average(rhs))
         | Sum(lhs, rhs) -> this.Average(lhs) + this.Average(rhs)
