@@ -6,5 +6,7 @@
       @"..\Parser.fs"
       @"..\Dice.fs"
 open mdw
+open mdw.DataDefs
 open mdw.Parser.Impl
-let spec = Parser.ParseCommand("avg.20d6-d4-d4") |> Dice.Instance.Resolve
+let spec = Parser.Parse("d2+") |> Dice.Instance.Average
+makeRoll 1 2 ("d2+", 2)

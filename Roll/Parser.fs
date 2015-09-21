@@ -83,9 +83,27 @@ module Impl =
                 | _ -> Util.nomatch()
             Some(node, next)
         | _ -> None
-    and (|SimpleExpression|_|) = function
-        | Next('d', Number(dieSize, next)) -> Some (Simple(1,dieSize), next)
-        | Number (n, Next('d', Number(dieSize, next))) -> Some (Simple(n, dieSize), next)
+    and (|SimpleExpression|_|) input = 
+        let makeRoll n d input = 
+            match input with
+            | Char arithmeticOperators (Char arithmeticOperators _) as rest ->
+                let (s, i) = input
+                let roll = match s.[i] with
+                            | '+' -> Adv(n, d)
+                            | '-' -> Disadv(n, d)
+                            | _ -> Util.nomatch()
+                Some (roll, (s, i+1))
+            | Char arithmeticOperators Empty ->
+                let (s, i) = input
+                let roll = match s.[i] with
+                            | '+' -> Adv(n, d)
+                            | '-' -> Disadv(n, d)
+                            | _ -> Util.nomatch()
+                Some (roll, (s, i+1))
+            | rest -> Some(Simple(n, d), rest)
+        match input with
+        | Next('d', Number(dieSize, next)) -> makeRoll 1 dieSize next
+        | Number (n, Next('d', Number(dieSize, next))) -> makeRoll n dieSize next
         | Number (n, Next('d', next)) -> Some (Simple(n, 6), next)
         | Number (n, next) -> Some (Simple(n, 1), next)
         | _ -> None
