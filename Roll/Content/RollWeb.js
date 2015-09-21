@@ -17467,7 +17467,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
 
 (function()
 {
- var Global=this,Runtime=this.IntelliFactory.Runtime,mdw,Dice,Resolver,Number,Seq,Operators,String,Random,Collections,FSharpSet,Parser,Impl,List,PrintfHelpers,Strings,parseInt,Util,T,jQuery,UI,Next,Client,Doc,Roll,Client1,Var,AttrProxy,RollRecord,Key,ListModel,View;
+ var Global=this,Runtime=this.IntelliFactory.Runtime,mdw,Dice,Resolver,Number,Seq,Operators,String,Random,Collections,FSharpSet,List,Parser,Impl,PrintfHelpers,Strings,parseInt,Util,T,jQuery,UI,Next,Client,Doc,Roll,Client1,Var,AttrProxy,RollRecord,Key,ListModel,View;
  Runtime.Define(Global,{
   mdw:{
    Dice:{
@@ -17649,6 +17649,10 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
    },
    Parser:{
     Impl:{
+     advantageDisadvantage:Runtime.Field(function()
+     {
+      return FSharpSet.New(List.ofArray([65,68,97,100]));
+     }),
      alpha:Runtime.Field(function()
      {
       return FSharpSet.New(Seq.toList(Operators.range(65,90))).add(FSharpSet.New(Seq.toList(Operators.range(97,122))));
@@ -17982,14 +17986,14 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      },
      "|SimpleExpression|_|":function(_,_1)
      {
-      var input,makeRoll,activePatternResult4,tupledArg3,activePatternResult5,activePatternResult6,tupledArg4,activePatternResult7,tupledArg5,activePatternResult8,activePatternResult9,tupledArg6,activePatternResulta,next,activePatternResultb,next1,activePatternResultc,next2,activePatternResultd,next3,activePatternResulte,tupledArg7,activePatternResultf,next4,activePatternResult10,next5,activePatternResult11,next6,activePatternResult12,next7,activePatternResult13,tupledArg8,activePatternResult14,next8,activePatternResult15,next9,activePatternResult16,nexta,activePatternResult17,nextb,activePatternResult18,tupledArg9,activePatternResult19,nextc,activePatternResult1a,nextd,activePatternResult1b,nexte,activePatternResult1c,nextf,activePatternResult1d,tupledArga,activePatternResult1e,tupledArgb,activePatternResult1f,activePatternResult20,tupledArgc,activePatternResult21,next10,activePatternResult22,next11,activePatternResult23,next12,activePatternResult24,next13,activePatternResult25,tupledArgd,activePatternResult26,next14,activePatternResult27,next15,activePatternResult28,next16,activePatternResult29,next17,activePatternResult2a,tupledArge,activePatternResult2b,next18,activePatternResult2c,next19,activePatternResult2d,next1a,activePatternResult2e,next1b,activePatternResult2f,tupledArgf,activePatternResult30,next1c,activePatternResult31,next1d,activePatternResult32,next1e,activePatternResult33,next1f,activePatternResult34,tupledArg10,activePatternResult35,tupledArg11,activePatternResult36,activePatternResult37,tupledArg12,activePatternResult38,next20,activePatternResult39,next21,activePatternResult3a,next22,activePatternResult3b,next23,activePatternResult3c,tupledArg13,activePatternResult3d,next24,activePatternResult3e,next25,activePatternResult3f,next26,activePatternResult40,next27,activePatternResult41,tupledArg14,activePatternResult42,next28,activePatternResult43,next29,activePatternResult44,next2a,activePatternResult45,next2b,activePatternResult46,tupledArg15,activePatternResult47,next2c,activePatternResult48,next2d,activePatternResult49,next2e,activePatternResult4a,next2f;
+      var input,makeRoll,activePatternResult6,tupledArg3,activePatternResult7,activePatternResult8,tupledArg4,activePatternResult9,tupledArg5,activePatternResulta,activePatternResultb,tupledArg6,activePatternResultc,next,activePatternResultd,next1,activePatternResulte,next2,activePatternResultf,next3,activePatternResult10,tupledArg7,activePatternResult11,next4,activePatternResult12,next5,activePatternResult13,next6,activePatternResult14,next7,activePatternResult15,tupledArg8,activePatternResult16,next8,activePatternResult17,next9,activePatternResult18,nexta,activePatternResult19,nextb,activePatternResult1a,tupledArg9,activePatternResult1b,nextc,activePatternResult1c,nextd,activePatternResult1d,nexte,activePatternResult1e,nextf,activePatternResult1f,tupledArga,activePatternResult20,tupledArgb,activePatternResult21,activePatternResult22,tupledArgc,activePatternResult23,next10,activePatternResult24,next11,activePatternResult25,next12,activePatternResult26,next13,activePatternResult27,tupledArgd,activePatternResult28,next14,activePatternResult29,next15,activePatternResult2a,next16,activePatternResult2b,next17,activePatternResult2c,tupledArge,activePatternResult2d,next18,activePatternResult2e,next19,activePatternResult2f,next1a,activePatternResult30,next1b,activePatternResult31,tupledArgf,activePatternResult32,next1c,activePatternResult33,next1d,activePatternResult34,next1e,activePatternResult35,next1f,activePatternResult36,tupledArg10,activePatternResult37,tupledArg11,activePatternResult38,activePatternResult39,tupledArg12,activePatternResult3a,next20,activePatternResult3b,next21,activePatternResult3c,next22,activePatternResult3d,next23,activePatternResult3e,tupledArg13,activePatternResult3f,next24,activePatternResult40,next25,activePatternResult41,next26,activePatternResult42,next27,activePatternResult43,tupledArg14,activePatternResult44,next28,activePatternResult45,next29,activePatternResult46,next2a,activePatternResult47,next2b,activePatternResult48,tupledArg15,activePatternResult49,next2c,activePatternResult4a,next2d,activePatternResult4b,next2e,activePatternResult4c,next2f;
       input=[_,_1];
       makeRoll=function(n,d,input1)
       {
-       var _arg10_,_arg11_,activePatternResult,tupledArg,_arg10_1,_arg11_1,activePatternResult1,s,i,matchValue,_arg10_2,_arg11_2,activePatternResult2,tupledArg1,s1,i1,matchValue1,_arg10_3,_arg11_3,activePatternResult3,tupledArg2,s2,i2,matchValue2;
+       var _arg10_,_arg11_,activePatternResult,tupledArg,_arg10_1,_arg11_1,activePatternResult1,s,i,matchValue,_arg10_2,_arg11_2,activePatternResult2,tupledArg1,activePatternResult3,s1,i1,matchValue1,_arg10_3,_arg11_3,activePatternResult4,tupledArg2,activePatternResult5,s2,i2,matchValue2;
        _arg10_=input1[0];
        _arg11_=input1[1];
-       activePatternResult=Impl["|Char|_|"](Impl.arithmeticOperators(),_arg10_,_arg11_);
+       activePatternResult=Impl["|Char|_|"](Impl.advantageDisadvantage(),_arg10_,_arg11_);
        if(activePatternResult.$==1)
         {
          tupledArg=activePatternResult.$0;
@@ -18003,11 +18007,19 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            matchValue=s.charCodeAt(i);
            return{
             $:1,
-            $0:[matchValue===43?{
+            $0:[matchValue===65?{
              $:1,
              $0:n,
              $1:d
-            }:matchValue===45?{
+            }:matchValue===68?{
+             $:2,
+             $0:n,
+             $1:d
+            }:matchValue===97?{
+             $:1,
+             $0:n,
+             $1:d
+            }:matchValue===100?{
              $:2,
              $0:n,
              $1:d
@@ -18018,22 +18030,31 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
           {
            _arg10_2=input1[0];
            _arg11_2=input1[1];
-           activePatternResult2=Impl["|Char|_|"](Impl.arithmeticOperators(),_arg10_2,_arg11_2);
+           activePatternResult2=Impl["|Char|_|"](Impl.advantageDisadvantage(),_arg10_2,_arg11_2);
            if(activePatternResult2.$==1)
             {
              tupledArg1=activePatternResult2.$0;
-             if(Impl["|Next|Empty|"](tupledArg1[0],tupledArg1[1]).$==1)
+             activePatternResult3=Impl["|Next|Empty|"](tupledArg1[0],tupledArg1[1]);
+             if(activePatternResult3.$==1)
               {
                s1=input1[0];
                i1=input1[1];
                matchValue1=s1.charCodeAt(i1);
                return{
                 $:1,
-                $0:[matchValue1===43?{
+                $0:[matchValue1===65?{
                  $:1,
                  $0:n,
                  $1:d
-                }:matchValue1===45?{
+                }:matchValue1===68?{
+                 $:2,
+                 $0:n,
+                 $1:d
+                }:matchValue1===97?{
+                 $:1,
+                 $0:n,
+                 $1:d
+                }:matchValue1===100?{
                  $:2,
                  $0:n,
                  $1:d
@@ -18069,22 +18090,31 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
         {
          _arg10_3=input1[0];
          _arg11_3=input1[1];
-         activePatternResult3=Impl["|Char|_|"](Impl.arithmeticOperators(),_arg10_3,_arg11_3);
-         if(activePatternResult3.$==1)
+         activePatternResult4=Impl["|Char|_|"](Impl.advantageDisadvantage(),_arg10_3,_arg11_3);
+         if(activePatternResult4.$==1)
           {
-           tupledArg2=activePatternResult3.$0;
-           if(Impl["|Next|Empty|"](tupledArg2[0],tupledArg2[1]).$==1)
+           tupledArg2=activePatternResult4.$0;
+           activePatternResult5=Impl["|Next|Empty|"](tupledArg2[0],tupledArg2[1]);
+           if(activePatternResult5.$==1)
             {
              s2=input1[0];
              i2=input1[1];
              matchValue2=s2.charCodeAt(i2);
              return{
               $:1,
-              $0:[matchValue2===43?{
+              $0:[matchValue2===65?{
                $:1,
                $0:n,
                $1:d
-              }:matchValue2===45?{
+              }:matchValue2===68?{
+               $:2,
+               $0:n,
+               $1:d
+              }:matchValue2===97?{
+               $:1,
+               $0:n,
+               $1:d
+              }:matchValue2===100?{
                $:2,
                $0:n,
                $1:d
@@ -18116,66 +18146,66 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
           }
         }
       };
-      activePatternResult4=Impl["|Next|Empty|"](input[0],input[1]);
-      if(activePatternResult4.$==0)
+      activePatternResult6=Impl["|Next|Empty|"](input[0],input[1]);
+      if(activePatternResult6.$==0)
        {
-        if(activePatternResult4.$0[0]===100)
+        if(activePatternResult6.$0[0]===100)
          {
-          tupledArg3=activePatternResult4.$0[1];
-          activePatternResult5=Impl["|Number|_|"](tupledArg3[0],tupledArg3[1]);
-          if(activePatternResult5.$==1)
+          tupledArg3=activePatternResult6.$0[1];
+          activePatternResult7=Impl["|Number|_|"](tupledArg3[0],tupledArg3[1]);
+          if(activePatternResult7.$==1)
            {
-            return makeRoll(1,activePatternResult5.$0[0],activePatternResult5.$0[1]);
+            return makeRoll(1,activePatternResult7.$0[0],activePatternResult7.$0[1]);
            }
           else
            {
-            activePatternResult6=Impl["|Number|_|"](input[0],input[1]);
-            if(activePatternResult6.$==1)
+            activePatternResult8=Impl["|Number|_|"](input[0],input[1]);
+            if(activePatternResult8.$==1)
              {
-              tupledArg4=activePatternResult6.$0[1];
-              activePatternResult7=Impl["|Next|Empty|"](tupledArg4[0],tupledArg4[1]);
-              if(activePatternResult7.$==0)
+              tupledArg4=activePatternResult8.$0[1];
+              activePatternResult9=Impl["|Next|Empty|"](tupledArg4[0],tupledArg4[1]);
+              if(activePatternResult9.$==0)
                {
-                if(activePatternResult7.$0[0]===100)
+                if(activePatternResult9.$0[0]===100)
                  {
-                  tupledArg5=activePatternResult7.$0[1];
-                  activePatternResult8=Impl["|Number|_|"](tupledArg5[0],tupledArg5[1]);
-                  if(activePatternResult8.$==1)
+                  tupledArg5=activePatternResult9.$0[1];
+                  activePatternResulta=Impl["|Number|_|"](tupledArg5[0],tupledArg5[1]);
+                  if(activePatternResulta.$==1)
                    {
-                    return makeRoll(activePatternResult6.$0[0],activePatternResult8.$0[0],activePatternResult8.$0[1]);
+                    return makeRoll(activePatternResult8.$0[0],activePatternResulta.$0[0],activePatternResulta.$0[1]);
                    }
                   else
                    {
-                    activePatternResult9=Impl["|Number|_|"](input[0],input[1]);
-                    if(activePatternResult9.$==1)
+                    activePatternResultb=Impl["|Number|_|"](input[0],input[1]);
+                    if(activePatternResultb.$==1)
                      {
-                      tupledArg6=activePatternResult9.$0[1];
-                      activePatternResulta=Impl["|Next|Empty|"](tupledArg6[0],tupledArg6[1]);
-                      if(activePatternResulta.$==0)
+                      tupledArg6=activePatternResultb.$0[1];
+                      activePatternResultc=Impl["|Next|Empty|"](tupledArg6[0],tupledArg6[1]);
+                      if(activePatternResultc.$==0)
                        {
-                        if(activePatternResulta.$0[0]===100)
+                        if(activePatternResultc.$0[0]===100)
                          {
-                          next=activePatternResulta.$0[1];
+                          next=activePatternResultc.$0[1];
                           return{
                            $:1,
                            $0:[{
                             $:0,
-                            $0:activePatternResult9.$0[0],
+                            $0:activePatternResultb.$0[0],
                             $1:6
                            },next]
                           };
                          }
                         else
                          {
-                          activePatternResultb=Impl["|Number|_|"](input[0],input[1]);
-                          if(activePatternResultb.$==1)
+                          activePatternResultd=Impl["|Number|_|"](input[0],input[1]);
+                          if(activePatternResultd.$==1)
                            {
-                            next1=activePatternResultb.$0[1];
+                            next1=activePatternResultd.$0[1];
                             return{
                              $:1,
                              $0:[{
                               $:0,
-                              $0:activePatternResultb.$0[0],
+                              $0:activePatternResultd.$0[0],
                               $1:1
                              },next1]
                             };
@@ -18190,15 +18220,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                        }
                       else
                        {
-                        activePatternResultc=Impl["|Number|_|"](input[0],input[1]);
-                        if(activePatternResultc.$==1)
+                        activePatternResulte=Impl["|Number|_|"](input[0],input[1]);
+                        if(activePatternResulte.$==1)
                          {
-                          next2=activePatternResultc.$0[1];
+                          next2=activePatternResulte.$0[1];
                           return{
                            $:1,
                            $0:[{
                             $:0,
-                            $0:activePatternResultc.$0[0],
+                            $0:activePatternResulte.$0[0],
                             $1:1
                            },next2]
                           };
@@ -18213,15 +18243,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                      }
                     else
                      {
-                      activePatternResultd=Impl["|Number|_|"](input[0],input[1]);
-                      if(activePatternResultd.$==1)
+                      activePatternResultf=Impl["|Number|_|"](input[0],input[1]);
+                      if(activePatternResultf.$==1)
                        {
-                        next3=activePatternResultd.$0[1];
+                        next3=activePatternResultf.$0[1];
                         return{
                          $:1,
                          $0:[{
                           $:0,
-                          $0:activePatternResultd.$0[0],
+                          $0:activePatternResultf.$0[0],
                           $1:1
                          },next3]
                         };
@@ -18237,36 +18267,36 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResulte=Impl["|Number|_|"](input[0],input[1]);
-                  if(activePatternResulte.$==1)
+                  activePatternResult10=Impl["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult10.$==1)
                    {
-                    tupledArg7=activePatternResulte.$0[1];
-                    activePatternResultf=Impl["|Next|Empty|"](tupledArg7[0],tupledArg7[1]);
-                    if(activePatternResultf.$==0)
+                    tupledArg7=activePatternResult10.$0[1];
+                    activePatternResult11=Impl["|Next|Empty|"](tupledArg7[0],tupledArg7[1]);
+                    if(activePatternResult11.$==0)
                      {
-                      if(activePatternResultf.$0[0]===100)
+                      if(activePatternResult11.$0[0]===100)
                        {
-                        next4=activePatternResultf.$0[1];
+                        next4=activePatternResult11.$0[1];
                         return{
                          $:1,
                          $0:[{
                           $:0,
-                          $0:activePatternResulte.$0[0],
+                          $0:activePatternResult10.$0[0],
                           $1:6
                          },next4]
                         };
                        }
                       else
                        {
-                        activePatternResult10=Impl["|Number|_|"](input[0],input[1]);
-                        if(activePatternResult10.$==1)
+                        activePatternResult12=Impl["|Number|_|"](input[0],input[1]);
+                        if(activePatternResult12.$==1)
                          {
-                          next5=activePatternResult10.$0[1];
+                          next5=activePatternResult12.$0[1];
                           return{
                            $:1,
                            $0:[{
                             $:0,
-                            $0:activePatternResult10.$0[0],
+                            $0:activePatternResult12.$0[0],
                             $1:1
                            },next5]
                           };
@@ -18281,15 +18311,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                      }
                     else
                      {
-                      activePatternResult11=Impl["|Number|_|"](input[0],input[1]);
-                      if(activePatternResult11.$==1)
+                      activePatternResult13=Impl["|Number|_|"](input[0],input[1]);
+                      if(activePatternResult13.$==1)
                        {
-                        next6=activePatternResult11.$0[1];
+                        next6=activePatternResult13.$0[1];
                         return{
                          $:1,
                          $0:[{
                           $:0,
-                          $0:activePatternResult11.$0[0],
+                          $0:activePatternResult13.$0[0],
                           $1:1
                          },next6]
                         };
@@ -18304,15 +18334,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                    }
                   else
                    {
-                    activePatternResult12=Impl["|Number|_|"](input[0],input[1]);
-                    if(activePatternResult12.$==1)
+                    activePatternResult14=Impl["|Number|_|"](input[0],input[1]);
+                    if(activePatternResult14.$==1)
                      {
-                      next7=activePatternResult12.$0[1];
+                      next7=activePatternResult14.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult12.$0[0],
+                        $0:activePatternResult14.$0[0],
                         $1:1
                        },next7]
                       };
@@ -18328,36 +18358,36 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult13=Impl["|Number|_|"](input[0],input[1]);
-                if(activePatternResult13.$==1)
+                activePatternResult15=Impl["|Number|_|"](input[0],input[1]);
+                if(activePatternResult15.$==1)
                  {
-                  tupledArg8=activePatternResult13.$0[1];
-                  activePatternResult14=Impl["|Next|Empty|"](tupledArg8[0],tupledArg8[1]);
-                  if(activePatternResult14.$==0)
+                  tupledArg8=activePatternResult15.$0[1];
+                  activePatternResult16=Impl["|Next|Empty|"](tupledArg8[0],tupledArg8[1]);
+                  if(activePatternResult16.$==0)
                    {
-                    if(activePatternResult14.$0[0]===100)
+                    if(activePatternResult16.$0[0]===100)
                      {
-                      next8=activePatternResult14.$0[1];
+                      next8=activePatternResult16.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult13.$0[0],
+                        $0:activePatternResult15.$0[0],
                         $1:6
                        },next8]
                       };
                      }
                     else
                      {
-                      activePatternResult15=Impl["|Number|_|"](input[0],input[1]);
-                      if(activePatternResult15.$==1)
+                      activePatternResult17=Impl["|Number|_|"](input[0],input[1]);
+                      if(activePatternResult17.$==1)
                        {
-                        next9=activePatternResult15.$0[1];
+                        next9=activePatternResult17.$0[1];
                         return{
                          $:1,
                          $0:[{
                           $:0,
-                          $0:activePatternResult15.$0[0],
+                          $0:activePatternResult17.$0[0],
                           $1:1
                          },next9]
                         };
@@ -18372,15 +18402,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                    }
                   else
                    {
-                    activePatternResult16=Impl["|Number|_|"](input[0],input[1]);
-                    if(activePatternResult16.$==1)
+                    activePatternResult18=Impl["|Number|_|"](input[0],input[1]);
+                    if(activePatternResult18.$==1)
                      {
-                      nexta=activePatternResult16.$0[1];
+                      nexta=activePatternResult18.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult16.$0[0],
+                        $0:activePatternResult18.$0[0],
                         $1:1
                        },nexta]
                       };
@@ -18395,15 +18425,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult17=Impl["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult17.$==1)
+                  activePatternResult19=Impl["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult19.$==1)
                    {
-                    nextb=activePatternResult17.$0[1];
+                    nextb=activePatternResult19.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult17.$0[0],
+                      $0:activePatternResult19.$0[0],
                       $1:1
                      },nextb]
                     };
@@ -18419,36 +18449,36 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult18=Impl["|Number|_|"](input[0],input[1]);
-              if(activePatternResult18.$==1)
+              activePatternResult1a=Impl["|Number|_|"](input[0],input[1]);
+              if(activePatternResult1a.$==1)
                {
-                tupledArg9=activePatternResult18.$0[1];
-                activePatternResult19=Impl["|Next|Empty|"](tupledArg9[0],tupledArg9[1]);
-                if(activePatternResult19.$==0)
+                tupledArg9=activePatternResult1a.$0[1];
+                activePatternResult1b=Impl["|Next|Empty|"](tupledArg9[0],tupledArg9[1]);
+                if(activePatternResult1b.$==0)
                  {
-                  if(activePatternResult19.$0[0]===100)
+                  if(activePatternResult1b.$0[0]===100)
                    {
-                    nextc=activePatternResult19.$0[1];
+                    nextc=activePatternResult1b.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult18.$0[0],
+                      $0:activePatternResult1a.$0[0],
                       $1:6
                      },nextc]
                     };
                    }
                   else
                    {
-                    activePatternResult1a=Impl["|Number|_|"](input[0],input[1]);
-                    if(activePatternResult1a.$==1)
+                    activePatternResult1c=Impl["|Number|_|"](input[0],input[1]);
+                    if(activePatternResult1c.$==1)
                      {
-                      nextd=activePatternResult1a.$0[1];
+                      nextd=activePatternResult1c.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult1a.$0[0],
+                        $0:activePatternResult1c.$0[0],
                         $1:1
                        },nextd]
                       };
@@ -18463,15 +18493,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult1b=Impl["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult1b.$==1)
+                  activePatternResult1d=Impl["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult1d.$==1)
                    {
-                    nexte=activePatternResult1b.$0[1];
+                    nexte=activePatternResult1d.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult1b.$0[0],
+                      $0:activePatternResult1d.$0[0],
                       $1:1
                      },nexte]
                     };
@@ -18486,15 +18516,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult1c=Impl["|Number|_|"](input[0],input[1]);
-                if(activePatternResult1c.$==1)
+                activePatternResult1e=Impl["|Number|_|"](input[0],input[1]);
+                if(activePatternResult1e.$==1)
                  {
-                  nextf=activePatternResult1c.$0[1];
+                  nextf=activePatternResult1e.$0[1];
                   return{
                    $:1,
                    $0:[{
                     $:0,
-                    $0:activePatternResult1c.$0[0],
+                    $0:activePatternResult1e.$0[0],
                     $1:1
                    },nextf]
                   };
@@ -18511,53 +18541,53 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
          }
         else
          {
-          activePatternResult1d=Impl["|Number|_|"](input[0],input[1]);
-          if(activePatternResult1d.$==1)
+          activePatternResult1f=Impl["|Number|_|"](input[0],input[1]);
+          if(activePatternResult1f.$==1)
            {
-            tupledArga=activePatternResult1d.$0[1];
-            activePatternResult1e=Impl["|Next|Empty|"](tupledArga[0],tupledArga[1]);
-            if(activePatternResult1e.$==0)
+            tupledArga=activePatternResult1f.$0[1];
+            activePatternResult20=Impl["|Next|Empty|"](tupledArga[0],tupledArga[1]);
+            if(activePatternResult20.$==0)
              {
-              if(activePatternResult1e.$0[0]===100)
+              if(activePatternResult20.$0[0]===100)
                {
-                tupledArgb=activePatternResult1e.$0[1];
-                activePatternResult1f=Impl["|Number|_|"](tupledArgb[0],tupledArgb[1]);
-                if(activePatternResult1f.$==1)
+                tupledArgb=activePatternResult20.$0[1];
+                activePatternResult21=Impl["|Number|_|"](tupledArgb[0],tupledArgb[1]);
+                if(activePatternResult21.$==1)
                  {
-                  return makeRoll(activePatternResult1d.$0[0],activePatternResult1f.$0[0],activePatternResult1f.$0[1]);
+                  return makeRoll(activePatternResult1f.$0[0],activePatternResult21.$0[0],activePatternResult21.$0[1]);
                  }
                 else
                  {
-                  activePatternResult20=Impl["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult20.$==1)
+                  activePatternResult22=Impl["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult22.$==1)
                    {
-                    tupledArgc=activePatternResult20.$0[1];
-                    activePatternResult21=Impl["|Next|Empty|"](tupledArgc[0],tupledArgc[1]);
-                    if(activePatternResult21.$==0)
+                    tupledArgc=activePatternResult22.$0[1];
+                    activePatternResult23=Impl["|Next|Empty|"](tupledArgc[0],tupledArgc[1]);
+                    if(activePatternResult23.$==0)
                      {
-                      if(activePatternResult21.$0[0]===100)
+                      if(activePatternResult23.$0[0]===100)
                        {
-                        next10=activePatternResult21.$0[1];
+                        next10=activePatternResult23.$0[1];
                         return{
                          $:1,
                          $0:[{
                           $:0,
-                          $0:activePatternResult20.$0[0],
+                          $0:activePatternResult22.$0[0],
                           $1:6
                          },next10]
                         };
                        }
                       else
                        {
-                        activePatternResult22=Impl["|Number|_|"](input[0],input[1]);
-                        if(activePatternResult22.$==1)
+                        activePatternResult24=Impl["|Number|_|"](input[0],input[1]);
+                        if(activePatternResult24.$==1)
                          {
-                          next11=activePatternResult22.$0[1];
+                          next11=activePatternResult24.$0[1];
                           return{
                            $:1,
                            $0:[{
                             $:0,
-                            $0:activePatternResult22.$0[0],
+                            $0:activePatternResult24.$0[0],
                             $1:1
                            },next11]
                           };
@@ -18572,15 +18602,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                      }
                     else
                      {
-                      activePatternResult23=Impl["|Number|_|"](input[0],input[1]);
-                      if(activePatternResult23.$==1)
+                      activePatternResult25=Impl["|Number|_|"](input[0],input[1]);
+                      if(activePatternResult25.$==1)
                        {
-                        next12=activePatternResult23.$0[1];
+                        next12=activePatternResult25.$0[1];
                         return{
                          $:1,
                          $0:[{
                           $:0,
-                          $0:activePatternResult23.$0[0],
+                          $0:activePatternResult25.$0[0],
                           $1:1
                          },next12]
                         };
@@ -18595,15 +18625,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                    }
                   else
                    {
-                    activePatternResult24=Impl["|Number|_|"](input[0],input[1]);
-                    if(activePatternResult24.$==1)
+                    activePatternResult26=Impl["|Number|_|"](input[0],input[1]);
+                    if(activePatternResult26.$==1)
                      {
-                      next13=activePatternResult24.$0[1];
+                      next13=activePatternResult26.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult24.$0[0],
+                        $0:activePatternResult26.$0[0],
                         $1:1
                        },next13]
                       };
@@ -18619,36 +18649,36 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult25=Impl["|Number|_|"](input[0],input[1]);
-                if(activePatternResult25.$==1)
+                activePatternResult27=Impl["|Number|_|"](input[0],input[1]);
+                if(activePatternResult27.$==1)
                  {
-                  tupledArgd=activePatternResult25.$0[1];
-                  activePatternResult26=Impl["|Next|Empty|"](tupledArgd[0],tupledArgd[1]);
-                  if(activePatternResult26.$==0)
+                  tupledArgd=activePatternResult27.$0[1];
+                  activePatternResult28=Impl["|Next|Empty|"](tupledArgd[0],tupledArgd[1]);
+                  if(activePatternResult28.$==0)
                    {
-                    if(activePatternResult26.$0[0]===100)
+                    if(activePatternResult28.$0[0]===100)
                      {
-                      next14=activePatternResult26.$0[1];
+                      next14=activePatternResult28.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult25.$0[0],
+                        $0:activePatternResult27.$0[0],
                         $1:6
                        },next14]
                       };
                      }
                     else
                      {
-                      activePatternResult27=Impl["|Number|_|"](input[0],input[1]);
-                      if(activePatternResult27.$==1)
+                      activePatternResult29=Impl["|Number|_|"](input[0],input[1]);
+                      if(activePatternResult29.$==1)
                        {
-                        next15=activePatternResult27.$0[1];
+                        next15=activePatternResult29.$0[1];
                         return{
                          $:1,
                          $0:[{
                           $:0,
-                          $0:activePatternResult27.$0[0],
+                          $0:activePatternResult29.$0[0],
                           $1:1
                          },next15]
                         };
@@ -18663,15 +18693,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                    }
                   else
                    {
-                    activePatternResult28=Impl["|Number|_|"](input[0],input[1]);
-                    if(activePatternResult28.$==1)
+                    activePatternResult2a=Impl["|Number|_|"](input[0],input[1]);
+                    if(activePatternResult2a.$==1)
                      {
-                      next16=activePatternResult28.$0[1];
+                      next16=activePatternResult2a.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult28.$0[0],
+                        $0:activePatternResult2a.$0[0],
                         $1:1
                        },next16]
                       };
@@ -18686,15 +18716,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult29=Impl["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult29.$==1)
+                  activePatternResult2b=Impl["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult2b.$==1)
                    {
-                    next17=activePatternResult29.$0[1];
+                    next17=activePatternResult2b.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult29.$0[0],
+                      $0:activePatternResult2b.$0[0],
                       $1:1
                      },next17]
                     };
@@ -18710,36 +18740,36 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult2a=Impl["|Number|_|"](input[0],input[1]);
-              if(activePatternResult2a.$==1)
+              activePatternResult2c=Impl["|Number|_|"](input[0],input[1]);
+              if(activePatternResult2c.$==1)
                {
-                tupledArge=activePatternResult2a.$0[1];
-                activePatternResult2b=Impl["|Next|Empty|"](tupledArge[0],tupledArge[1]);
-                if(activePatternResult2b.$==0)
+                tupledArge=activePatternResult2c.$0[1];
+                activePatternResult2d=Impl["|Next|Empty|"](tupledArge[0],tupledArge[1]);
+                if(activePatternResult2d.$==0)
                  {
-                  if(activePatternResult2b.$0[0]===100)
+                  if(activePatternResult2d.$0[0]===100)
                    {
-                    next18=activePatternResult2b.$0[1];
+                    next18=activePatternResult2d.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult2a.$0[0],
+                      $0:activePatternResult2c.$0[0],
                       $1:6
                      },next18]
                     };
                    }
                   else
                    {
-                    activePatternResult2c=Impl["|Number|_|"](input[0],input[1]);
-                    if(activePatternResult2c.$==1)
+                    activePatternResult2e=Impl["|Number|_|"](input[0],input[1]);
+                    if(activePatternResult2e.$==1)
                      {
-                      next19=activePatternResult2c.$0[1];
+                      next19=activePatternResult2e.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult2c.$0[0],
+                        $0:activePatternResult2e.$0[0],
                         $1:1
                        },next19]
                       };
@@ -18754,15 +18784,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult2d=Impl["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult2d.$==1)
+                  activePatternResult2f=Impl["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult2f.$==1)
                    {
-                    next1a=activePatternResult2d.$0[1];
+                    next1a=activePatternResult2f.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult2d.$0[0],
+                      $0:activePatternResult2f.$0[0],
                       $1:1
                      },next1a]
                     };
@@ -18777,15 +18807,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult2e=Impl["|Number|_|"](input[0],input[1]);
-                if(activePatternResult2e.$==1)
+                activePatternResult30=Impl["|Number|_|"](input[0],input[1]);
+                if(activePatternResult30.$==1)
                  {
-                  next1b=activePatternResult2e.$0[1];
+                  next1b=activePatternResult30.$0[1];
                   return{
                    $:1,
                    $0:[{
                     $:0,
-                    $0:activePatternResult2e.$0[0],
+                    $0:activePatternResult30.$0[0],
                     $1:1
                    },next1b]
                   };
@@ -18801,36 +18831,36 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            }
           else
            {
-            activePatternResult2f=Impl["|Number|_|"](input[0],input[1]);
-            if(activePatternResult2f.$==1)
+            activePatternResult31=Impl["|Number|_|"](input[0],input[1]);
+            if(activePatternResult31.$==1)
              {
-              tupledArgf=activePatternResult2f.$0[1];
-              activePatternResult30=Impl["|Next|Empty|"](tupledArgf[0],tupledArgf[1]);
-              if(activePatternResult30.$==0)
+              tupledArgf=activePatternResult31.$0[1];
+              activePatternResult32=Impl["|Next|Empty|"](tupledArgf[0],tupledArgf[1]);
+              if(activePatternResult32.$==0)
                {
-                if(activePatternResult30.$0[0]===100)
+                if(activePatternResult32.$0[0]===100)
                  {
-                  next1c=activePatternResult30.$0[1];
+                  next1c=activePatternResult32.$0[1];
                   return{
                    $:1,
                    $0:[{
                     $:0,
-                    $0:activePatternResult2f.$0[0],
+                    $0:activePatternResult31.$0[0],
                     $1:6
                    },next1c]
                   };
                  }
                 else
                  {
-                  activePatternResult31=Impl["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult31.$==1)
+                  activePatternResult33=Impl["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult33.$==1)
                    {
-                    next1d=activePatternResult31.$0[1];
+                    next1d=activePatternResult33.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult31.$0[0],
+                      $0:activePatternResult33.$0[0],
                       $1:1
                      },next1d]
                     };
@@ -18845,15 +18875,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult32=Impl["|Number|_|"](input[0],input[1]);
-                if(activePatternResult32.$==1)
+                activePatternResult34=Impl["|Number|_|"](input[0],input[1]);
+                if(activePatternResult34.$==1)
                  {
-                  next1e=activePatternResult32.$0[1];
+                  next1e=activePatternResult34.$0[1];
                   return{
                    $:1,
                    $0:[{
                     $:0,
-                    $0:activePatternResult32.$0[0],
+                    $0:activePatternResult34.$0[0],
                     $1:1
                    },next1e]
                   };
@@ -18868,15 +18898,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult33=Impl["|Number|_|"](input[0],input[1]);
-              if(activePatternResult33.$==1)
+              activePatternResult35=Impl["|Number|_|"](input[0],input[1]);
+              if(activePatternResult35.$==1)
                {
-                next1f=activePatternResult33.$0[1];
+                next1f=activePatternResult35.$0[1];
                 return{
                  $:1,
                  $0:[{
                   $:0,
-                  $0:activePatternResult33.$0[0],
+                  $0:activePatternResult35.$0[0],
                   $1:1
                  },next1f]
                 };
@@ -18893,53 +18923,53 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
        }
       else
        {
-        activePatternResult34=Impl["|Number|_|"](input[0],input[1]);
-        if(activePatternResult34.$==1)
+        activePatternResult36=Impl["|Number|_|"](input[0],input[1]);
+        if(activePatternResult36.$==1)
          {
-          tupledArg10=activePatternResult34.$0[1];
-          activePatternResult35=Impl["|Next|Empty|"](tupledArg10[0],tupledArg10[1]);
-          if(activePatternResult35.$==0)
+          tupledArg10=activePatternResult36.$0[1];
+          activePatternResult37=Impl["|Next|Empty|"](tupledArg10[0],tupledArg10[1]);
+          if(activePatternResult37.$==0)
            {
-            if(activePatternResult35.$0[0]===100)
+            if(activePatternResult37.$0[0]===100)
              {
-              tupledArg11=activePatternResult35.$0[1];
-              activePatternResult36=Impl["|Number|_|"](tupledArg11[0],tupledArg11[1]);
-              if(activePatternResult36.$==1)
+              tupledArg11=activePatternResult37.$0[1];
+              activePatternResult38=Impl["|Number|_|"](tupledArg11[0],tupledArg11[1]);
+              if(activePatternResult38.$==1)
                {
-                return makeRoll(activePatternResult34.$0[0],activePatternResult36.$0[0],activePatternResult36.$0[1]);
+                return makeRoll(activePatternResult36.$0[0],activePatternResult38.$0[0],activePatternResult38.$0[1]);
                }
               else
                {
-                activePatternResult37=Impl["|Number|_|"](input[0],input[1]);
-                if(activePatternResult37.$==1)
+                activePatternResult39=Impl["|Number|_|"](input[0],input[1]);
+                if(activePatternResult39.$==1)
                  {
-                  tupledArg12=activePatternResult37.$0[1];
-                  activePatternResult38=Impl["|Next|Empty|"](tupledArg12[0],tupledArg12[1]);
-                  if(activePatternResult38.$==0)
+                  tupledArg12=activePatternResult39.$0[1];
+                  activePatternResult3a=Impl["|Next|Empty|"](tupledArg12[0],tupledArg12[1]);
+                  if(activePatternResult3a.$==0)
                    {
-                    if(activePatternResult38.$0[0]===100)
+                    if(activePatternResult3a.$0[0]===100)
                      {
-                      next20=activePatternResult38.$0[1];
+                      next20=activePatternResult3a.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult37.$0[0],
+                        $0:activePatternResult39.$0[0],
                         $1:6
                        },next20]
                       };
                      }
                     else
                      {
-                      activePatternResult39=Impl["|Number|_|"](input[0],input[1]);
-                      if(activePatternResult39.$==1)
+                      activePatternResult3b=Impl["|Number|_|"](input[0],input[1]);
+                      if(activePatternResult3b.$==1)
                        {
-                        next21=activePatternResult39.$0[1];
+                        next21=activePatternResult3b.$0[1];
                         return{
                          $:1,
                          $0:[{
                           $:0,
-                          $0:activePatternResult39.$0[0],
+                          $0:activePatternResult3b.$0[0],
                           $1:1
                          },next21]
                         };
@@ -18954,15 +18984,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                    }
                   else
                    {
-                    activePatternResult3a=Impl["|Number|_|"](input[0],input[1]);
-                    if(activePatternResult3a.$==1)
+                    activePatternResult3c=Impl["|Number|_|"](input[0],input[1]);
+                    if(activePatternResult3c.$==1)
                      {
-                      next22=activePatternResult3a.$0[1];
+                      next22=activePatternResult3c.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult3a.$0[0],
+                        $0:activePatternResult3c.$0[0],
                         $1:1
                        },next22]
                       };
@@ -18977,15 +19007,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult3b=Impl["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult3b.$==1)
+                  activePatternResult3d=Impl["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult3d.$==1)
                    {
-                    next23=activePatternResult3b.$0[1];
+                    next23=activePatternResult3d.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult3b.$0[0],
+                      $0:activePatternResult3d.$0[0],
                       $1:1
                      },next23]
                     };
@@ -19001,36 +19031,36 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult3c=Impl["|Number|_|"](input[0],input[1]);
-              if(activePatternResult3c.$==1)
+              activePatternResult3e=Impl["|Number|_|"](input[0],input[1]);
+              if(activePatternResult3e.$==1)
                {
-                tupledArg13=activePatternResult3c.$0[1];
-                activePatternResult3d=Impl["|Next|Empty|"](tupledArg13[0],tupledArg13[1]);
-                if(activePatternResult3d.$==0)
+                tupledArg13=activePatternResult3e.$0[1];
+                activePatternResult3f=Impl["|Next|Empty|"](tupledArg13[0],tupledArg13[1]);
+                if(activePatternResult3f.$==0)
                  {
-                  if(activePatternResult3d.$0[0]===100)
+                  if(activePatternResult3f.$0[0]===100)
                    {
-                    next24=activePatternResult3d.$0[1];
+                    next24=activePatternResult3f.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult3c.$0[0],
+                      $0:activePatternResult3e.$0[0],
                       $1:6
                      },next24]
                     };
                    }
                   else
                    {
-                    activePatternResult3e=Impl["|Number|_|"](input[0],input[1]);
-                    if(activePatternResult3e.$==1)
+                    activePatternResult40=Impl["|Number|_|"](input[0],input[1]);
+                    if(activePatternResult40.$==1)
                      {
-                      next25=activePatternResult3e.$0[1];
+                      next25=activePatternResult40.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult3e.$0[0],
+                        $0:activePatternResult40.$0[0],
                         $1:1
                        },next25]
                       };
@@ -19045,15 +19075,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult3f=Impl["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult3f.$==1)
+                  activePatternResult41=Impl["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult41.$==1)
                    {
-                    next26=activePatternResult3f.$0[1];
+                    next26=activePatternResult41.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult3f.$0[0],
+                      $0:activePatternResult41.$0[0],
                       $1:1
                      },next26]
                     };
@@ -19068,15 +19098,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult40=Impl["|Number|_|"](input[0],input[1]);
-                if(activePatternResult40.$==1)
+                activePatternResult42=Impl["|Number|_|"](input[0],input[1]);
+                if(activePatternResult42.$==1)
                  {
-                  next27=activePatternResult40.$0[1];
+                  next27=activePatternResult42.$0[1];
                   return{
                    $:1,
                    $0:[{
                     $:0,
-                    $0:activePatternResult40.$0[0],
+                    $0:activePatternResult42.$0[0],
                     $1:1
                    },next27]
                   };
@@ -19092,36 +19122,36 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            }
           else
            {
-            activePatternResult41=Impl["|Number|_|"](input[0],input[1]);
-            if(activePatternResult41.$==1)
+            activePatternResult43=Impl["|Number|_|"](input[0],input[1]);
+            if(activePatternResult43.$==1)
              {
-              tupledArg14=activePatternResult41.$0[1];
-              activePatternResult42=Impl["|Next|Empty|"](tupledArg14[0],tupledArg14[1]);
-              if(activePatternResult42.$==0)
+              tupledArg14=activePatternResult43.$0[1];
+              activePatternResult44=Impl["|Next|Empty|"](tupledArg14[0],tupledArg14[1]);
+              if(activePatternResult44.$==0)
                {
-                if(activePatternResult42.$0[0]===100)
+                if(activePatternResult44.$0[0]===100)
                  {
-                  next28=activePatternResult42.$0[1];
+                  next28=activePatternResult44.$0[1];
                   return{
                    $:1,
                    $0:[{
                     $:0,
-                    $0:activePatternResult41.$0[0],
+                    $0:activePatternResult43.$0[0],
                     $1:6
                    },next28]
                   };
                  }
                 else
                  {
-                  activePatternResult43=Impl["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult43.$==1)
+                  activePatternResult45=Impl["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult45.$==1)
                    {
-                    next29=activePatternResult43.$0[1];
+                    next29=activePatternResult45.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult43.$0[0],
+                      $0:activePatternResult45.$0[0],
                       $1:1
                      },next29]
                     };
@@ -19136,15 +19166,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult44=Impl["|Number|_|"](input[0],input[1]);
-                if(activePatternResult44.$==1)
+                activePatternResult46=Impl["|Number|_|"](input[0],input[1]);
+                if(activePatternResult46.$==1)
                  {
-                  next2a=activePatternResult44.$0[1];
+                  next2a=activePatternResult46.$0[1];
                   return{
                    $:1,
                    $0:[{
                     $:0,
-                    $0:activePatternResult44.$0[0],
+                    $0:activePatternResult46.$0[0],
                     $1:1
                    },next2a]
                   };
@@ -19159,15 +19189,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult45=Impl["|Number|_|"](input[0],input[1]);
-              if(activePatternResult45.$==1)
+              activePatternResult47=Impl["|Number|_|"](input[0],input[1]);
+              if(activePatternResult47.$==1)
                {
-                next2b=activePatternResult45.$0[1];
+                next2b=activePatternResult47.$0[1];
                 return{
                  $:1,
                  $0:[{
                   $:0,
-                  $0:activePatternResult45.$0[0],
+                  $0:activePatternResult47.$0[0],
                   $1:1
                  },next2b]
                 };
@@ -19183,36 +19213,36 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
          }
         else
          {
-          activePatternResult46=Impl["|Number|_|"](input[0],input[1]);
-          if(activePatternResult46.$==1)
+          activePatternResult48=Impl["|Number|_|"](input[0],input[1]);
+          if(activePatternResult48.$==1)
            {
-            tupledArg15=activePatternResult46.$0[1];
-            activePatternResult47=Impl["|Next|Empty|"](tupledArg15[0],tupledArg15[1]);
-            if(activePatternResult47.$==0)
+            tupledArg15=activePatternResult48.$0[1];
+            activePatternResult49=Impl["|Next|Empty|"](tupledArg15[0],tupledArg15[1]);
+            if(activePatternResult49.$==0)
              {
-              if(activePatternResult47.$0[0]===100)
+              if(activePatternResult49.$0[0]===100)
                {
-                next2c=activePatternResult47.$0[1];
+                next2c=activePatternResult49.$0[1];
                 return{
                  $:1,
                  $0:[{
                   $:0,
-                  $0:activePatternResult46.$0[0],
+                  $0:activePatternResult48.$0[0],
                   $1:6
                  },next2c]
                 };
                }
               else
                {
-                activePatternResult48=Impl["|Number|_|"](input[0],input[1]);
-                if(activePatternResult48.$==1)
+                activePatternResult4a=Impl["|Number|_|"](input[0],input[1]);
+                if(activePatternResult4a.$==1)
                  {
-                  next2d=activePatternResult48.$0[1];
+                  next2d=activePatternResult4a.$0[1];
                   return{
                    $:1,
                    $0:[{
                     $:0,
-                    $0:activePatternResult48.$0[0],
+                    $0:activePatternResult4a.$0[0],
                     $1:1
                    },next2d]
                   };
@@ -19227,15 +19257,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult49=Impl["|Number|_|"](input[0],input[1]);
-              if(activePatternResult49.$==1)
+              activePatternResult4b=Impl["|Number|_|"](input[0],input[1]);
+              if(activePatternResult4b.$==1)
                {
-                next2e=activePatternResult49.$0[1];
+                next2e=activePatternResult4b.$0[1];
                 return{
                  $:1,
                  $0:[{
                   $:0,
-                  $0:activePatternResult49.$0[0],
+                  $0:activePatternResult4b.$0[0],
                   $1:1
                  },next2e]
                 };
@@ -19250,15 +19280,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            }
           else
            {
-            activePatternResult4a=Impl["|Number|_|"](input[0],input[1]);
-            if(activePatternResult4a.$==1)
+            activePatternResult4c=Impl["|Number|_|"](input[0],input[1]);
+            if(activePatternResult4c.$==1)
              {
-              next2f=activePatternResult4a.$0[1];
+              next2f=activePatternResult4c.$0[1];
               return{
                $:1,
                $0:[{
                 $:0,
-                $0:activePatternResult4a.$0[0],
+                $0:activePatternResult4c.$0[0],
                 $1:1
                },next2f]
               };
@@ -19585,9 +19615,9 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
   Random=Runtime.Safe(Global.WebSharper.Random);
   Collections=Runtime.Safe(Global.WebSharper.Collections);
   FSharpSet=Runtime.Safe(Collections.FSharpSet);
+  List=Runtime.Safe(Global.WebSharper.List);
   Parser=Runtime.Safe(mdw.Parser);
   Impl=Runtime.Safe(Parser.Impl);
-  List=Runtime.Safe(Global.WebSharper.List);
   PrintfHelpers=Runtime.Safe(Global.WebSharper.PrintfHelpers);
   Strings=Runtime.Safe(Global.WebSharper.Strings);
   parseInt=Runtime.Safe(Global.parseInt);
@@ -19617,6 +19647,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
   Impl.arithmeticOperators();
   Impl.alphanumeric();
   Impl.alpha();
+  Impl.advantageDisadvantage();
   Dice.Instance();
   return;
  });
