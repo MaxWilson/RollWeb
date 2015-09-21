@@ -49,7 +49,8 @@ let Average() =
 [<InlineData("20.18?20?", 4.)>]
 let ``Complete-ish list of example roll specs``(input: string, expectedAverage: float) =
     let spec = Parser.Parse(input)
-    Assert.Equal(expectedAverage, Dice.Instance.Average(spec))
+    let round (x : float) = System.Math.Round(x, 3) // round to three places
+    Assert.Equal(round expectedAverage, round (Dice.Instance.Average(spec)))
     Dice.Instance.Resolve(spec) |> ignore // must not throw
 
 [<Fact>]

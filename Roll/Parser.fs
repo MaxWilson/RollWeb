@@ -58,6 +58,10 @@ module Impl =
     and (|CompoundExpression|_|) = function
         | Number(n, Next('.', CompoundExpression(v, next))) -> 
             Some(Repeat(n, v), next)
+        | Number(threshold, Next('?', Number(critThreshold, Next('?', next)))) -> 
+            Some(Check(Single(Simple(1, 20)), [critThreshold, Single(Simple(2, 1)); threshold, Single(Simple(1, 1)) ], 0), next)
+        | Number(threshold, Next('?', next)) -> 
+            Some(Check(Single(Simple(1, 20)), [threshold, Single(Simple(1, 1))], 0), next)
         | SumSimplesExpression(v, next) -> Some(v, next)
         | _ -> None
     and (|SumSimplesExpression|_|) input = 
