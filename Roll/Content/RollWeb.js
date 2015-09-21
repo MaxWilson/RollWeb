@@ -17467,7 +17467,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
 
 (function()
 {
- var Global=this,Runtime=this.IntelliFactory.Runtime,mdw,Dice,Resolver,Number,Seq,Operators,String,Random,Collections,FSharpSet,List,Parser,Impl,PrintfHelpers,Strings,parseInt,Util,T,jQuery,UI,Next,Client,Doc,Roll,Client1,Var,AttrProxy,RollRecord,Key,ListModel,View;
+ var Global=this,Runtime=this.IntelliFactory.Runtime,mdw,Dice,Resolver,Number,Seq,Operators,String,Random,Collections,FSharpSet,List,Parser,Impl,PrintfHelpers,Strings,parseInt,Util,T,jQuery,UI,Next,Client,Doc,Roll,Client1,Var,AttrProxy,RollRecord,alert,Key,ListModel,View;
  Runtime.Define(Global,{
   mdw:{
    Dice:{
@@ -19539,11 +19539,18 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
       arg201=List.ofArray([Doc.Element("label",[],arg202),Doc.Input(List.ofArray([AttrProxy.Create("autofocus","autofocus")]),rvInput)]);
       arg203=function()
       {
-       var spec,todo,arg00;
+       var spec,todo,arg00,e;
        spec=Var.Get(rvInput);
-       arg00=(Parser.ParseCommand())(spec);
-       todo=RollRecord.Create(spec,Dice.Instance().Resolve2(arg00));
-       return Client1.Rolls().Add(todo);
+       try
+       {
+        arg00=(Parser.ParseCommand())(spec);
+        todo=RollRecord.Create(spec,Dice.Instance().Resolve2(arg00));
+        return Client1.Rolls().Add(todo);
+       }
+       catch(e)
+       {
+        return alert("Error: "+PrintfHelpers.toSafe(e.message)+". Try a simple expression like '2d6' or 'avg.5d4+2'.");
+       }
       };
       arg20=List.ofArray([Doc.Element("div",[],arg201),Doc.Button("Submit",Runtime.New(T,{
        $:0
@@ -19633,6 +19640,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
   Var=Runtime.Safe(Next.Var);
   AttrProxy=Runtime.Safe(Client.AttrProxy);
   RollRecord=Runtime.Safe(Client1.RollRecord);
+  alert=Runtime.Safe(Global.alert);
   Key=Runtime.Safe(Next.Key);
   ListModel=Runtime.Safe(Next.ListModel);
   return View=Runtime.Safe(Next.View);
