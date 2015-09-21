@@ -14,6 +14,7 @@ module Impl =
     let alpha = Set<char>['A'..'Z'] + Set<char>['a'..'z']
     let numeric = Set<char>['0'..'9']
     let arithmeticOperators = Set<_>['+'; '-']
+    let advantageDisadvantage = Set<_>['A'; 'D'; 'a'; 'd']
     let alphanumeric = alpha + numeric
 
     let (|Next|Empty|) = function
@@ -86,18 +87,18 @@ module Impl =
     and (|SimpleExpression|_|) input = 
         let makeRoll n d input = 
             match input with
-            | Char arithmeticOperators (Char arithmeticOperators _) as rest ->
+            | Char advantageDisadvantage (Char arithmeticOperators _) as rest ->
                 let (s, i) = input
                 let roll = match s.[i] with
-                            | '+' -> Adv(n, d)
-                            | '-' -> Disadv(n, d)
+                            | 'A' | 'a' -> Adv(n, d)
+                            | 'D' | 'd' -> Disadv(n, d)
                             | _ -> Util.nomatch()
                 Some (roll, (s, i+1))
-            | Char arithmeticOperators Empty ->
+            | Char advantageDisadvantage Empty ->
                 let (s, i) = input
                 let roll = match s.[i] with
-                            | '+' -> Adv(n, d)
-                            | '-' -> Disadv(n, d)
+                            | 'A' | 'a' -> Adv(n, d)
+                            | 'D' | 'd' -> Disadv(n, d)
                             | _ -> Util.nomatch()
                 Some (roll, (s, i+1))
             | rest -> Some(Simple(n, d), rest)
