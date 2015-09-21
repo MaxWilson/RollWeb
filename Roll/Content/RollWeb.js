@@ -17467,7 +17467,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
 
 (function()
 {
- var Global=this,Runtime=this.IntelliFactory.Runtime,mdw,Dice,Resolver,Number,Seq,Operators,String,Random,Collections,FSharpSet,List,Parser,Impl,PrintfHelpers,Strings,parseInt,Util,T,jQuery,UI,Next,Client,Doc,Roll,Client1,Var,AttrProxy,RollRecord,alert,Key,ListModel,View;
+ var Global=this,Runtime=this.IntelliFactory.Runtime,mdw,Dice,Resolver,Number,Seq,Operators,String,List,Util,Random,Seq1,Collections,FSharpSet,Parser,Impl,PrintfHelpers,Strings,parseInt,T,jQuery,UI,Next,Client,Doc,Roll,Client1,Var,AttrProxy,RollRecord,alert,Key,ListModel,View;
  Runtime.Define(Global,{
   mdw:{
    Dice:{
@@ -17480,7 +17480,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
     Resolver:Runtime.Class({
      Average:function(cmd)
      {
-      var inner,rhs,rhs1,inner1,n,d,n1,d1,d2;
+      var inner,rhs,rhs1,resultOptions,fallback,_this=this,inner1,d,dist,total;
       if(cmd.$==3)
        {
         inner=cmd.$1;
@@ -17502,43 +17502,47 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            }
           else
            {
-            inner1=cmd.$0;
-            if(inner1.$==1)
+            if(cmd.$==4)
              {
-              n=inner1.$0;
-              d=inner1.$1;
-              return Number(Seq.sum(Seq.toList(Seq.delay(function()
+              resultOptions=cmd.$1;
+              fallback=cmd.$2;
+              return this.sumBy(cmd.$0,function(n)
               {
-               return Seq.collect(function(x)
+               return function(weight)
                {
-                return Seq.map(function(y)
+                var _arg6;
+                _arg6=Seq.tryPick(function(_arg5)
                 {
-                 return Operators.Max(x,y);
-                },Operators.range(1,d));
-               },Operators.range(1,d));
-              }))))*Number(n)/Number(d*d);
+                 return n>=_arg5[0]?{
+                  $:1,
+                  $0:_this.Resolve1(_arg5[1])
+                 }:{
+                  $:0
+                 };
+                },resultOptions);
+                return Number(_arg6.$==0?fallback:_arg6.$0)*weight;
+               };
+              });
              }
             else
              {
-              if(inner1.$==2)
+              inner1=cmd.$0;
+              if(inner1.$==0)
                {
-                n1=inner1.$0;
-                d1=inner1.$1;
-                return Number(Seq.sum(Seq.toList(Seq.delay(function()
-                {
-                 return Seq.collect(function(x)
-                 {
-                  return Seq.map(function(y)
-                  {
-                   return Operators.Min(x,y);
-                  },Operators.range(1,d1));
-                 },Operators.range(1,d1));
-                }))))*Number(n1)/Number(d1*d1);
+                d=inner1.$1;
+                return Number(inner1.$0)*Number(d+1)/2;
                }
               else
                {
-                d2=inner1.$1;
-                return Number(inner1.$0)*Number(d2+1)/2;
+                dist=_this.enumerateSimple(inner1);
+                total=Seq.sumBy(function(tuple)
+                {
+                 return tuple[1];
+                },dist);
+                return Number(Seq.sumBy(function(tupledArg)
+                {
+                 return tupledArg[0]*tupledArg[1];
+                },dist))/Number(total);
                }
              }
            }
@@ -17590,7 +17594,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      },
      Resolve1:function(cmd)
      {
-      var rhs,rhs1,n,_this=this;
+      var rhs,rhs1,n,_this=this,resultOptions,fallback,result,_arg4;
       if(cmd.$==1)
        {
         rhs=cmd.$1;
@@ -17618,7 +17622,26 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            }
           else
            {
-            return _this.Resolve(cmd.$0);
+            if(cmd.$==4)
+             {
+              resultOptions=cmd.$1;
+              fallback=cmd.$2;
+              result=_this.Resolve1(cmd.$0);
+              _arg4=Seq.tryPick(function(_arg3)
+              {
+               return result>=_arg3[0]?{
+                $:1,
+                $0:_this.Resolve1(_arg3[1])
+               }:{
+                $:0
+               };
+              },resultOptions);
+              return _arg4.$==0?fallback:_arg4.$0;
+             }
+            else
+             {
+              return _this.Resolve(cmd.$0);
+             }
            }
          }
        }
@@ -17636,13 +17659,187 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
         copyOfStruct1=this.Resolve1(cmd.$0);
         return String(copyOfStruct1);
        }
+     },
+     enumerate:function(_arg2)
+     {
+      var rhs,lhs,_this=this;
+      if(_arg2.$==0)
+       {
+        return this.enumerateSimple(_arg2.$0);
+       }
+      else
+       {
+        if(_arg2.$==1)
+         {
+          rhs=_arg2.$1;
+          lhs=_arg2.$0;
+          return List.ofSeq(this.sumTerms.call(null,Seq.toList(Seq.delay(function()
+          {
+           return Seq.collect(function(matchValue)
+           {
+            var n0,c0;
+            n0=matchValue[0];
+            c0=matchValue[1];
+            return Seq.collect(function(matchValue1)
+            {
+             return[[n0+matchValue1[0],c0+matchValue1[1]]];
+            },_this.enumerate(rhs));
+           },_this.enumerate(lhs));
+          }))));
+         }
+        else
+         {
+          return Util.nomatch();
+         }
+       }
+     },
+     enumerateSimple:function(_arg1)
+     {
+      var d,n,_this=this,d1,n2,d2,n3;
+      if(_arg1.$==1)
+       {
+        d=_arg1.$1;
+        n=_arg1.$0;
+        return List.ofSeq(Seq.map(function(tupledArg)
+        {
+         return[tupledArg[0],tupledArg[1]/2>>0];
+        },this.sumTerms.call(null,Seq.toList(Seq.delay(function()
+        {
+         return Seq.collect(function(matchValue)
+         {
+          var n0,c0;
+          n0=matchValue[0];
+          c0=matchValue[1];
+          return Seq.collect(function(matchValue1)
+          {
+           var n1,c1;
+           n1=matchValue1[0];
+           c1=matchValue1[1];
+           return[n1>n0?[n1,c0+c1]:[n0,c0+c1]];
+          },_this.enumerateSimple({
+           $:0,
+           $0:n,
+           $1:d
+          }));
+         },_this.enumerateSimple({
+          $:0,
+          $0:n,
+          $1:d
+         }));
+        })))));
+       }
+      else
+       {
+        if(_arg1.$==2)
+         {
+          d1=_arg1.$1;
+          n2=_arg1.$0;
+          return List.ofSeq(Seq.map(function(tupledArg)
+          {
+           return[tupledArg[0],tupledArg[1]/2>>0];
+          },_this.sumTerms.call(null,Seq.toList(Seq.delay(function()
+          {
+           return Seq.collect(function(matchValue)
+           {
+            var n0,c0;
+            n0=matchValue[0];
+            c0=matchValue[1];
+            return Seq.collect(function(matchValue1)
+            {
+             var n1,c1;
+             n1=matchValue1[0];
+             c1=matchValue1[1];
+             return[n1<n0?[n1,c0+c1]:[n0,c0+c1]];
+            },_this.enumerateSimple({
+             $:0,
+             $0:n2,
+             $1:d1
+            }));
+           },_this.enumerateSimple({
+            $:0,
+            $0:n2,
+            $1:d1
+           }));
+          })))));
+         }
+        else
+         {
+          if(_arg1.$1===1)
+           {
+            return List.ofArray([[_arg1.$0,1]]);
+           }
+          else
+           {
+            d2=_arg1.$1;
+            n3=_arg1.$0;
+            return Seq.fold(function(range)
+            {
+             return function()
+             {
+              var min,max;
+              min=1+Seq.min(Seq.map(function(tuple)
+              {
+               return tuple[0];
+              },range));
+              max=d2+Seq.max(Seq.map(function(tuple)
+              {
+               return tuple[0];
+              },range));
+              return Seq.toList(Seq.delay(function()
+              {
+               return Seq.map(function(x)
+               {
+                return[x,Seq.sumBy(function(tupledArg)
+                {
+                 var count,roll;
+                 count=tupledArg[1];
+                 roll=x-tupledArg[0];
+                 return(1<=roll?roll<=d2:false)?count:0;
+                },range)];
+               },Operators.range(min,max));
+              }));
+             };
+            },List.ofArray([[0,1]]),Seq.toList(Operators.range(1,n3)));
+           }
+         }
+       }
+     },
+     sumBy:function(spec,sumCalculator)
+     {
+      var seq,total;
+      seq=this.enumerate(spec);
+      total=Number(Seq.sumBy(function(tuple)
+      {
+       return tuple[1];
+      },seq));
+      return Seq.sumBy(function(tupledArg)
+      {
+       var count;
+       count=tupledArg[1];
+       return(sumCalculator(tupledArg[0]))(Number(count)/total);
+      },seq);
      }
     },{
      New:function(random)
      {
-      var r;
+      var r,projection,mapping;
       r=Runtime.New(this,{});
       r.r=Operators.DefaultArg(random,Random.New());
+      projection=function(tuple)
+      {
+       return tuple[0];
+      };
+      mapping=function(tupledArg)
+      {
+       return[tupledArg[0],Seq.sumBy(function(tuple)
+       {
+        return tuple[1];
+       },tupledArg[1])];
+      };
+      r.sumTerms=function(x)
+      {
+       return Seq.map(mapping,Seq1.groupBy(projection,x));
+      };
       return r;
      }
     })
@@ -17802,7 +17999,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      },
      "|CompoundExpression|_|":function(_,_1)
      {
-      var _arg2,activePatternResult,tupledArg,activePatternResult1,tupledArg1,activePatternResult2,next,activePatternResult3,activePatternResult4,activePatternResult5,activePatternResult6;
+      var _arg2,activePatternResult,tupledArg,activePatternResult1,tupledArg1,activePatternResult2,next,activePatternResult3,tupledArg2,activePatternResult4,tupledArg3,activePatternResult5,tupledArg4,activePatternResult6,critThreshold,next1,threshold,activePatternResult7,tupledArg5,activePatternResult8,next2,threshold1,activePatternResult9,activePatternResulta,activePatternResultb,activePatternResultc,tupledArg6,activePatternResultd,next3,threshold2,activePatternResulte,activePatternResultf,activePatternResult10,activePatternResult11,tupledArg7,activePatternResult12,next4,threshold3,activePatternResult13,activePatternResult14,activePatternResult15,activePatternResult16,tupledArg8,activePatternResult17,next5,threshold4,activePatternResult18,activePatternResult19,activePatternResult1a,activePatternResult1b,tupledArg9,activePatternResult1c,next6,threshold5,activePatternResult1d,activePatternResult1e,activePatternResult1f,activePatternResult20,tupledArga,activePatternResult21,next7,threshold6,activePatternResult22,activePatternResult23,activePatternResult24,activePatternResult25,tupledArgb,activePatternResult26,tupledArgc,activePatternResult27,tupledArgd,activePatternResult28,critThreshold1,next8,threshold7,activePatternResult29,tupledArge,activePatternResult2a,next9,threshold8,activePatternResult2b,activePatternResult2c,activePatternResult2d,activePatternResult2e,tupledArgf,activePatternResult2f,nexta,threshold9,activePatternResult30,activePatternResult31,activePatternResult32,activePatternResult33,tupledArg10,activePatternResult34,nextb,thresholda,activePatternResult35,activePatternResult36,activePatternResult37,activePatternResult38,tupledArg11,activePatternResult39,nextc,thresholdb,activePatternResult3a,activePatternResult3b,activePatternResult3c,activePatternResult3d,tupledArg12,activePatternResult3e,nextd,thresholdc,activePatternResult3f,activePatternResult40,activePatternResult41,activePatternResult42,tupledArg13,activePatternResult43,nexte,thresholdd,activePatternResult44,activePatternResult45,activePatternResult46,activePatternResult47,tupledArg14,activePatternResult48,tupledArg15,activePatternResult49,tupledArg16,activePatternResult4a,critThreshold2,nextf,thresholde,activePatternResult4b,tupledArg17,activePatternResult4c,next10,thresholdf,activePatternResult4d,activePatternResult4e,activePatternResult4f,activePatternResult50,tupledArg18,activePatternResult51,next11,threshold10,activePatternResult52,activePatternResult53,activePatternResult54,activePatternResult55,tupledArg19,activePatternResult56,next12,threshold11,activePatternResult57,activePatternResult58,activePatternResult59,activePatternResult5a,tupledArg1a,activePatternResult5b,next13,threshold12,activePatternResult5c,activePatternResult5d,activePatternResult5e,activePatternResult5f,tupledArg1b,activePatternResult60,next14,threshold13,activePatternResult61,activePatternResult62,activePatternResult63,activePatternResult64,tupledArg1c,activePatternResult65,next15,threshold14,activePatternResult66,activePatternResult67,activePatternResult68,activePatternResult69,tupledArg1d,activePatternResult6a,tupledArg1e,activePatternResult6b,tupledArg1f,activePatternResult6c,critThreshold3,next16,threshold15,activePatternResult6d,tupledArg20,activePatternResult6e,next17,threshold16,activePatternResult6f,activePatternResult70,activePatternResult71,activePatternResult72,tupledArg21,activePatternResult73,next18,threshold17,activePatternResult74,activePatternResult75,activePatternResult76,activePatternResult77,tupledArg22,activePatternResult78,next19,threshold18,activePatternResult79,activePatternResult7a,activePatternResult7b,activePatternResult7c,tupledArg23,activePatternResult7d,next1a,threshold19,activePatternResult7e,activePatternResult7f,activePatternResult80,activePatternResult81,tupledArg24,activePatternResult82,next1b,threshold1a,activePatternResult83,activePatternResult84,activePatternResult85,activePatternResult86,tupledArg25,activePatternResult87,next1c,threshold1b,activePatternResult88,activePatternResult89,activePatternResult8a;
       _arg2=[_,_1];
       activePatternResult=Impl["|Number|_|"](_arg2[0],_arg2[1]);
       if(activePatternResult.$==1)
@@ -17829,10 +18026,1914 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult3=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-              return activePatternResult3.$==1?{
+              activePatternResult3=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+              if(activePatternResult3.$==1)
+               {
+                tupledArg2=activePatternResult3.$0[1];
+                activePatternResult4=Impl["|Next|Empty|"](tupledArg2[0],tupledArg2[1]);
+                if(activePatternResult4.$==0)
+                 {
+                  if(activePatternResult4.$0[0]===63)
+                   {
+                    tupledArg3=activePatternResult4.$0[1];
+                    activePatternResult5=Impl["|Number|_|"](tupledArg3[0],tupledArg3[1]);
+                    if(activePatternResult5.$==1)
+                     {
+                      tupledArg4=activePatternResult5.$0[1];
+                      activePatternResult6=Impl["|Next|Empty|"](tupledArg4[0],tupledArg4[1]);
+                      if(activePatternResult6.$==0)
+                       {
+                        if(activePatternResult6.$0[0]===63)
+                         {
+                          critThreshold=activePatternResult5.$0[0];
+                          next1=activePatternResult6.$0[1];
+                          threshold=activePatternResult3.$0[0];
+                          return{
+                           $:1,
+                           $0:[{
+                            $:4,
+                            $0:{
+                             $:0,
+                             $0:{
+                              $:0,
+                              $0:1,
+                              $1:20
+                             }
+                            },
+                            $1:List.ofArray([[critThreshold,{
+                             $:0,
+                             $0:{
+                              $:0,
+                              $0:2,
+                              $1:1
+                             }
+                            }],[threshold,{
+                             $:0,
+                             $0:{
+                              $:0,
+                              $0:1,
+                              $1:1
+                             }
+                            }]]),
+                            $2:0
+                           },next1]
+                          };
+                         }
+                        else
+                         {
+                          activePatternResult7=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+                          if(activePatternResult7.$==1)
+                           {
+                            tupledArg5=activePatternResult7.$0[1];
+                            activePatternResult8=Impl["|Next|Empty|"](tupledArg5[0],tupledArg5[1]);
+                            if(activePatternResult8.$==0)
+                             {
+                              if(activePatternResult8.$0[0]===63)
+                               {
+                                next2=activePatternResult8.$0[1];
+                                threshold1=activePatternResult7.$0[0];
+                                return{
+                                 $:1,
+                                 $0:[{
+                                  $:4,
+                                  $0:{
+                                   $:0,
+                                   $0:{
+                                    $:0,
+                                    $0:1,
+                                    $1:20
+                                   }
+                                  },
+                                  $1:List.ofArray([[threshold1,{
+                                   $:0,
+                                   $0:{
+                                    $:0,
+                                    $0:1,
+                                    $1:1
+                                   }
+                                  }]]),
+                                  $2:0
+                                 },next2]
+                                };
+                               }
+                              else
+                               {
+                                activePatternResult9=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                                return activePatternResult9.$==1?{
+                                 $:1,
+                                 $0:[activePatternResult9.$0[0],activePatternResult9.$0[1]]
+                                }:{
+                                 $:0
+                                };
+                               }
+                             }
+                            else
+                             {
+                              activePatternResulta=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                              return activePatternResulta.$==1?{
+                               $:1,
+                               $0:[activePatternResulta.$0[0],activePatternResulta.$0[1]]
+                              }:{
+                               $:0
+                              };
+                             }
+                           }
+                          else
+                           {
+                            activePatternResultb=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                            return activePatternResultb.$==1?{
+                             $:1,
+                             $0:[activePatternResultb.$0[0],activePatternResultb.$0[1]]
+                            }:{
+                             $:0
+                            };
+                           }
+                         }
+                       }
+                      else
+                       {
+                        activePatternResultc=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+                        if(activePatternResultc.$==1)
+                         {
+                          tupledArg6=activePatternResultc.$0[1];
+                          activePatternResultd=Impl["|Next|Empty|"](tupledArg6[0],tupledArg6[1]);
+                          if(activePatternResultd.$==0)
+                           {
+                            if(activePatternResultd.$0[0]===63)
+                             {
+                              next3=activePatternResultd.$0[1];
+                              threshold2=activePatternResultc.$0[0];
+                              return{
+                               $:1,
+                               $0:[{
+                                $:4,
+                                $0:{
+                                 $:0,
+                                 $0:{
+                                  $:0,
+                                  $0:1,
+                                  $1:20
+                                 }
+                                },
+                                $1:List.ofArray([[threshold2,{
+                                 $:0,
+                                 $0:{
+                                  $:0,
+                                  $0:1,
+                                  $1:1
+                                 }
+                                }]]),
+                                $2:0
+                               },next3]
+                              };
+                             }
+                            else
+                             {
+                              activePatternResulte=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                              return activePatternResulte.$==1?{
+                               $:1,
+                               $0:[activePatternResulte.$0[0],activePatternResulte.$0[1]]
+                              }:{
+                               $:0
+                              };
+                             }
+                           }
+                          else
+                           {
+                            activePatternResultf=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                            return activePatternResultf.$==1?{
+                             $:1,
+                             $0:[activePatternResultf.$0[0],activePatternResultf.$0[1]]
+                            }:{
+                             $:0
+                            };
+                           }
+                         }
+                        else
+                         {
+                          activePatternResult10=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                          return activePatternResult10.$==1?{
+                           $:1,
+                           $0:[activePatternResult10.$0[0],activePatternResult10.$0[1]]
+                          }:{
+                           $:0
+                          };
+                         }
+                       }
+                     }
+                    else
+                     {
+                      activePatternResult11=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+                      if(activePatternResult11.$==1)
+                       {
+                        tupledArg7=activePatternResult11.$0[1];
+                        activePatternResult12=Impl["|Next|Empty|"](tupledArg7[0],tupledArg7[1]);
+                        if(activePatternResult12.$==0)
+                         {
+                          if(activePatternResult12.$0[0]===63)
+                           {
+                            next4=activePatternResult12.$0[1];
+                            threshold3=activePatternResult11.$0[0];
+                            return{
+                             $:1,
+                             $0:[{
+                              $:4,
+                              $0:{
+                               $:0,
+                               $0:{
+                                $:0,
+                                $0:1,
+                                $1:20
+                               }
+                              },
+                              $1:List.ofArray([[threshold3,{
+                               $:0,
+                               $0:{
+                                $:0,
+                                $0:1,
+                                $1:1
+                               }
+                              }]]),
+                              $2:0
+                             },next4]
+                            };
+                           }
+                          else
+                           {
+                            activePatternResult13=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                            return activePatternResult13.$==1?{
+                             $:1,
+                             $0:[activePatternResult13.$0[0],activePatternResult13.$0[1]]
+                            }:{
+                             $:0
+                            };
+                           }
+                         }
+                        else
+                         {
+                          activePatternResult14=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                          return activePatternResult14.$==1?{
+                           $:1,
+                           $0:[activePatternResult14.$0[0],activePatternResult14.$0[1]]
+                          }:{
+                           $:0
+                          };
+                         }
+                       }
+                      else
+                       {
+                        activePatternResult15=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                        return activePatternResult15.$==1?{
+                         $:1,
+                         $0:[activePatternResult15.$0[0],activePatternResult15.$0[1]]
+                        }:{
+                         $:0
+                        };
+                       }
+                     }
+                   }
+                  else
+                   {
+                    activePatternResult16=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+                    if(activePatternResult16.$==1)
+                     {
+                      tupledArg8=activePatternResult16.$0[1];
+                      activePatternResult17=Impl["|Next|Empty|"](tupledArg8[0],tupledArg8[1]);
+                      if(activePatternResult17.$==0)
+                       {
+                        if(activePatternResult17.$0[0]===63)
+                         {
+                          next5=activePatternResult17.$0[1];
+                          threshold4=activePatternResult16.$0[0];
+                          return{
+                           $:1,
+                           $0:[{
+                            $:4,
+                            $0:{
+                             $:0,
+                             $0:{
+                              $:0,
+                              $0:1,
+                              $1:20
+                             }
+                            },
+                            $1:List.ofArray([[threshold4,{
+                             $:0,
+                             $0:{
+                              $:0,
+                              $0:1,
+                              $1:1
+                             }
+                            }]]),
+                            $2:0
+                           },next5]
+                          };
+                         }
+                        else
+                         {
+                          activePatternResult18=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                          return activePatternResult18.$==1?{
+                           $:1,
+                           $0:[activePatternResult18.$0[0],activePatternResult18.$0[1]]
+                          }:{
+                           $:0
+                          };
+                         }
+                       }
+                      else
+                       {
+                        activePatternResult19=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                        return activePatternResult19.$==1?{
+                         $:1,
+                         $0:[activePatternResult19.$0[0],activePatternResult19.$0[1]]
+                        }:{
+                         $:0
+                        };
+                       }
+                     }
+                    else
+                     {
+                      activePatternResult1a=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                      return activePatternResult1a.$==1?{
+                       $:1,
+                       $0:[activePatternResult1a.$0[0],activePatternResult1a.$0[1]]
+                      }:{
+                       $:0
+                      };
+                     }
+                   }
+                 }
+                else
+                 {
+                  activePatternResult1b=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+                  if(activePatternResult1b.$==1)
+                   {
+                    tupledArg9=activePatternResult1b.$0[1];
+                    activePatternResult1c=Impl["|Next|Empty|"](tupledArg9[0],tupledArg9[1]);
+                    if(activePatternResult1c.$==0)
+                     {
+                      if(activePatternResult1c.$0[0]===63)
+                       {
+                        next6=activePatternResult1c.$0[1];
+                        threshold5=activePatternResult1b.$0[0];
+                        return{
+                         $:1,
+                         $0:[{
+                          $:4,
+                          $0:{
+                           $:0,
+                           $0:{
+                            $:0,
+                            $0:1,
+                            $1:20
+                           }
+                          },
+                          $1:List.ofArray([[threshold5,{
+                           $:0,
+                           $0:{
+                            $:0,
+                            $0:1,
+                            $1:1
+                           }
+                          }]]),
+                          $2:0
+                         },next6]
+                        };
+                       }
+                      else
+                       {
+                        activePatternResult1d=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                        return activePatternResult1d.$==1?{
+                         $:1,
+                         $0:[activePatternResult1d.$0[0],activePatternResult1d.$0[1]]
+                        }:{
+                         $:0
+                        };
+                       }
+                     }
+                    else
+                     {
+                      activePatternResult1e=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                      return activePatternResult1e.$==1?{
+                       $:1,
+                       $0:[activePatternResult1e.$0[0],activePatternResult1e.$0[1]]
+                      }:{
+                       $:0
+                      };
+                     }
+                   }
+                  else
+                   {
+                    activePatternResult1f=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                    return activePatternResult1f.$==1?{
+                     $:1,
+                     $0:[activePatternResult1f.$0[0],activePatternResult1f.$0[1]]
+                    }:{
+                     $:0
+                    };
+                   }
+                 }
+               }
+              else
+               {
+                activePatternResult20=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+                if(activePatternResult20.$==1)
+                 {
+                  tupledArga=activePatternResult20.$0[1];
+                  activePatternResult21=Impl["|Next|Empty|"](tupledArga[0],tupledArga[1]);
+                  if(activePatternResult21.$==0)
+                   {
+                    if(activePatternResult21.$0[0]===63)
+                     {
+                      next7=activePatternResult21.$0[1];
+                      threshold6=activePatternResult20.$0[0];
+                      return{
+                       $:1,
+                       $0:[{
+                        $:4,
+                        $0:{
+                         $:0,
+                         $0:{
+                          $:0,
+                          $0:1,
+                          $1:20
+                         }
+                        },
+                        $1:List.ofArray([[threshold6,{
+                         $:0,
+                         $0:{
+                          $:0,
+                          $0:1,
+                          $1:1
+                         }
+                        }]]),
+                        $2:0
+                       },next7]
+                      };
+                     }
+                    else
+                     {
+                      activePatternResult22=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                      return activePatternResult22.$==1?{
+                       $:1,
+                       $0:[activePatternResult22.$0[0],activePatternResult22.$0[1]]
+                      }:{
+                       $:0
+                      };
+                     }
+                   }
+                  else
+                   {
+                    activePatternResult23=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                    return activePatternResult23.$==1?{
+                     $:1,
+                     $0:[activePatternResult23.$0[0],activePatternResult23.$0[1]]
+                    }:{
+                     $:0
+                    };
+                   }
+                 }
+                else
+                 {
+                  activePatternResult24=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                  return activePatternResult24.$==1?{
+                   $:1,
+                   $0:[activePatternResult24.$0[0],activePatternResult24.$0[1]]
+                  }:{
+                   $:0
+                  };
+                 }
+               }
+             }
+           }
+          else
+           {
+            activePatternResult25=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+            if(activePatternResult25.$==1)
+             {
+              tupledArgb=activePatternResult25.$0[1];
+              activePatternResult26=Impl["|Next|Empty|"](tupledArgb[0],tupledArgb[1]);
+              if(activePatternResult26.$==0)
+               {
+                if(activePatternResult26.$0[0]===63)
+                 {
+                  tupledArgc=activePatternResult26.$0[1];
+                  activePatternResult27=Impl["|Number|_|"](tupledArgc[0],tupledArgc[1]);
+                  if(activePatternResult27.$==1)
+                   {
+                    tupledArgd=activePatternResult27.$0[1];
+                    activePatternResult28=Impl["|Next|Empty|"](tupledArgd[0],tupledArgd[1]);
+                    if(activePatternResult28.$==0)
+                     {
+                      if(activePatternResult28.$0[0]===63)
+                       {
+                        critThreshold1=activePatternResult27.$0[0];
+                        next8=activePatternResult28.$0[1];
+                        threshold7=activePatternResult25.$0[0];
+                        return{
+                         $:1,
+                         $0:[{
+                          $:4,
+                          $0:{
+                           $:0,
+                           $0:{
+                            $:0,
+                            $0:1,
+                            $1:20
+                           }
+                          },
+                          $1:List.ofArray([[critThreshold1,{
+                           $:0,
+                           $0:{
+                            $:0,
+                            $0:2,
+                            $1:1
+                           }
+                          }],[threshold7,{
+                           $:0,
+                           $0:{
+                            $:0,
+                            $0:1,
+                            $1:1
+                           }
+                          }]]),
+                          $2:0
+                         },next8]
+                        };
+                       }
+                      else
+                       {
+                        activePatternResult29=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+                        if(activePatternResult29.$==1)
+                         {
+                          tupledArge=activePatternResult29.$0[1];
+                          activePatternResult2a=Impl["|Next|Empty|"](tupledArge[0],tupledArge[1]);
+                          if(activePatternResult2a.$==0)
+                           {
+                            if(activePatternResult2a.$0[0]===63)
+                             {
+                              next9=activePatternResult2a.$0[1];
+                              threshold8=activePatternResult29.$0[0];
+                              return{
+                               $:1,
+                               $0:[{
+                                $:4,
+                                $0:{
+                                 $:0,
+                                 $0:{
+                                  $:0,
+                                  $0:1,
+                                  $1:20
+                                 }
+                                },
+                                $1:List.ofArray([[threshold8,{
+                                 $:0,
+                                 $0:{
+                                  $:0,
+                                  $0:1,
+                                  $1:1
+                                 }
+                                }]]),
+                                $2:0
+                               },next9]
+                              };
+                             }
+                            else
+                             {
+                              activePatternResult2b=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                              return activePatternResult2b.$==1?{
+                               $:1,
+                               $0:[activePatternResult2b.$0[0],activePatternResult2b.$0[1]]
+                              }:{
+                               $:0
+                              };
+                             }
+                           }
+                          else
+                           {
+                            activePatternResult2c=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                            return activePatternResult2c.$==1?{
+                             $:1,
+                             $0:[activePatternResult2c.$0[0],activePatternResult2c.$0[1]]
+                            }:{
+                             $:0
+                            };
+                           }
+                         }
+                        else
+                         {
+                          activePatternResult2d=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                          return activePatternResult2d.$==1?{
+                           $:1,
+                           $0:[activePatternResult2d.$0[0],activePatternResult2d.$0[1]]
+                          }:{
+                           $:0
+                          };
+                         }
+                       }
+                     }
+                    else
+                     {
+                      activePatternResult2e=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+                      if(activePatternResult2e.$==1)
+                       {
+                        tupledArgf=activePatternResult2e.$0[1];
+                        activePatternResult2f=Impl["|Next|Empty|"](tupledArgf[0],tupledArgf[1]);
+                        if(activePatternResult2f.$==0)
+                         {
+                          if(activePatternResult2f.$0[0]===63)
+                           {
+                            nexta=activePatternResult2f.$0[1];
+                            threshold9=activePatternResult2e.$0[0];
+                            return{
+                             $:1,
+                             $0:[{
+                              $:4,
+                              $0:{
+                               $:0,
+                               $0:{
+                                $:0,
+                                $0:1,
+                                $1:20
+                               }
+                              },
+                              $1:List.ofArray([[threshold9,{
+                               $:0,
+                               $0:{
+                                $:0,
+                                $0:1,
+                                $1:1
+                               }
+                              }]]),
+                              $2:0
+                             },nexta]
+                            };
+                           }
+                          else
+                           {
+                            activePatternResult30=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                            return activePatternResult30.$==1?{
+                             $:1,
+                             $0:[activePatternResult30.$0[0],activePatternResult30.$0[1]]
+                            }:{
+                             $:0
+                            };
+                           }
+                         }
+                        else
+                         {
+                          activePatternResult31=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                          return activePatternResult31.$==1?{
+                           $:1,
+                           $0:[activePatternResult31.$0[0],activePatternResult31.$0[1]]
+                          }:{
+                           $:0
+                          };
+                         }
+                       }
+                      else
+                       {
+                        activePatternResult32=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                        return activePatternResult32.$==1?{
+                         $:1,
+                         $0:[activePatternResult32.$0[0],activePatternResult32.$0[1]]
+                        }:{
+                         $:0
+                        };
+                       }
+                     }
+                   }
+                  else
+                   {
+                    activePatternResult33=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+                    if(activePatternResult33.$==1)
+                     {
+                      tupledArg10=activePatternResult33.$0[1];
+                      activePatternResult34=Impl["|Next|Empty|"](tupledArg10[0],tupledArg10[1]);
+                      if(activePatternResult34.$==0)
+                       {
+                        if(activePatternResult34.$0[0]===63)
+                         {
+                          nextb=activePatternResult34.$0[1];
+                          thresholda=activePatternResult33.$0[0];
+                          return{
+                           $:1,
+                           $0:[{
+                            $:4,
+                            $0:{
+                             $:0,
+                             $0:{
+                              $:0,
+                              $0:1,
+                              $1:20
+                             }
+                            },
+                            $1:List.ofArray([[thresholda,{
+                             $:0,
+                             $0:{
+                              $:0,
+                              $0:1,
+                              $1:1
+                             }
+                            }]]),
+                            $2:0
+                           },nextb]
+                          };
+                         }
+                        else
+                         {
+                          activePatternResult35=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                          return activePatternResult35.$==1?{
+                           $:1,
+                           $0:[activePatternResult35.$0[0],activePatternResult35.$0[1]]
+                          }:{
+                           $:0
+                          };
+                         }
+                       }
+                      else
+                       {
+                        activePatternResult36=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                        return activePatternResult36.$==1?{
+                         $:1,
+                         $0:[activePatternResult36.$0[0],activePatternResult36.$0[1]]
+                        }:{
+                         $:0
+                        };
+                       }
+                     }
+                    else
+                     {
+                      activePatternResult37=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                      return activePatternResult37.$==1?{
+                       $:1,
+                       $0:[activePatternResult37.$0[0],activePatternResult37.$0[1]]
+                      }:{
+                       $:0
+                      };
+                     }
+                   }
+                 }
+                else
+                 {
+                  activePatternResult38=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+                  if(activePatternResult38.$==1)
+                   {
+                    tupledArg11=activePatternResult38.$0[1];
+                    activePatternResult39=Impl["|Next|Empty|"](tupledArg11[0],tupledArg11[1]);
+                    if(activePatternResult39.$==0)
+                     {
+                      if(activePatternResult39.$0[0]===63)
+                       {
+                        nextc=activePatternResult39.$0[1];
+                        thresholdb=activePatternResult38.$0[0];
+                        return{
+                         $:1,
+                         $0:[{
+                          $:4,
+                          $0:{
+                           $:0,
+                           $0:{
+                            $:0,
+                            $0:1,
+                            $1:20
+                           }
+                          },
+                          $1:List.ofArray([[thresholdb,{
+                           $:0,
+                           $0:{
+                            $:0,
+                            $0:1,
+                            $1:1
+                           }
+                          }]]),
+                          $2:0
+                         },nextc]
+                        };
+                       }
+                      else
+                       {
+                        activePatternResult3a=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                        return activePatternResult3a.$==1?{
+                         $:1,
+                         $0:[activePatternResult3a.$0[0],activePatternResult3a.$0[1]]
+                        }:{
+                         $:0
+                        };
+                       }
+                     }
+                    else
+                     {
+                      activePatternResult3b=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                      return activePatternResult3b.$==1?{
+                       $:1,
+                       $0:[activePatternResult3b.$0[0],activePatternResult3b.$0[1]]
+                      }:{
+                       $:0
+                      };
+                     }
+                   }
+                  else
+                   {
+                    activePatternResult3c=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                    return activePatternResult3c.$==1?{
+                     $:1,
+                     $0:[activePatternResult3c.$0[0],activePatternResult3c.$0[1]]
+                    }:{
+                     $:0
+                    };
+                   }
+                 }
+               }
+              else
+               {
+                activePatternResult3d=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+                if(activePatternResult3d.$==1)
+                 {
+                  tupledArg12=activePatternResult3d.$0[1];
+                  activePatternResult3e=Impl["|Next|Empty|"](tupledArg12[0],tupledArg12[1]);
+                  if(activePatternResult3e.$==0)
+                   {
+                    if(activePatternResult3e.$0[0]===63)
+                     {
+                      nextd=activePatternResult3e.$0[1];
+                      thresholdc=activePatternResult3d.$0[0];
+                      return{
+                       $:1,
+                       $0:[{
+                        $:4,
+                        $0:{
+                         $:0,
+                         $0:{
+                          $:0,
+                          $0:1,
+                          $1:20
+                         }
+                        },
+                        $1:List.ofArray([[thresholdc,{
+                         $:0,
+                         $0:{
+                          $:0,
+                          $0:1,
+                          $1:1
+                         }
+                        }]]),
+                        $2:0
+                       },nextd]
+                      };
+                     }
+                    else
+                     {
+                      activePatternResult3f=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                      return activePatternResult3f.$==1?{
+                       $:1,
+                       $0:[activePatternResult3f.$0[0],activePatternResult3f.$0[1]]
+                      }:{
+                       $:0
+                      };
+                     }
+                   }
+                  else
+                   {
+                    activePatternResult40=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                    return activePatternResult40.$==1?{
+                     $:1,
+                     $0:[activePatternResult40.$0[0],activePatternResult40.$0[1]]
+                    }:{
+                     $:0
+                    };
+                   }
+                 }
+                else
+                 {
+                  activePatternResult41=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                  return activePatternResult41.$==1?{
+                   $:1,
+                   $0:[activePatternResult41.$0[0],activePatternResult41.$0[1]]
+                  }:{
+                   $:0
+                  };
+                 }
+               }
+             }
+            else
+             {
+              activePatternResult42=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+              if(activePatternResult42.$==1)
+               {
+                tupledArg13=activePatternResult42.$0[1];
+                activePatternResult43=Impl["|Next|Empty|"](tupledArg13[0],tupledArg13[1]);
+                if(activePatternResult43.$==0)
+                 {
+                  if(activePatternResult43.$0[0]===63)
+                   {
+                    nexte=activePatternResult43.$0[1];
+                    thresholdd=activePatternResult42.$0[0];
+                    return{
+                     $:1,
+                     $0:[{
+                      $:4,
+                      $0:{
+                       $:0,
+                       $0:{
+                        $:0,
+                        $0:1,
+                        $1:20
+                       }
+                      },
+                      $1:List.ofArray([[thresholdd,{
+                       $:0,
+                       $0:{
+                        $:0,
+                        $0:1,
+                        $1:1
+                       }
+                      }]]),
+                      $2:0
+                     },nexte]
+                    };
+                   }
+                  else
+                   {
+                    activePatternResult44=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                    return activePatternResult44.$==1?{
+                     $:1,
+                     $0:[activePatternResult44.$0[0],activePatternResult44.$0[1]]
+                    }:{
+                     $:0
+                    };
+                   }
+                 }
+                else
+                 {
+                  activePatternResult45=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                  return activePatternResult45.$==1?{
+                   $:1,
+                   $0:[activePatternResult45.$0[0],activePatternResult45.$0[1]]
+                  }:{
+                   $:0
+                  };
+                 }
+               }
+              else
+               {
+                activePatternResult46=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                return activePatternResult46.$==1?{
+                 $:1,
+                 $0:[activePatternResult46.$0[0],activePatternResult46.$0[1]]
+                }:{
+                 $:0
+                };
+               }
+             }
+           }
+         }
+        else
+         {
+          activePatternResult47=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+          if(activePatternResult47.$==1)
+           {
+            tupledArg14=activePatternResult47.$0[1];
+            activePatternResult48=Impl["|Next|Empty|"](tupledArg14[0],tupledArg14[1]);
+            if(activePatternResult48.$==0)
+             {
+              if(activePatternResult48.$0[0]===63)
+               {
+                tupledArg15=activePatternResult48.$0[1];
+                activePatternResult49=Impl["|Number|_|"](tupledArg15[0],tupledArg15[1]);
+                if(activePatternResult49.$==1)
+                 {
+                  tupledArg16=activePatternResult49.$0[1];
+                  activePatternResult4a=Impl["|Next|Empty|"](tupledArg16[0],tupledArg16[1]);
+                  if(activePatternResult4a.$==0)
+                   {
+                    if(activePatternResult4a.$0[0]===63)
+                     {
+                      critThreshold2=activePatternResult49.$0[0];
+                      nextf=activePatternResult4a.$0[1];
+                      thresholde=activePatternResult47.$0[0];
+                      return{
+                       $:1,
+                       $0:[{
+                        $:4,
+                        $0:{
+                         $:0,
+                         $0:{
+                          $:0,
+                          $0:1,
+                          $1:20
+                         }
+                        },
+                        $1:List.ofArray([[critThreshold2,{
+                         $:0,
+                         $0:{
+                          $:0,
+                          $0:2,
+                          $1:1
+                         }
+                        }],[thresholde,{
+                         $:0,
+                         $0:{
+                          $:0,
+                          $0:1,
+                          $1:1
+                         }
+                        }]]),
+                        $2:0
+                       },nextf]
+                      };
+                     }
+                    else
+                     {
+                      activePatternResult4b=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+                      if(activePatternResult4b.$==1)
+                       {
+                        tupledArg17=activePatternResult4b.$0[1];
+                        activePatternResult4c=Impl["|Next|Empty|"](tupledArg17[0],tupledArg17[1]);
+                        if(activePatternResult4c.$==0)
+                         {
+                          if(activePatternResult4c.$0[0]===63)
+                           {
+                            next10=activePatternResult4c.$0[1];
+                            thresholdf=activePatternResult4b.$0[0];
+                            return{
+                             $:1,
+                             $0:[{
+                              $:4,
+                              $0:{
+                               $:0,
+                               $0:{
+                                $:0,
+                                $0:1,
+                                $1:20
+                               }
+                              },
+                              $1:List.ofArray([[thresholdf,{
+                               $:0,
+                               $0:{
+                                $:0,
+                                $0:1,
+                                $1:1
+                               }
+                              }]]),
+                              $2:0
+                             },next10]
+                            };
+                           }
+                          else
+                           {
+                            activePatternResult4d=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                            return activePatternResult4d.$==1?{
+                             $:1,
+                             $0:[activePatternResult4d.$0[0],activePatternResult4d.$0[1]]
+                            }:{
+                             $:0
+                            };
+                           }
+                         }
+                        else
+                         {
+                          activePatternResult4e=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                          return activePatternResult4e.$==1?{
+                           $:1,
+                           $0:[activePatternResult4e.$0[0],activePatternResult4e.$0[1]]
+                          }:{
+                           $:0
+                          };
+                         }
+                       }
+                      else
+                       {
+                        activePatternResult4f=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                        return activePatternResult4f.$==1?{
+                         $:1,
+                         $0:[activePatternResult4f.$0[0],activePatternResult4f.$0[1]]
+                        }:{
+                         $:0
+                        };
+                       }
+                     }
+                   }
+                  else
+                   {
+                    activePatternResult50=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+                    if(activePatternResult50.$==1)
+                     {
+                      tupledArg18=activePatternResult50.$0[1];
+                      activePatternResult51=Impl["|Next|Empty|"](tupledArg18[0],tupledArg18[1]);
+                      if(activePatternResult51.$==0)
+                       {
+                        if(activePatternResult51.$0[0]===63)
+                         {
+                          next11=activePatternResult51.$0[1];
+                          threshold10=activePatternResult50.$0[0];
+                          return{
+                           $:1,
+                           $0:[{
+                            $:4,
+                            $0:{
+                             $:0,
+                             $0:{
+                              $:0,
+                              $0:1,
+                              $1:20
+                             }
+                            },
+                            $1:List.ofArray([[threshold10,{
+                             $:0,
+                             $0:{
+                              $:0,
+                              $0:1,
+                              $1:1
+                             }
+                            }]]),
+                            $2:0
+                           },next11]
+                          };
+                         }
+                        else
+                         {
+                          activePatternResult52=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                          return activePatternResult52.$==1?{
+                           $:1,
+                           $0:[activePatternResult52.$0[0],activePatternResult52.$0[1]]
+                          }:{
+                           $:0
+                          };
+                         }
+                       }
+                      else
+                       {
+                        activePatternResult53=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                        return activePatternResult53.$==1?{
+                         $:1,
+                         $0:[activePatternResult53.$0[0],activePatternResult53.$0[1]]
+                        }:{
+                         $:0
+                        };
+                       }
+                     }
+                    else
+                     {
+                      activePatternResult54=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                      return activePatternResult54.$==1?{
+                       $:1,
+                       $0:[activePatternResult54.$0[0],activePatternResult54.$0[1]]
+                      }:{
+                       $:0
+                      };
+                     }
+                   }
+                 }
+                else
+                 {
+                  activePatternResult55=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+                  if(activePatternResult55.$==1)
+                   {
+                    tupledArg19=activePatternResult55.$0[1];
+                    activePatternResult56=Impl["|Next|Empty|"](tupledArg19[0],tupledArg19[1]);
+                    if(activePatternResult56.$==0)
+                     {
+                      if(activePatternResult56.$0[0]===63)
+                       {
+                        next12=activePatternResult56.$0[1];
+                        threshold11=activePatternResult55.$0[0];
+                        return{
+                         $:1,
+                         $0:[{
+                          $:4,
+                          $0:{
+                           $:0,
+                           $0:{
+                            $:0,
+                            $0:1,
+                            $1:20
+                           }
+                          },
+                          $1:List.ofArray([[threshold11,{
+                           $:0,
+                           $0:{
+                            $:0,
+                            $0:1,
+                            $1:1
+                           }
+                          }]]),
+                          $2:0
+                         },next12]
+                        };
+                       }
+                      else
+                       {
+                        activePatternResult57=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                        return activePatternResult57.$==1?{
+                         $:1,
+                         $0:[activePatternResult57.$0[0],activePatternResult57.$0[1]]
+                        }:{
+                         $:0
+                        };
+                       }
+                     }
+                    else
+                     {
+                      activePatternResult58=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                      return activePatternResult58.$==1?{
+                       $:1,
+                       $0:[activePatternResult58.$0[0],activePatternResult58.$0[1]]
+                      }:{
+                       $:0
+                      };
+                     }
+                   }
+                  else
+                   {
+                    activePatternResult59=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                    return activePatternResult59.$==1?{
+                     $:1,
+                     $0:[activePatternResult59.$0[0],activePatternResult59.$0[1]]
+                    }:{
+                     $:0
+                    };
+                   }
+                 }
+               }
+              else
+               {
+                activePatternResult5a=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+                if(activePatternResult5a.$==1)
+                 {
+                  tupledArg1a=activePatternResult5a.$0[1];
+                  activePatternResult5b=Impl["|Next|Empty|"](tupledArg1a[0],tupledArg1a[1]);
+                  if(activePatternResult5b.$==0)
+                   {
+                    if(activePatternResult5b.$0[0]===63)
+                     {
+                      next13=activePatternResult5b.$0[1];
+                      threshold12=activePatternResult5a.$0[0];
+                      return{
+                       $:1,
+                       $0:[{
+                        $:4,
+                        $0:{
+                         $:0,
+                         $0:{
+                          $:0,
+                          $0:1,
+                          $1:20
+                         }
+                        },
+                        $1:List.ofArray([[threshold12,{
+                         $:0,
+                         $0:{
+                          $:0,
+                          $0:1,
+                          $1:1
+                         }
+                        }]]),
+                        $2:0
+                       },next13]
+                      };
+                     }
+                    else
+                     {
+                      activePatternResult5c=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                      return activePatternResult5c.$==1?{
+                       $:1,
+                       $0:[activePatternResult5c.$0[0],activePatternResult5c.$0[1]]
+                      }:{
+                       $:0
+                      };
+                     }
+                   }
+                  else
+                   {
+                    activePatternResult5d=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                    return activePatternResult5d.$==1?{
+                     $:1,
+                     $0:[activePatternResult5d.$0[0],activePatternResult5d.$0[1]]
+                    }:{
+                     $:0
+                    };
+                   }
+                 }
+                else
+                 {
+                  activePatternResult5e=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                  return activePatternResult5e.$==1?{
+                   $:1,
+                   $0:[activePatternResult5e.$0[0],activePatternResult5e.$0[1]]
+                  }:{
+                   $:0
+                  };
+                 }
+               }
+             }
+            else
+             {
+              activePatternResult5f=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+              if(activePatternResult5f.$==1)
+               {
+                tupledArg1b=activePatternResult5f.$0[1];
+                activePatternResult60=Impl["|Next|Empty|"](tupledArg1b[0],tupledArg1b[1]);
+                if(activePatternResult60.$==0)
+                 {
+                  if(activePatternResult60.$0[0]===63)
+                   {
+                    next14=activePatternResult60.$0[1];
+                    threshold13=activePatternResult5f.$0[0];
+                    return{
+                     $:1,
+                     $0:[{
+                      $:4,
+                      $0:{
+                       $:0,
+                       $0:{
+                        $:0,
+                        $0:1,
+                        $1:20
+                       }
+                      },
+                      $1:List.ofArray([[threshold13,{
+                       $:0,
+                       $0:{
+                        $:0,
+                        $0:1,
+                        $1:1
+                       }
+                      }]]),
+                      $2:0
+                     },next14]
+                    };
+                   }
+                  else
+                   {
+                    activePatternResult61=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                    return activePatternResult61.$==1?{
+                     $:1,
+                     $0:[activePatternResult61.$0[0],activePatternResult61.$0[1]]
+                    }:{
+                     $:0
+                    };
+                   }
+                 }
+                else
+                 {
+                  activePatternResult62=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                  return activePatternResult62.$==1?{
+                   $:1,
+                   $0:[activePatternResult62.$0[0],activePatternResult62.$0[1]]
+                  }:{
+                   $:0
+                  };
+                 }
+               }
+              else
+               {
+                activePatternResult63=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                return activePatternResult63.$==1?{
+                 $:1,
+                 $0:[activePatternResult63.$0[0],activePatternResult63.$0[1]]
+                }:{
+                 $:0
+                };
+               }
+             }
+           }
+          else
+           {
+            activePatternResult64=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+            if(activePatternResult64.$==1)
+             {
+              tupledArg1c=activePatternResult64.$0[1];
+              activePatternResult65=Impl["|Next|Empty|"](tupledArg1c[0],tupledArg1c[1]);
+              if(activePatternResult65.$==0)
+               {
+                if(activePatternResult65.$0[0]===63)
+                 {
+                  next15=activePatternResult65.$0[1];
+                  threshold14=activePatternResult64.$0[0];
+                  return{
+                   $:1,
+                   $0:[{
+                    $:4,
+                    $0:{
+                     $:0,
+                     $0:{
+                      $:0,
+                      $0:1,
+                      $1:20
+                     }
+                    },
+                    $1:List.ofArray([[threshold14,{
+                     $:0,
+                     $0:{
+                      $:0,
+                      $0:1,
+                      $1:1
+                     }
+                    }]]),
+                    $2:0
+                   },next15]
+                  };
+                 }
+                else
+                 {
+                  activePatternResult66=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                  return activePatternResult66.$==1?{
+                   $:1,
+                   $0:[activePatternResult66.$0[0],activePatternResult66.$0[1]]
+                  }:{
+                   $:0
+                  };
+                 }
+               }
+              else
+               {
+                activePatternResult67=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                return activePatternResult67.$==1?{
+                 $:1,
+                 $0:[activePatternResult67.$0[0],activePatternResult67.$0[1]]
+                }:{
+                 $:0
+                };
+               }
+             }
+            else
+             {
+              activePatternResult68=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+              return activePatternResult68.$==1?{
                $:1,
-               $0:[activePatternResult3.$0[0],activePatternResult3.$0[1]]
+               $0:[activePatternResult68.$0[0],activePatternResult68.$0[1]]
+              }:{
+               $:0
+              };
+             }
+           }
+         }
+       }
+      else
+       {
+        activePatternResult69=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+        if(activePatternResult69.$==1)
+         {
+          tupledArg1d=activePatternResult69.$0[1];
+          activePatternResult6a=Impl["|Next|Empty|"](tupledArg1d[0],tupledArg1d[1]);
+          if(activePatternResult6a.$==0)
+           {
+            if(activePatternResult6a.$0[0]===63)
+             {
+              tupledArg1e=activePatternResult6a.$0[1];
+              activePatternResult6b=Impl["|Number|_|"](tupledArg1e[0],tupledArg1e[1]);
+              if(activePatternResult6b.$==1)
+               {
+                tupledArg1f=activePatternResult6b.$0[1];
+                activePatternResult6c=Impl["|Next|Empty|"](tupledArg1f[0],tupledArg1f[1]);
+                if(activePatternResult6c.$==0)
+                 {
+                  if(activePatternResult6c.$0[0]===63)
+                   {
+                    critThreshold3=activePatternResult6b.$0[0];
+                    next16=activePatternResult6c.$0[1];
+                    threshold15=activePatternResult69.$0[0];
+                    return{
+                     $:1,
+                     $0:[{
+                      $:4,
+                      $0:{
+                       $:0,
+                       $0:{
+                        $:0,
+                        $0:1,
+                        $1:20
+                       }
+                      },
+                      $1:List.ofArray([[critThreshold3,{
+                       $:0,
+                       $0:{
+                        $:0,
+                        $0:2,
+                        $1:1
+                       }
+                      }],[threshold15,{
+                       $:0,
+                       $0:{
+                        $:0,
+                        $0:1,
+                        $1:1
+                       }
+                      }]]),
+                      $2:0
+                     },next16]
+                    };
+                   }
+                  else
+                   {
+                    activePatternResult6d=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+                    if(activePatternResult6d.$==1)
+                     {
+                      tupledArg20=activePatternResult6d.$0[1];
+                      activePatternResult6e=Impl["|Next|Empty|"](tupledArg20[0],tupledArg20[1]);
+                      if(activePatternResult6e.$==0)
+                       {
+                        if(activePatternResult6e.$0[0]===63)
+                         {
+                          next17=activePatternResult6e.$0[1];
+                          threshold16=activePatternResult6d.$0[0];
+                          return{
+                           $:1,
+                           $0:[{
+                            $:4,
+                            $0:{
+                             $:0,
+                             $0:{
+                              $:0,
+                              $0:1,
+                              $1:20
+                             }
+                            },
+                            $1:List.ofArray([[threshold16,{
+                             $:0,
+                             $0:{
+                              $:0,
+                              $0:1,
+                              $1:1
+                             }
+                            }]]),
+                            $2:0
+                           },next17]
+                          };
+                         }
+                        else
+                         {
+                          activePatternResult6f=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                          return activePatternResult6f.$==1?{
+                           $:1,
+                           $0:[activePatternResult6f.$0[0],activePatternResult6f.$0[1]]
+                          }:{
+                           $:0
+                          };
+                         }
+                       }
+                      else
+                       {
+                        activePatternResult70=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                        return activePatternResult70.$==1?{
+                         $:1,
+                         $0:[activePatternResult70.$0[0],activePatternResult70.$0[1]]
+                        }:{
+                         $:0
+                        };
+                       }
+                     }
+                    else
+                     {
+                      activePatternResult71=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                      return activePatternResult71.$==1?{
+                       $:1,
+                       $0:[activePatternResult71.$0[0],activePatternResult71.$0[1]]
+                      }:{
+                       $:0
+                      };
+                     }
+                   }
+                 }
+                else
+                 {
+                  activePatternResult72=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+                  if(activePatternResult72.$==1)
+                   {
+                    tupledArg21=activePatternResult72.$0[1];
+                    activePatternResult73=Impl["|Next|Empty|"](tupledArg21[0],tupledArg21[1]);
+                    if(activePatternResult73.$==0)
+                     {
+                      if(activePatternResult73.$0[0]===63)
+                       {
+                        next18=activePatternResult73.$0[1];
+                        threshold17=activePatternResult72.$0[0];
+                        return{
+                         $:1,
+                         $0:[{
+                          $:4,
+                          $0:{
+                           $:0,
+                           $0:{
+                            $:0,
+                            $0:1,
+                            $1:20
+                           }
+                          },
+                          $1:List.ofArray([[threshold17,{
+                           $:0,
+                           $0:{
+                            $:0,
+                            $0:1,
+                            $1:1
+                           }
+                          }]]),
+                          $2:0
+                         },next18]
+                        };
+                       }
+                      else
+                       {
+                        activePatternResult74=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                        return activePatternResult74.$==1?{
+                         $:1,
+                         $0:[activePatternResult74.$0[0],activePatternResult74.$0[1]]
+                        }:{
+                         $:0
+                        };
+                       }
+                     }
+                    else
+                     {
+                      activePatternResult75=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                      return activePatternResult75.$==1?{
+                       $:1,
+                       $0:[activePatternResult75.$0[0],activePatternResult75.$0[1]]
+                      }:{
+                       $:0
+                      };
+                     }
+                   }
+                  else
+                   {
+                    activePatternResult76=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                    return activePatternResult76.$==1?{
+                     $:1,
+                     $0:[activePatternResult76.$0[0],activePatternResult76.$0[1]]
+                    }:{
+                     $:0
+                    };
+                   }
+                 }
+               }
+              else
+               {
+                activePatternResult77=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+                if(activePatternResult77.$==1)
+                 {
+                  tupledArg22=activePatternResult77.$0[1];
+                  activePatternResult78=Impl["|Next|Empty|"](tupledArg22[0],tupledArg22[1]);
+                  if(activePatternResult78.$==0)
+                   {
+                    if(activePatternResult78.$0[0]===63)
+                     {
+                      next19=activePatternResult78.$0[1];
+                      threshold18=activePatternResult77.$0[0];
+                      return{
+                       $:1,
+                       $0:[{
+                        $:4,
+                        $0:{
+                         $:0,
+                         $0:{
+                          $:0,
+                          $0:1,
+                          $1:20
+                         }
+                        },
+                        $1:List.ofArray([[threshold18,{
+                         $:0,
+                         $0:{
+                          $:0,
+                          $0:1,
+                          $1:1
+                         }
+                        }]]),
+                        $2:0
+                       },next19]
+                      };
+                     }
+                    else
+                     {
+                      activePatternResult79=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                      return activePatternResult79.$==1?{
+                       $:1,
+                       $0:[activePatternResult79.$0[0],activePatternResult79.$0[1]]
+                      }:{
+                       $:0
+                      };
+                     }
+                   }
+                  else
+                   {
+                    activePatternResult7a=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                    return activePatternResult7a.$==1?{
+                     $:1,
+                     $0:[activePatternResult7a.$0[0],activePatternResult7a.$0[1]]
+                    }:{
+                     $:0
+                    };
+                   }
+                 }
+                else
+                 {
+                  activePatternResult7b=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                  return activePatternResult7b.$==1?{
+                   $:1,
+                   $0:[activePatternResult7b.$0[0],activePatternResult7b.$0[1]]
+                  }:{
+                   $:0
+                  };
+                 }
+               }
+             }
+            else
+             {
+              activePatternResult7c=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+              if(activePatternResult7c.$==1)
+               {
+                tupledArg23=activePatternResult7c.$0[1];
+                activePatternResult7d=Impl["|Next|Empty|"](tupledArg23[0],tupledArg23[1]);
+                if(activePatternResult7d.$==0)
+                 {
+                  if(activePatternResult7d.$0[0]===63)
+                   {
+                    next1a=activePatternResult7d.$0[1];
+                    threshold19=activePatternResult7c.$0[0];
+                    return{
+                     $:1,
+                     $0:[{
+                      $:4,
+                      $0:{
+                       $:0,
+                       $0:{
+                        $:0,
+                        $0:1,
+                        $1:20
+                       }
+                      },
+                      $1:List.ofArray([[threshold19,{
+                       $:0,
+                       $0:{
+                        $:0,
+                        $0:1,
+                        $1:1
+                       }
+                      }]]),
+                      $2:0
+                     },next1a]
+                    };
+                   }
+                  else
+                   {
+                    activePatternResult7e=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                    return activePatternResult7e.$==1?{
+                     $:1,
+                     $0:[activePatternResult7e.$0[0],activePatternResult7e.$0[1]]
+                    }:{
+                     $:0
+                    };
+                   }
+                 }
+                else
+                 {
+                  activePatternResult7f=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                  return activePatternResult7f.$==1?{
+                   $:1,
+                   $0:[activePatternResult7f.$0[0],activePatternResult7f.$0[1]]
+                  }:{
+                   $:0
+                  };
+                 }
+               }
+              else
+               {
+                activePatternResult80=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                return activePatternResult80.$==1?{
+                 $:1,
+                 $0:[activePatternResult80.$0[0],activePatternResult80.$0[1]]
+                }:{
+                 $:0
+                };
+               }
+             }
+           }
+          else
+           {
+            activePatternResult81=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+            if(activePatternResult81.$==1)
+             {
+              tupledArg24=activePatternResult81.$0[1];
+              activePatternResult82=Impl["|Next|Empty|"](tupledArg24[0],tupledArg24[1]);
+              if(activePatternResult82.$==0)
+               {
+                if(activePatternResult82.$0[0]===63)
+                 {
+                  next1b=activePatternResult82.$0[1];
+                  threshold1a=activePatternResult81.$0[0];
+                  return{
+                   $:1,
+                   $0:[{
+                    $:4,
+                    $0:{
+                     $:0,
+                     $0:{
+                      $:0,
+                      $0:1,
+                      $1:20
+                     }
+                    },
+                    $1:List.ofArray([[threshold1a,{
+                     $:0,
+                     $0:{
+                      $:0,
+                      $0:1,
+                      $1:1
+                     }
+                    }]]),
+                    $2:0
+                   },next1b]
+                  };
+                 }
+                else
+                 {
+                  activePatternResult83=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                  return activePatternResult83.$==1?{
+                   $:1,
+                   $0:[activePatternResult83.$0[0],activePatternResult83.$0[1]]
+                  }:{
+                   $:0
+                  };
+                 }
+               }
+              else
+               {
+                activePatternResult84=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                return activePatternResult84.$==1?{
+                 $:1,
+                 $0:[activePatternResult84.$0[0],activePatternResult84.$0[1]]
+                }:{
+                 $:0
+                };
+               }
+             }
+            else
+             {
+              activePatternResult85=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+              return activePatternResult85.$==1?{
+               $:1,
+               $0:[activePatternResult85.$0[0],activePatternResult85.$0[1]]
+              }:{
+               $:0
+              };
+             }
+           }
+         }
+        else
+         {
+          activePatternResult86=Impl["|Number|_|"](_arg2[0],_arg2[1]);
+          if(activePatternResult86.$==1)
+           {
+            tupledArg25=activePatternResult86.$0[1];
+            activePatternResult87=Impl["|Next|Empty|"](tupledArg25[0],tupledArg25[1]);
+            if(activePatternResult87.$==0)
+             {
+              if(activePatternResult87.$0[0]===63)
+               {
+                next1c=activePatternResult87.$0[1];
+                threshold1b=activePatternResult86.$0[0];
+                return{
+                 $:1,
+                 $0:[{
+                  $:4,
+                  $0:{
+                   $:0,
+                   $0:{
+                    $:0,
+                    $0:1,
+                    $1:20
+                   }
+                  },
+                  $1:List.ofArray([[threshold1b,{
+                   $:0,
+                   $0:{
+                    $:0,
+                    $0:1,
+                    $1:1
+                   }
+                  }]]),
+                  $2:0
+                 },next1c]
+                };
+               }
+              else
+               {
+                activePatternResult88=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+                return activePatternResult88.$==1?{
+                 $:1,
+                 $0:[activePatternResult88.$0[0],activePatternResult88.$0[1]]
+                }:{
+                 $:0
+                };
+               }
+             }
+            else
+             {
+              activePatternResult89=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+              return activePatternResult89.$==1?{
+               $:1,
+               $0:[activePatternResult89.$0[0],activePatternResult89.$0[1]]
               }:{
                $:0
               };
@@ -17840,35 +19941,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            }
           else
            {
-            activePatternResult4=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-            return activePatternResult4.$==1?{
+            activePatternResult8a=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
+            return activePatternResult8a.$==1?{
              $:1,
-             $0:[activePatternResult4.$0[0],activePatternResult4.$0[1]]
+             $0:[activePatternResult8a.$0[0],activePatternResult8a.$0[1]]
             }:{
              $:0
             };
            }
          }
-        else
-         {
-          activePatternResult5=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-          return activePatternResult5.$==1?{
-           $:1,
-           $0:[activePatternResult5.$0[0],activePatternResult5.$0[1]]
-          }:{
-           $:0
-          };
-         }
-       }
-      else
-       {
-        activePatternResult6=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-        return activePatternResult6.$==1?{
-         $:1,
-         $0:[activePatternResult6.$0[0],activePatternResult6.$0[1]]
-        }:{
-         $:0
-        };
        }
      },
      "|MaybeChars|":function(_,_1,_2)
@@ -19619,16 +21700,17 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
   Seq=Runtime.Safe(Global.WebSharper.Seq);
   Operators=Runtime.Safe(Global.WebSharper.Operators);
   String=Runtime.Safe(Global.String);
+  List=Runtime.Safe(Global.WebSharper.List);
+  Util=Runtime.Safe(mdw.Util);
   Random=Runtime.Safe(Global.WebSharper.Random);
+  Seq1=Runtime.Safe(Global.Seq);
   Collections=Runtime.Safe(Global.WebSharper.Collections);
   FSharpSet=Runtime.Safe(Collections.FSharpSet);
-  List=Runtime.Safe(Global.WebSharper.List);
   Parser=Runtime.Safe(mdw.Parser);
   Impl=Runtime.Safe(Parser.Impl);
   PrintfHelpers=Runtime.Safe(Global.WebSharper.PrintfHelpers);
   Strings=Runtime.Safe(Global.WebSharper.Strings);
   parseInt=Runtime.Safe(Global.parseInt);
-  Util=Runtime.Safe(mdw.Util);
   T=Runtime.Safe(List.T);
   jQuery=Runtime.Safe(Global.jQuery);
   UI=Runtime.Safe(Global.WebSharper.UI);
