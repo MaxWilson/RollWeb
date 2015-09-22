@@ -14,9 +14,9 @@ module Client =
     open WebSharper.UI.Next.Html
 
     type RollRecord = 
-        { Key : Key; Description : string; Value: string}
-        static member Create(descr, value) =
-            { Key = Key.Fresh(); Description = descr; Value = value}
+        { Key : Key; Description : string; Value: string; Explain: string}
+        static member Create(descr, value, explain) =
+            { Key = Key.Fresh(); Description = descr; Value = value; Explain = explain}
     let Rolls =
         ListModel.FromSeq<RollRecord> [ ]
         
@@ -27,6 +27,9 @@ module Client =
             ]
             td [
                 Doc.TextNode m.Value
+            ]
+            td[
+                Doc.Button "Explain" [] (fun _ -> JS.Alert(m.Explain))
             ]
         ]
     let RollForm =
@@ -43,8 +46,8 @@ module Client =
                 // We construct a new ToDo item
                 let spec = Var.Get rvInput
                 try
-                    let result = Parser.ParseCommand spec |> Dice.Instance.Resolve
-                    let todo = RollRecord.Create (spec, result)
+                    let result, explain = Parser.ParseCommand spec |> Dice.Instance.Resolve
+                    let todo = RollRecord.Create (spec, result, explain)
                     // This is then added to the collection, which automatically
                     // updates the presentation.
                     Rolls.Add todo
