@@ -1,10 +1,11 @@
 ﻿[<WebSharper.Core.Attributes.JavaScript>]
 module mdw.Parser 
 
+#nowarn "40" // recursive object references from memoization
+
 open DataDefs
 
-[<AutoOpen>]
-module Impl =
+type Impl() =
     (* Throughout this file we use string * int as a data type for parse inputs,
     representing a string and a position within it. I can't figure out how to get
     the type inference to work with type aliases though so I'm just using a raw
@@ -16,6 +17,24 @@ module Impl =
     let arithmeticOperators = Set<_>['+'; '-']
     let advantageDisadvantage = Set<_>['A'; 'D'; 'a'; 'd']
     let alphanumeric = alpha + numeric
+    let memo: Map<_,_> ref = ref (Map.empty)
+    // memoization provides better perf (linear time) AND allows left-recursive grammars to terminate
+    let memoize pattern input =
+        let key = (pattern.ToString(), input)
+        match Map.tryFind key !memo with
+        | Some(v) -> v
+        | None ->
+            let rec growSeed prev =
+                let result = pattern input
+                memo := Map.add key result !memo
+                match result, prev with
+                | None, _  ->
+                    prev
+                | Some(_, new'), Some(_, prev') when new' <= prev' ->
+                    prev
+                | _ -> growSeed result
+            memo := Map.add key None !memo // set initial seed to FAIL
+            growSeed None
 
     let (|Next|Empty|) = function
         | (input : string), pos when pos < input.Length -> Next(input.[pos], (input, pos+1))
@@ -55,15 +74,18 @@ module Impl =
     let rec (|Number|_|) = function
         | Chars numeric i1 as i0 -> (System.Int32.Parse(sub i0 i1), i1) |> Some
         | _ -> None
-    and (|CompoundExpression|_|) = function
+    and (|CompoundExpression|_|) = memoize (function
         | Number(n, Next('.', CompoundExpression(v, next))) -> 
             Some(Repeat(n, v), next)
         | Number(threshold, Next('?', Number(critThreshold, Next('?', next)))) -> 
             Some(Check(Single(Simple(1, 20)), [critThreshold, Single(Simple(2, 1)); threshold, Single(Simple(1, 1)) ], 0), next)
         | Number(threshold, Next('?', next)) -> 
             Some(Check(Single(Simple(1, 20)), [threshold, Single(Simple(1, 1))], 0), next)
+        | CompoundExpression(lhs, Next('+', CompoundExpression(rhs, next))) -> Some(Sum(lhs, rhs), next)
+        | CompoundExpression(lhs, Next('-', CompoundExpression(rhs, next))) -> Some(Sum(lhs, MultByConstant(-1, rhs)), next)
+        | SimpleExpression(v, next) -> Some(Single(v), next)
         | SumSimplesExpression(v, next) -> Some(v, next)
-        | _ -> None
+        | _ -> None)
     and (|SumSimplesExpression|_|) input = 
         // Use helper for recursion so sum can be left-associative
         let rec (|Helper|_|) positive = function
@@ -117,16 +139,16 @@ module Impl =
         | CompoundExpression(v, next) -> Some (Roll(v), next)
         | _ -> None
         
-    let parseCompound txt =
+    member this.parseCompound txt =
         match (txt, 0) with
         | CompoundExpression(cmd, Empty) -> cmd
         | _ -> failwithf "failed to parse '%s'" txt
 
-    let parseCommand txt =
+    member this.parseCommand txt =
         match (txt, 0) with
         | CommandExpression(cmd, Empty) -> cmd
         | _ -> failwithf "failed to parse '%s'" txt
 
 let Parse txt = 
-    parseCompound txt
-let ParseCommand = parseCommand
+    (Impl()).parseCompound txt
+let ParseCommand txt = (Impl()).parseCommand txt
