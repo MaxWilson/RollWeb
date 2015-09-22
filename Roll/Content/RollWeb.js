@@ -17467,7 +17467,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
 
 (function()
 {
- var Global=this,Runtime=this.IntelliFactory.Runtime,mdw,Dice,Resolver,Number,Seq,Operators,String,List,Util,Random,Seq1,Collections,MapModule,Unchecked,PrintfHelpers,Strings,Lazy,parseInt,FSharpSet,FSharpMap,Parser,Impl,jQuery,UI,Next,Client,Doc,Roll,Client1,Var,AttrProxy,RollRecord,alert,T,Key,ListModel,View;
+ var Global=this,Runtime=this.IntelliFactory.Runtime,mdw,Dice,Resolver,Number,Seq,Operators,String,PrintfHelpers,Strings,Arrays,List,Util,Random,Seq1,Collections,MapModule,Unchecked,Lazy,parseInt,FSharpSet,FSharpMap,Parser,Impl,jQuery,UI,Next,Client,Doc,Roll,Client1,Var,AttrProxy,RollRecord,alert,T,Key,ListModel,View;
  Runtime.Define(Global,{
   mdw:{
    Dice:{
@@ -17515,12 +17515,12 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                 {
                  return n>=_arg5[0]?{
                   $:1,
-                  $0:_this.Resolve1(_arg5[1])
+                  $0:_this.Average(_arg5[1])
                  }:{
                   $:0
                  };
                 },resultOptions);
-                return Number(_arg6.$==0?fallback:_arg6.$0)*weight;
+                return Number(_arg6.$==0?Number(fallback):_arg6.$0)*weight;
                };
               });
              }
@@ -17551,12 +17551,12 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      },
      Resolve:function(cmd)
      {
-      var size,d,_this=this,size1,d1,size2,d2;
+      var result,size,d,_this=this,size1,d1,size2,d2;
       if(cmd.$==1)
        {
         size=cmd.$1;
         d=cmd.$0;
-        return Seq.sum(Seq.toList(Seq.delay(function()
+        result=Seq.sum(Seq.toList(Seq.delay(function()
         {
          return Seq.collect(function()
          {
@@ -17570,7 +17570,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
          {
           size1=cmd.$1;
           d1=cmd.$0;
-          return Seq.sum(Seq.toList(Seq.delay(function()
+          result=Seq.sum(Seq.toList(Seq.delay(function()
           {
            return Seq.collect(function()
            {
@@ -17582,7 +17582,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
          {
           size2=cmd.$1;
           d2=cmd.$0;
-          return Seq.sum(Seq.toList(Seq.delay(function()
+          result=Seq.sum(Seq.toList(Seq.delay(function()
           {
            return Seq.collect(function()
            {
@@ -17591,20 +17591,26 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
           })));
          }
        }
+      return[result,String(result)];
      },
      Resolve1:function(cmd)
      {
-      var rhs,rhs1,n,_this=this,resultOptions,fallback,result,_arg4;
+      var rhs,patternInput,_,k,patternInput1,explain,rhs1,n,results,_this=this,result,_1,_2,roll,resultOptions,fallback,patternInput2,result1,explain1,_arg4,_3,_4;
       if(cmd.$==1)
        {
         rhs=cmd.$1;
-        return this.Resolve1(cmd.$0)+this.Resolve1(rhs);
+        patternInput=[this.Resolve1(cmd.$0),this.Resolve1(rhs)];
+        _=patternInput[1][1];
+        return[patternInput[0][0]+patternInput[1][0],PrintfHelpers.toSafe(patternInput[0][1])+" + "+PrintfHelpers.toSafe(_)];
        }
       else
        {
         if(cmd.$==2)
          {
-          return cmd.$0*this.Resolve1(cmd.$1);
+          k=cmd.$0;
+          patternInput1=this.Resolve1(cmd.$1);
+          explain=patternInput1[1];
+          return[k*patternInput1[0],k===-1?"-"+explain:Global.String(k)+"("+PrintfHelpers.toSafe(explain)+")"];
          }
         else
          {
@@ -17612,31 +17618,53 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            {
             rhs1=cmd.$1;
             n=cmd.$0;
-            return Seq.sum(Seq.toList(Seq.delay(function()
+            results=Seq.toList(Seq.delay(function()
             {
              return Seq.collect(function()
              {
               return[_this.Resolve1(rhs1)];
              },Operators.range(1,n));
-            })));
+            }));
+            result=Seq.sum(Seq.map(function(tuple)
+            {
+             return tuple[0];
+            },results));
+            _1=Strings.Join(",",Arrays.ofSeq(Seq.map(function(tuple)
+            {
+             return tuple[1];
+            },results)));
+            _2=String(result);
+            return[result,"("+PrintfHelpers.toSafe(_1)+")->"+PrintfHelpers.toSafe(_2)];
            }
           else
            {
             if(cmd.$==4)
              {
+              roll=cmd.$0;
               resultOptions=cmd.$1;
               fallback=cmd.$2;
-              result=_this.Resolve1(cmd.$0);
+              patternInput2=_this.Resolve1(roll);
+              result1=patternInput2[0];
+              explain1=patternInput2[1];
               _arg4=Seq.tryPick(function(_arg3)
               {
-               return result>=_arg3[0]?{
+               return result1>=_arg3[0]?{
                 $:1,
                 $0:_this.Resolve1(_arg3[1])
                }:{
                 $:0
                };
               },resultOptions);
-              return _arg4.$==0?fallback:_arg4.$0;
+              if(_arg4.$==0)
+               {
+                _3=String(fallback);
+                return[fallback,PrintfHelpers.toSafe(explain1)+" -> "+PrintfHelpers.toSafe(_3)];
+               }
+              else
+               {
+                _4=_arg4.$0[1];
+                return[_arg4.$0[0],PrintfHelpers.toSafe(explain1)+"->"+PrintfHelpers.toSafe(_4)];
+               }
              }
             else
              {
@@ -17648,16 +17676,17 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      },
      Resolve2:function(cmd)
      {
-      var copyOfStruct,copyOfStruct1;
+      var copyOfStruct,patternInput,explain;
       if(cmd.$==1)
        {
         copyOfStruct=this.Average(cmd.$0);
-        return String(copyOfStruct);
+        return[String(copyOfStruct),"Computed"];
        }
       else
        {
-        copyOfStruct1=this.Resolve1(cmd.$0);
-        return String(copyOfStruct1);
+        patternInput=this.Resolve1(cmd.$0);
+        explain=patternInput[1];
+        return[String(patternInput[0]),explain];
        }
      },
      enumerate:function(_arg2)
@@ -33586,12 +33615,13 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
       arg201=List.ofArray([Doc.Element("label",[],arg202),Doc.Input(List.ofArray([AttrProxy.Create("autofocus","autofocus")]),rvInput)]);
       arg203=function()
       {
-       var spec,todo,arg00,e;
+       var spec,arg00,patternInput,todo,e;
        spec=Var.Get(rvInput);
        try
        {
         arg00=Parser.ParseCommand(spec);
-        todo=RollRecord.Create(spec,Dice.Instance().Resolve2(arg00));
+        patternInput=Dice.Instance().Resolve2(arg00);
+        todo=RollRecord.Create(spec,patternInput[0],patternInput[1]);
         return Client1.Rolls().Add(todo);
        }
        catch(e)
@@ -33605,12 +33635,13 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
       return Doc.Element("form",[],arg20);
      }),
      RollRecord:Runtime.Class({},{
-      Create:function(descr,value)
+      Create:function(descr,value,explain)
       {
        return Runtime.New(RollRecord,{
         Key:Key.Fresh(),
         Description:descr,
-        Value:value
+        Value:value,
+        Explain:explain
        });
       }
      }),
@@ -33622,10 +33653,17 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      }),
      renderItem:function(m)
      {
-      var arg20,arg201,arg202;
+      var arg20,arg201,arg202,arg203,arg204;
       arg201=List.ofArray([Doc.TextNode(m.Description)]);
       arg202=List.ofArray([Doc.TextNode(m.Value)]);
-      arg20=List.ofArray([Doc.Element("td",[],arg201),Doc.Element("td",[],arg202)]);
+      arg204=function()
+      {
+       return alert(m.Explain);
+      };
+      arg203=List.ofArray([Doc.Button("Explain",Runtime.New(T,{
+       $:0
+      }),arg204)]);
+      arg20=List.ofArray([Doc.Element("td",[],arg201),Doc.Element("td",[],arg202),Doc.Element("td",[],arg203)]);
       return Doc.Element("tr",[],arg20);
      },
      renderRolls:function(rolls)
@@ -33666,6 +33704,9 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
   Seq=Runtime.Safe(Global.WebSharper.Seq);
   Operators=Runtime.Safe(Global.WebSharper.Operators);
   String=Runtime.Safe(Global.String);
+  PrintfHelpers=Runtime.Safe(Global.WebSharper.PrintfHelpers);
+  Strings=Runtime.Safe(Global.WebSharper.Strings);
+  Arrays=Runtime.Safe(Global.WebSharper.Arrays);
   List=Runtime.Safe(Global.WebSharper.List);
   Util=Runtime.Safe(mdw.Util);
   Random=Runtime.Safe(Global.WebSharper.Random);
@@ -33673,8 +33714,6 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
   Collections=Runtime.Safe(Global.WebSharper.Collections);
   MapModule=Runtime.Safe(Collections.MapModule);
   Unchecked=Runtime.Safe(Global.WebSharper.Unchecked);
-  PrintfHelpers=Runtime.Safe(Global.WebSharper.PrintfHelpers);
-  Strings=Runtime.Safe(Global.WebSharper.Strings);
   Lazy=Runtime.Safe(Global.WebSharper.Lazy);
   parseInt=Runtime.Safe(Global.parseInt);
   FSharpSet=Runtime.Safe(Collections.FSharpSet);
