@@ -46,10 +46,11 @@ let Average() =
 [<InlineData("1d2A", 1.75)>]
 [<InlineData("1d2D", 1.25)>]
 [<InlineData("20.18?", 3.)>]
-[<InlineData("20.18?20?", 4.)>]
 [<InlineData("(d20+11)-(d20+8)", 3.)>]
 [<InlineData("10.18A?", 2.775)>]
 [<InlineData("10.18D?", 0.225)>]
+[<InlineData("20.18A?100", 555.)>]
+[<InlineData("20.d20:14?", 6)>]
 let ``Complete-ish list of example roll specs``(input: string, expectedAverage: float) =
     let spec = Parser.Parse(input)
     let round (x : float) = System.Math.Round(x, 3) // round to three places
@@ -81,8 +82,8 @@ let ``Complete-ish list of example command specs``(input: string, expectedOutput
     if(expectedOutput <> null) then
         Assert.Equal<string>(expectedOutput, output)
 
-[<Theory(Skip="Incomplete")>]
-[<InlineData("20.18A?100", 27.75)>]
+[<Theory(Skip="Incomplete")>]202
+[<InlineData("20.18?20?", 4.)>]
 [<InlineData("20.d4A+d10+d20D:18?d10+5+d6", 0.)>]
 let ``Example roll specs that aren't working yet``(input: string, expectedAverage: float) =
     Assert.Equal(expectedAverage, Dice.Instance.Average(Parser.Parse(input)))

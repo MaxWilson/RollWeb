@@ -88,19 +88,33 @@ type Impl() =
         | Next('(', CompoundExpression(lhs, Next(')', next))) -> Some(lhs, next)
         | Number(n, Next('.', CompoundExpression(v, next))) -> 
             Some(Repeat(n, v), next)
-        | Number(threshold, NextChar advantageDisadvantage (c, Next('?', next)))  -> 
-            let roll = 
-                if c = 'a' || c = 'A' then
-                    Adv(1, 20)
-                else
-                    Disadv(1, 20)
-            Some(Check(Single(roll), [threshold, Single(Simple(1, 1))], 0), next)
-        | Number(threshold, Next('?', Number(critThreshold, Next('?', next)))) -> 
-            Some(Check(Single(Simple(1, 20)), [critThreshold, Single(Simple(2, 1)); threshold, Single(Simple(1, 1)) ], 0), next)
-        | Number(threshold, Next('?', next)) -> 
-            Some(Check(Single(Simple(1, 20)), [threshold, Single(Simple(1, 1))], 0), next)
+        | CheckTerm(v, next) -> Some(v, next)
         | SimpleExpression(v, next) -> Some(Single(v), next)
         | _ -> None)
+    and (|CheckTerm|_|) = 
+        let (|Predicate|_|) = function
+            | CompoundExpression(roll, Next(':', Number(target, Next('?', next)))) ->
+                Some(roll, target, next)
+            | Number(target, NextChar advantageDisadvantage (c, Next('?', next))) ->
+                let ctor = (if c = 'a' || c = 'A' then Adv else Disadv) >> Single
+                Some(ctor(1, 20), target, next)
+            | Number(target, Next('?', next)) ->
+                Some(Single(Simple(1, 20)), target, next)
+            | _ -> None
+        let (|ResultTerm|_|) = function
+            | CompoundExpression(result, next) ->
+                Some(result, next)
+            | next -> Some(Single(Simple(1, 1)), next)
+        memoize (function
+            | Predicate(roll, target, ResultTerm(consequent, next)) -> 
+                let rec double = function
+                    | Single(Simple(n, 1)) as constant -> constant
+                    | Single(Simple(n, d)) ->
+                        Single(Simple(n*2, d))
+                    | _ -> Util.nomatch()
+                Some(Check(roll, [target, consequent], 0), next)
+            | _ -> None
+        )
     and (|SimpleExpression|_|) input = 
         let makeRoll n d input = 
             match input with

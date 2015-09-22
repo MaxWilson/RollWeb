@@ -115,8 +115,8 @@
     <Content Include="Web.config" />
     <Content Include="Global.asax" />
     <None Include="packages.config" />
-    <None Include="Scripts\load-references.fsx" />
     <None Include="Scripts\load-project.fsx" />
+    <None Include="Scripts\load-references.fsx" />
     <None Include="Scripts\Script1.fsx" />
   </ItemGroup>
   <ItemGroup>
