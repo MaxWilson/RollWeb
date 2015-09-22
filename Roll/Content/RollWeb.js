@@ -17467,7 +17467,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
 
 (function()
 {
- var Global=this,Runtime=this.IntelliFactory.Runtime,mdw,Dice,Resolver,Number,Seq,Operators,String,List,Util,Random,Seq1,Collections,FSharpSet,Parser,Impl,PrintfHelpers,Strings,parseInt,T,jQuery,UI,Next,Client,Doc,Roll,Client1,Var,AttrProxy,RollRecord,alert,Key,ListModel,View;
+ var Global=this,Runtime=this.IntelliFactory.Runtime,mdw,Dice,Resolver,Number,Seq,Operators,String,List,Util,Random,Seq1,Collections,MapModule,Unchecked,PrintfHelpers,Strings,Lazy,parseInt,FSharpSet,FSharpMap,Parser,Impl,jQuery,UI,Next,Client,Doc,Roll,Client1,Var,AttrProxy,RollRecord,alert,T,Key,ListModel,View;
  Runtime.Define(Global,{
   mdw:{
    Dice:{
@@ -17845,36 +17845,73 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
     })
    },
    Parser:{
-    Impl:{
-     advantageDisadvantage:Runtime.Field(function()
+    Impl:Runtime.Class({
+     memoize:function(_,_1,_2)
      {
-      return FSharpSet.New(List.ofArray([65,68,97,100]));
-     }),
-     alpha:Runtime.Field(function()
-     {
-      return FSharpSet.New(Seq.toList(Operators.range(65,90))).add(FSharpSet.New(Seq.toList(Operators.range(97,122))));
-     }),
-     alphanumeric:Runtime.Field(function()
-     {
-      return Impl.alpha().add(Impl.numeric());
-     }),
-     arithmeticOperators:Runtime.Field(function()
-     {
-      return FSharpSet.New(List.ofArray([43,45]));
-     }),
-     numeric:Runtime.Field(function()
-     {
-      return FSharpSet.New(Seq.toList(Operators.range(48,57)));
-     }),
+      var input,key,matchValue,loop,result,matchValue1;
+      input=[_1,_2];
+      key=[String(_),input];
+      matchValue=MapModule.TryFind(key,this.memo[0]);
+      if(matchValue.$==0)
+       {
+        loop=[];
+        this.memo[0]=this.memo[0].Add(key,{
+         $:0
+        });
+        loop[1]={
+         $:0
+        };
+        loop[0]=1;
+        while(loop[0])
+         {
+          result=_(input);
+          this.memo[0]=this.memo[0].Add(key,result);
+          matchValue1=[result,loop[1]];
+          if(matchValue1[0].$==1)
+           {
+            if(matchValue1[1].$==1)
+             {
+              if(Unchecked.Compare(matchValue1[0].$0[1],matchValue1[1].$0[1])<=0)
+               {
+                matchValue1[0].$0[1];
+                matchValue1[1].$0[1];
+                loop[0]=0;
+                loop[1]=loop[1];
+               }
+              else
+               {
+                loop[1]=result;
+                loop[0]=1;
+               }
+             }
+            else
+             {
+              loop[1]=result;
+              loop[0]=1;
+             }
+           }
+          else
+           {
+            loop[0]=0;
+            loop[1]=loop[1];
+           }
+         }
+        return loop[1];
+       }
+      else
+       {
+        return matchValue.$0;
+       }
+     },
      parseCommand:function(txt)
      {
       var matchValue,activePatternResult,tupledArg;
       matchValue=[txt,0];
-      activePatternResult=Impl["|CommandExpression|_|"](matchValue[0],matchValue[1]);
+      activePatternResult=this["|CommandExpression|_|"](matchValue[0],matchValue[1]);
       if(activePatternResult.$==1)
        {
         tupledArg=activePatternResult.$0[1];
-        return Impl["|Next|Empty|"](tupledArg[0],tupledArg[1]).$==1?activePatternResult.$0[0]:Operators.FailWith("failed to parse '"+PrintfHelpers.toSafe(txt)+"'");
+        return this["|Next|Empty|"](tupledArg[0],tupledArg[1]).$==1?activePatternResult.$0[0]:Operators.FailWith("failed to parse '"+PrintfHelpers.toSafe(txt)+"'");
        }
       else
        {
@@ -17883,34 +17920,33 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      },
      parseCompound:function(txt)
      {
-      var matchValue,activePatternResult,tupledArg;
-      matchValue=[txt,0];
-      activePatternResult=Impl["|CompoundExpression|_|"](matchValue[0],matchValue[1]);
+      var activePatternResult,tupledArg;
+      activePatternResult=this["|CompoundExpression|_|@77-1"].call(null,[txt,0]);
       if(activePatternResult.$==1)
        {
         tupledArg=activePatternResult.$0[1];
-        return Impl["|Next|Empty|"](tupledArg[0],tupledArg[1]).$==1?activePatternResult.$0[0]:Operators.FailWith("failed to parse '"+PrintfHelpers.toSafe(txt)+"'");
+        return this["|Next|Empty|"](tupledArg[0],tupledArg[1]).$==1?activePatternResult.$0[0]:Operators.FailWith("failed to parse '"+PrintfHelpers.toSafe(txt)+"'");
        }
       else
        {
         return Operators.FailWith("failed to parse '"+PrintfHelpers.toSafe(txt)+"'");
        }
      },
-     sub:function(s,i0,_arg1,i1)
+     sub:function(s,i0,_arg5,i1)
      {
       return Strings.Substring(s,i0,i1-i0);
      },
      "|Chars|_|":function(_,_1,_2)
      {
-      var _arg1,activePatternResult,tupledArg;
-      _arg1=[_1,_2];
-      activePatternResult=Impl["|Char|_|"](_,_arg1[0],_arg1[1]);
+      var _arg4,activePatternResult,tupledArg;
+      _arg4=[_1,_2];
+      activePatternResult=this["|Char|_|"](_,_arg4[0],_arg4[1]);
       if(activePatternResult.$==1)
        {
         tupledArg=activePatternResult.$0;
         return{
          $:1,
-         $0:Impl["|MaybeChars|"](_,tupledArg[0],tupledArg[1])
+         $0:this["|MaybeChars|"](_,tupledArg[0],tupledArg[1])
         };
        }
       else
@@ -17922,26 +17958,25 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      },
      "|Char|_|":function(_,_1,_2)
      {
-      var _arg1;
-      _arg1=[_1,_2];
-      return Impl["|Next|Empty|"](_arg1[0],_arg1[1]).$==1?{
+      var _arg2;
+      _arg2=[_1,_2];
+      return this["|Next|Empty|"](_arg2[0],_arg2[1]).$==1?{
        $:0
-      }:_.Contains(_arg1[0].charCodeAt(_arg1[1]))?{
+      }:_.Contains(_arg2[0].charCodeAt(_arg2[1]))?{
        $:1,
-       $0:[_arg1[0],_arg1[1]+1]
+       $0:[_arg2[0],_arg2[1]+1]
       }:{
        $:0
       };
      },
      "|CommandExpression|_|":function(_,_1)
      {
-      var _arg4,activePatternResult,tupledArg,activePatternResult1,next,activePatternResult2,next1,activePatternResult3,next2;
-      _arg4=[_,_1];
-      activePatternResult=Impl["|NextWord|_|"]("avg.",_arg4[0],_arg4[1]);
+      var _arg11,activePatternResult,activePatternResult1,next,activePatternResult2,next1,activePatternResult3,next2;
+      _arg11=[_,_1];
+      activePatternResult=this["|NextWord|_|"]("avg.",_arg11[0],_arg11[1]);
       if(activePatternResult.$==1)
        {
-        tupledArg=activePatternResult.$0;
-        activePatternResult1=Impl["|CompoundExpression|_|"](tupledArg[0],tupledArg[1]);
+        activePatternResult1=(Lazy.Force(this["|CompoundExpression|_|@77"]))(activePatternResult.$0);
         if(activePatternResult1.$==1)
          {
           next=activePatternResult1.$0[1];
@@ -17955,7 +17990,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
          }
         else
          {
-          activePatternResult2=Impl["|CompoundExpression|_|"](_arg4[0],_arg4[1]);
+          activePatternResult2=(Lazy.Force(this["|CompoundExpression|_|@77"]))(_arg11);
           if(activePatternResult2.$==1)
            {
             next1=activePatternResult2.$0[1];
@@ -17977,7 +18012,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
        }
       else
        {
-        activePatternResult3=Impl["|CompoundExpression|_|"](_arg4[0],_arg4[1]);
+        activePatternResult3=(Lazy.Force(this["|CompoundExpression|_|@77"]))(_arg11);
         if(activePatternResult3.$==1)
          {
           next2=activePatternResult3.$0[1];
@@ -17997,1985 +18032,3193 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
          }
        }
      },
-     "|CompoundExpression|_|":function(_,_1)
+     "|CompoundExpressionSum|_|":function()
      {
-      var _arg2,activePatternResult,tupledArg,activePatternResult1,tupledArg1,activePatternResult2,next,activePatternResult3,tupledArg2,activePatternResult4,tupledArg3,activePatternResult5,tupledArg4,activePatternResult6,critThreshold,next1,threshold,activePatternResult7,tupledArg5,activePatternResult8,next2,threshold1,activePatternResult9,activePatternResulta,activePatternResultb,activePatternResultc,tupledArg6,activePatternResultd,next3,threshold2,activePatternResulte,activePatternResultf,activePatternResult10,activePatternResult11,tupledArg7,activePatternResult12,next4,threshold3,activePatternResult13,activePatternResult14,activePatternResult15,activePatternResult16,tupledArg8,activePatternResult17,next5,threshold4,activePatternResult18,activePatternResult19,activePatternResult1a,activePatternResult1b,tupledArg9,activePatternResult1c,next6,threshold5,activePatternResult1d,activePatternResult1e,activePatternResult1f,activePatternResult20,tupledArga,activePatternResult21,next7,threshold6,activePatternResult22,activePatternResult23,activePatternResult24,activePatternResult25,tupledArgb,activePatternResult26,tupledArgc,activePatternResult27,tupledArgd,activePatternResult28,critThreshold1,next8,threshold7,activePatternResult29,tupledArge,activePatternResult2a,next9,threshold8,activePatternResult2b,activePatternResult2c,activePatternResult2d,activePatternResult2e,tupledArgf,activePatternResult2f,nexta,threshold9,activePatternResult30,activePatternResult31,activePatternResult32,activePatternResult33,tupledArg10,activePatternResult34,nextb,thresholda,activePatternResult35,activePatternResult36,activePatternResult37,activePatternResult38,tupledArg11,activePatternResult39,nextc,thresholdb,activePatternResult3a,activePatternResult3b,activePatternResult3c,activePatternResult3d,tupledArg12,activePatternResult3e,nextd,thresholdc,activePatternResult3f,activePatternResult40,activePatternResult41,activePatternResult42,tupledArg13,activePatternResult43,nexte,thresholdd,activePatternResult44,activePatternResult45,activePatternResult46,activePatternResult47,tupledArg14,activePatternResult48,tupledArg15,activePatternResult49,tupledArg16,activePatternResult4a,critThreshold2,nextf,thresholde,activePatternResult4b,tupledArg17,activePatternResult4c,next10,thresholdf,activePatternResult4d,activePatternResult4e,activePatternResult4f,activePatternResult50,tupledArg18,activePatternResult51,next11,threshold10,activePatternResult52,activePatternResult53,activePatternResult54,activePatternResult55,tupledArg19,activePatternResult56,next12,threshold11,activePatternResult57,activePatternResult58,activePatternResult59,activePatternResult5a,tupledArg1a,activePatternResult5b,next13,threshold12,activePatternResult5c,activePatternResult5d,activePatternResult5e,activePatternResult5f,tupledArg1b,activePatternResult60,next14,threshold13,activePatternResult61,activePatternResult62,activePatternResult63,activePatternResult64,tupledArg1c,activePatternResult65,next15,threshold14,activePatternResult66,activePatternResult67,activePatternResult68,activePatternResult69,tupledArg1d,activePatternResult6a,tupledArg1e,activePatternResult6b,tupledArg1f,activePatternResult6c,critThreshold3,next16,threshold15,activePatternResult6d,tupledArg20,activePatternResult6e,next17,threshold16,activePatternResult6f,activePatternResult70,activePatternResult71,activePatternResult72,tupledArg21,activePatternResult73,next18,threshold17,activePatternResult74,activePatternResult75,activePatternResult76,activePatternResult77,tupledArg22,activePatternResult78,next19,threshold18,activePatternResult79,activePatternResult7a,activePatternResult7b,activePatternResult7c,tupledArg23,activePatternResult7d,next1a,threshold19,activePatternResult7e,activePatternResult7f,activePatternResult80,activePatternResult81,tupledArg24,activePatternResult82,next1b,threshold1a,activePatternResult83,activePatternResult84,activePatternResult85,activePatternResult86,tupledArg25,activePatternResult87,next1c,threshold1b,activePatternResult88,activePatternResult89,activePatternResult8a;
-      _arg2=[_,_1];
-      activePatternResult=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-      if(activePatternResult.$==1)
-       {
-        tupledArg=activePatternResult.$0[1];
-        activePatternResult1=Impl["|Next|Empty|"](tupledArg[0],tupledArg[1]);
-        if(activePatternResult1.$==0)
-         {
-          if(activePatternResult1.$0[0]===46)
-           {
-            tupledArg1=activePatternResult1.$0[1];
-            activePatternResult2=Impl["|CompoundExpression|_|"](tupledArg1[0],tupledArg1[1]);
-            if(activePatternResult2.$==1)
-             {
-              next=activePatternResult2.$0[1];
-              return{
-               $:1,
-               $0:[{
-                $:3,
-                $0:activePatternResult.$0[0],
-                $1:activePatternResult2.$0[0]
-               },next]
-              };
-             }
-            else
-             {
-              activePatternResult3=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-              if(activePatternResult3.$==1)
-               {
-                tupledArg2=activePatternResult3.$0[1];
-                activePatternResult4=Impl["|Next|Empty|"](tupledArg2[0],tupledArg2[1]);
-                if(activePatternResult4.$==0)
-                 {
-                  if(activePatternResult4.$0[0]===63)
-                   {
-                    tupledArg3=activePatternResult4.$0[1];
-                    activePatternResult5=Impl["|Number|_|"](tupledArg3[0],tupledArg3[1]);
-                    if(activePatternResult5.$==1)
-                     {
-                      tupledArg4=activePatternResult5.$0[1];
-                      activePatternResult6=Impl["|Next|Empty|"](tupledArg4[0],tupledArg4[1]);
-                      if(activePatternResult6.$==0)
-                       {
-                        if(activePatternResult6.$0[0]===63)
-                         {
-                          critThreshold=activePatternResult5.$0[0];
-                          next1=activePatternResult6.$0[1];
-                          threshold=activePatternResult3.$0[0];
-                          return{
-                           $:1,
-                           $0:[{
-                            $:4,
-                            $0:{
-                             $:0,
-                             $0:{
-                              $:0,
-                              $0:1,
-                              $1:20
-                             }
-                            },
-                            $1:List.ofArray([[critThreshold,{
-                             $:0,
-                             $0:{
-                              $:0,
-                              $0:2,
-                              $1:1
-                             }
-                            }],[threshold,{
-                             $:0,
-                             $0:{
-                              $:0,
-                              $0:1,
-                              $1:1
-                             }
-                            }]]),
-                            $2:0
-                           },next1]
-                          };
+      var pattern,_this=this;
+      pattern=function(_arg9)
+      {
+       var activePatternResult,tupledArg,activePatternResult1,activePatternResult2,next,activePatternResult3,tupledArg1,activePatternResult4,activePatternResult5,next1,activePatternResult6,activePatternResult7,activePatternResult8,activePatternResult9,activePatternResulta,tupledArg2,activePatternResultb,activePatternResultc,next2,activePatternResultd,activePatternResulte,activePatternResultf,activePatternResult10,activePatternResult11,tupledArg3,activePatternResult12,activePatternResult13,next3,activePatternResult14,activePatternResult15,activePatternResult16,activePatternResult17,activePatternResult18,tupledArg4,activePatternResult19,activePatternResult1a,next4,activePatternResult1b,activePatternResult1c,activePatternResult1d,activePatternResult1e;
+       activePatternResult=(Lazy.Force(_this["|CompoundExpressionSum|_|@81"]))(_arg9);
+       if(activePatternResult.$==1)
+        {
+         tupledArg=activePatternResult.$0[1];
+         activePatternResult1=_this["|Next|Empty|"](tupledArg[0],tupledArg[1]);
+         if(activePatternResult1.$==0)
+          {
+           if(activePatternResult1.$0[0]===43)
+            {
+             activePatternResult2=(Lazy.Force(_this["|CompoundExpression|_|@77"]))(activePatternResult1.$0[1]);
+             if(activePatternResult2.$==1)
+              {
+               next=activePatternResult2.$0[1];
+               return{
+                $:1,
+                $0:[{
+                 $:1,
+                 $0:activePatternResult.$0[0],
+                 $1:activePatternResult2.$0[0]
+                },next]
+               };
+              }
+             else
+              {
+               activePatternResult3=(Lazy.Force(_this["|CompoundExpressionSum|_|@81"]))(_arg9);
+               if(activePatternResult3.$==1)
+                {
+                 tupledArg1=activePatternResult3.$0[1];
+                 activePatternResult4=_this["|Next|Empty|"](tupledArg1[0],tupledArg1[1]);
+                 if(activePatternResult4.$==0)
+                  {
+                   if(activePatternResult4.$0[0]===45)
+                    {
+                     activePatternResult5=(Lazy.Force(_this["|CompoundExpression|_|@77"]))(activePatternResult4.$0[1]);
+                     if(activePatternResult5.$==1)
+                      {
+                       next1=activePatternResult5.$0[1];
+                       return{
+                        $:1,
+                        $0:[{
+                         $:1,
+                         $0:activePatternResult3.$0[0],
+                         $1:{
+                          $:2,
+                          $0:-1,
+                          $1:activePatternResult5.$0[0]
                          }
-                        else
-                         {
-                          activePatternResult7=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-                          if(activePatternResult7.$==1)
-                           {
-                            tupledArg5=activePatternResult7.$0[1];
-                            activePatternResult8=Impl["|Next|Empty|"](tupledArg5[0],tupledArg5[1]);
-                            if(activePatternResult8.$==0)
-                             {
-                              if(activePatternResult8.$0[0]===63)
-                               {
-                                next2=activePatternResult8.$0[1];
-                                threshold1=activePatternResult7.$0[0];
-                                return{
-                                 $:1,
-                                 $0:[{
-                                  $:4,
+                        },next1]
+                       };
+                      }
+                     else
+                      {
+                       activePatternResult6=(Lazy.Force(_this["|CompoundExpressionTerm|_|@86"]))(_arg9);
+                       return activePatternResult6.$==1?{
+                        $:1,
+                        $0:[activePatternResult6.$0[0],activePatternResult6.$0[1]]
+                       }:{
+                        $:0
+                       };
+                      }
+                    }
+                   else
+                    {
+                     activePatternResult7=(Lazy.Force(_this["|CompoundExpressionTerm|_|@86"]))(_arg9);
+                     return activePatternResult7.$==1?{
+                      $:1,
+                      $0:[activePatternResult7.$0[0],activePatternResult7.$0[1]]
+                     }:{
+                      $:0
+                     };
+                    }
+                  }
+                 else
+                  {
+                   activePatternResult8=(Lazy.Force(_this["|CompoundExpressionTerm|_|@86"]))(_arg9);
+                   return activePatternResult8.$==1?{
+                    $:1,
+                    $0:[activePatternResult8.$0[0],activePatternResult8.$0[1]]
+                   }:{
+                    $:0
+                   };
+                  }
+                }
+               else
+                {
+                 activePatternResult9=(Lazy.Force(_this["|CompoundExpressionTerm|_|@86"]))(_arg9);
+                 return activePatternResult9.$==1?{
+                  $:1,
+                  $0:[activePatternResult9.$0[0],activePatternResult9.$0[1]]
+                 }:{
+                  $:0
+                 };
+                }
+              }
+            }
+           else
+            {
+             activePatternResulta=(Lazy.Force(_this["|CompoundExpressionSum|_|@81"]))(_arg9);
+             if(activePatternResulta.$==1)
+              {
+               tupledArg2=activePatternResulta.$0[1];
+               activePatternResultb=_this["|Next|Empty|"](tupledArg2[0],tupledArg2[1]);
+               if(activePatternResultb.$==0)
+                {
+                 if(activePatternResultb.$0[0]===45)
+                  {
+                   activePatternResultc=(Lazy.Force(_this["|CompoundExpression|_|@77"]))(activePatternResultb.$0[1]);
+                   if(activePatternResultc.$==1)
+                    {
+                     next2=activePatternResultc.$0[1];
+                     return{
+                      $:1,
+                      $0:[{
+                       $:1,
+                       $0:activePatternResulta.$0[0],
+                       $1:{
+                        $:2,
+                        $0:-1,
+                        $1:activePatternResultc.$0[0]
+                       }
+                      },next2]
+                     };
+                    }
+                   else
+                    {
+                     activePatternResultd=(Lazy.Force(_this["|CompoundExpressionTerm|_|@86"]))(_arg9);
+                     return activePatternResultd.$==1?{
+                      $:1,
+                      $0:[activePatternResultd.$0[0],activePatternResultd.$0[1]]
+                     }:{
+                      $:0
+                     };
+                    }
+                  }
+                 else
+                  {
+                   activePatternResulte=(Lazy.Force(_this["|CompoundExpressionTerm|_|@86"]))(_arg9);
+                   return activePatternResulte.$==1?{
+                    $:1,
+                    $0:[activePatternResulte.$0[0],activePatternResulte.$0[1]]
+                   }:{
+                    $:0
+                   };
+                  }
+                }
+               else
+                {
+                 activePatternResultf=(Lazy.Force(_this["|CompoundExpressionTerm|_|@86"]))(_arg9);
+                 return activePatternResultf.$==1?{
+                  $:1,
+                  $0:[activePatternResultf.$0[0],activePatternResultf.$0[1]]
+                 }:{
+                  $:0
+                 };
+                }
+              }
+             else
+              {
+               activePatternResult10=(Lazy.Force(_this["|CompoundExpressionTerm|_|@86"]))(_arg9);
+               return activePatternResult10.$==1?{
+                $:1,
+                $0:[activePatternResult10.$0[0],activePatternResult10.$0[1]]
+               }:{
+                $:0
+               };
+              }
+            }
+          }
+         else
+          {
+           activePatternResult11=(Lazy.Force(_this["|CompoundExpressionSum|_|@81"]))(_arg9);
+           if(activePatternResult11.$==1)
+            {
+             tupledArg3=activePatternResult11.$0[1];
+             activePatternResult12=_this["|Next|Empty|"](tupledArg3[0],tupledArg3[1]);
+             if(activePatternResult12.$==0)
+              {
+               if(activePatternResult12.$0[0]===45)
+                {
+                 activePatternResult13=(Lazy.Force(_this["|CompoundExpression|_|@77"]))(activePatternResult12.$0[1]);
+                 if(activePatternResult13.$==1)
+                  {
+                   next3=activePatternResult13.$0[1];
+                   return{
+                    $:1,
+                    $0:[{
+                     $:1,
+                     $0:activePatternResult11.$0[0],
+                     $1:{
+                      $:2,
+                      $0:-1,
+                      $1:activePatternResult13.$0[0]
+                     }
+                    },next3]
+                   };
+                  }
+                 else
+                  {
+                   activePatternResult14=(Lazy.Force(_this["|CompoundExpressionTerm|_|@86"]))(_arg9);
+                   return activePatternResult14.$==1?{
+                    $:1,
+                    $0:[activePatternResult14.$0[0],activePatternResult14.$0[1]]
+                   }:{
+                    $:0
+                   };
+                  }
+                }
+               else
+                {
+                 activePatternResult15=(Lazy.Force(_this["|CompoundExpressionTerm|_|@86"]))(_arg9);
+                 return activePatternResult15.$==1?{
+                  $:1,
+                  $0:[activePatternResult15.$0[0],activePatternResult15.$0[1]]
+                 }:{
+                  $:0
+                 };
+                }
+              }
+             else
+              {
+               activePatternResult16=(Lazy.Force(_this["|CompoundExpressionTerm|_|@86"]))(_arg9);
+               return activePatternResult16.$==1?{
+                $:1,
+                $0:[activePatternResult16.$0[0],activePatternResult16.$0[1]]
+               }:{
+                $:0
+               };
+              }
+            }
+           else
+            {
+             activePatternResult17=(Lazy.Force(_this["|CompoundExpressionTerm|_|@86"]))(_arg9);
+             return activePatternResult17.$==1?{
+              $:1,
+              $0:[activePatternResult17.$0[0],activePatternResult17.$0[1]]
+             }:{
+              $:0
+             };
+            }
+          }
+        }
+       else
+        {
+         activePatternResult18=(Lazy.Force(_this["|CompoundExpressionSum|_|@81"]))(_arg9);
+         if(activePatternResult18.$==1)
+          {
+           tupledArg4=activePatternResult18.$0[1];
+           activePatternResult19=_this["|Next|Empty|"](tupledArg4[0],tupledArg4[1]);
+           if(activePatternResult19.$==0)
+            {
+             if(activePatternResult19.$0[0]===45)
+              {
+               activePatternResult1a=(Lazy.Force(_this["|CompoundExpression|_|@77"]))(activePatternResult19.$0[1]);
+               if(activePatternResult1a.$==1)
+                {
+                 next4=activePatternResult1a.$0[1];
+                 return{
+                  $:1,
+                  $0:[{
+                   $:1,
+                   $0:activePatternResult18.$0[0],
+                   $1:{
+                    $:2,
+                    $0:-1,
+                    $1:activePatternResult1a.$0[0]
+                   }
+                  },next4]
+                 };
+                }
+               else
+                {
+                 activePatternResult1b=(Lazy.Force(_this["|CompoundExpressionTerm|_|@86"]))(_arg9);
+                 return activePatternResult1b.$==1?{
+                  $:1,
+                  $0:[activePatternResult1b.$0[0],activePatternResult1b.$0[1]]
+                 }:{
+                  $:0
+                 };
+                }
+              }
+             else
+              {
+               activePatternResult1c=(Lazy.Force(_this["|CompoundExpressionTerm|_|@86"]))(_arg9);
+               return activePatternResult1c.$==1?{
+                $:1,
+                $0:[activePatternResult1c.$0[0],activePatternResult1c.$0[1]]
+               }:{
+                $:0
+               };
+              }
+            }
+           else
+            {
+             activePatternResult1d=(Lazy.Force(_this["|CompoundExpressionTerm|_|@86"]))(_arg9);
+             return activePatternResult1d.$==1?{
+              $:1,
+              $0:[activePatternResult1d.$0[0],activePatternResult1d.$0[1]]
+             }:{
+              $:0
+             };
+            }
+          }
+         else
+          {
+           activePatternResult1e=(Lazy.Force(_this["|CompoundExpressionTerm|_|@86"]))(_arg9);
+           return activePatternResult1e.$==1?{
+            $:1,
+            $0:[activePatternResult1e.$0[0],activePatternResult1e.$0[1]]
+           }:{
+            $:0
+           };
+          }
+        }
+      };
+      return function(tupledArg)
+      {
+       return _this.memoize(pattern,tupledArg[0],tupledArg[1]);
+      };
+     },
+     "|CompoundExpressionTerm|_|":function()
+     {
+      var pattern,_this=this;
+      pattern=function(_arg10)
+      {
+       var activePatternResult,tupledArg,activePatternResult1,activePatternResult2,next,activePatternResult3,tupledArg1,activePatternResult4,tupledArg2,activePatternResult5,tupledArg3,activePatternResult6,critThreshold,next1,threshold,activePatternResult7,tupledArg4,activePatternResult8,next2,threshold1,activePatternResult9,next3,activePatternResulta,next4,activePatternResultb,next5,activePatternResultc,tupledArg5,activePatternResultd,next6,threshold2,activePatternResulte,next7,activePatternResultf,next8,activePatternResult10,next9,activePatternResult11,tupledArg6,activePatternResult12,nexta,threshold3,activePatternResult13,nextb,activePatternResult14,nextc,activePatternResult15,nextd,activePatternResult16,tupledArg7,activePatternResult17,nexte,threshold4,activePatternResult18,nextf,activePatternResult19,next10,activePatternResult1a,next11,activePatternResult1b,tupledArg8,activePatternResult1c,next12,threshold5,activePatternResult1d,next13,activePatternResult1e,next14,activePatternResult1f,next15,activePatternResult20,tupledArg9,activePatternResult21,next16,threshold6,activePatternResult22,next17,activePatternResult23,next18,activePatternResult24,next19,activePatternResult25,tupledArga,activePatternResult26,tupledArgb,activePatternResult27,tupledArgc,activePatternResult28,critThreshold1,next1a,threshold7,activePatternResult29,tupledArgd,activePatternResult2a,next1b,threshold8,activePatternResult2b,next1c,activePatternResult2c,next1d,activePatternResult2d,next1e,activePatternResult2e,tupledArge,activePatternResult2f,next1f,threshold9,activePatternResult30,next20,activePatternResult31,next21,activePatternResult32,next22,activePatternResult33,tupledArgf,activePatternResult34,next23,thresholda,activePatternResult35,next24,activePatternResult36,next25,activePatternResult37,next26,activePatternResult38,tupledArg10,activePatternResult39,next27,thresholdb,activePatternResult3a,next28,activePatternResult3b,next29,activePatternResult3c,next2a,activePatternResult3d,tupledArg11,activePatternResult3e,next2b,thresholdc,activePatternResult3f,next2c,activePatternResult40,next2d,activePatternResult41,next2e,activePatternResult42,tupledArg12,activePatternResult43,next2f,thresholdd,activePatternResult44,next30,activePatternResult45,next31,activePatternResult46,next32,activePatternResult47,tupledArg13,activePatternResult48,tupledArg14,activePatternResult49,tupledArg15,activePatternResult4a,critThreshold2,next33,thresholde,activePatternResult4b,tupledArg16,activePatternResult4c,next34,thresholdf,activePatternResult4d,next35,activePatternResult4e,next36,activePatternResult4f,next37,activePatternResult50,tupledArg17,activePatternResult51,next38,threshold10,activePatternResult52,next39,activePatternResult53,next3a,activePatternResult54,next3b,activePatternResult55,tupledArg18,activePatternResult56,next3c,threshold11,activePatternResult57,next3d,activePatternResult58,next3e,activePatternResult59,next3f,activePatternResult5a,tupledArg19,activePatternResult5b,next40,threshold12,activePatternResult5c,next41,activePatternResult5d,next42,activePatternResult5e,next43,activePatternResult5f,tupledArg1a,activePatternResult60,next44,threshold13,activePatternResult61,next45,activePatternResult62,next46,activePatternResult63,next47,activePatternResult64,tupledArg1b,activePatternResult65,next48,threshold14,activePatternResult66,next49,activePatternResult67,next4a,activePatternResult68,next4b,activePatternResult69,tupledArg1c,activePatternResult6a,tupledArg1d,activePatternResult6b,tupledArg1e,activePatternResult6c,critThreshold3,next4c,threshold15,activePatternResult6d,tupledArg1f,activePatternResult6e,next4d,threshold16,activePatternResult6f,next4e,activePatternResult70,next4f,activePatternResult71,next50,activePatternResult72,tupledArg20,activePatternResult73,next51,threshold17,activePatternResult74,next52,activePatternResult75,next53,activePatternResult76,next54,activePatternResult77,tupledArg21,activePatternResult78,next55,threshold18,activePatternResult79,next56,activePatternResult7a,next57,activePatternResult7b,next58,activePatternResult7c,tupledArg22,activePatternResult7d,next59,threshold19,activePatternResult7e,next5a,activePatternResult7f,next5b,activePatternResult80,next5c,activePatternResult81,tupledArg23,activePatternResult82,next5d,threshold1a,activePatternResult83,next5e,activePatternResult84,next5f,activePatternResult85,next60,activePatternResult86,tupledArg24,activePatternResult87,next61,threshold1b,activePatternResult88,next62,activePatternResult89,next63,activePatternResult8a,next64;
+       activePatternResult=_this["|Number|_|"](_arg10[0],_arg10[1]);
+       if(activePatternResult.$==1)
+        {
+         tupledArg=activePatternResult.$0[1];
+         activePatternResult1=_this["|Next|Empty|"](tupledArg[0],tupledArg[1]);
+         if(activePatternResult1.$==0)
+          {
+           if(activePatternResult1.$0[0]===46)
+            {
+             activePatternResult2=(Lazy.Force(_this["|CompoundExpression|_|@77"]))(activePatternResult1.$0[1]);
+             if(activePatternResult2.$==1)
+              {
+               next=activePatternResult2.$0[1];
+               return{
+                $:1,
+                $0:[{
+                 $:3,
+                 $0:activePatternResult.$0[0],
+                 $1:activePatternResult2.$0[0]
+                },next]
+               };
+              }
+             else
+              {
+               activePatternResult3=_this["|Number|_|"](_arg10[0],_arg10[1]);
+               if(activePatternResult3.$==1)
+                {
+                 tupledArg1=activePatternResult3.$0[1];
+                 activePatternResult4=_this["|Next|Empty|"](tupledArg1[0],tupledArg1[1]);
+                 if(activePatternResult4.$==0)
+                  {
+                   if(activePatternResult4.$0[0]===63)
+                    {
+                     tupledArg2=activePatternResult4.$0[1];
+                     activePatternResult5=_this["|Number|_|"](tupledArg2[0],tupledArg2[1]);
+                     if(activePatternResult5.$==1)
+                      {
+                       tupledArg3=activePatternResult5.$0[1];
+                       activePatternResult6=_this["|Next|Empty|"](tupledArg3[0],tupledArg3[1]);
+                       if(activePatternResult6.$==0)
+                        {
+                         if(activePatternResult6.$0[0]===63)
+                          {
+                           critThreshold=activePatternResult5.$0[0];
+                           next1=activePatternResult6.$0[1];
+                           threshold=activePatternResult3.$0[0];
+                           return{
+                            $:1,
+                            $0:[{
+                             $:4,
+                             $0:{
+                              $:0,
+                              $0:{
+                               $:0,
+                               $0:1,
+                               $1:20
+                              }
+                             },
+                             $1:List.ofArray([[critThreshold,{
+                              $:0,
+                              $0:{
+                               $:0,
+                               $0:2,
+                               $1:1
+                              }
+                             }],[threshold,{
+                              $:0,
+                              $0:{
+                               $:0,
+                               $0:1,
+                               $1:1
+                              }
+                             }]]),
+                             $2:0
+                            },next1]
+                           };
+                          }
+                         else
+                          {
+                           activePatternResult7=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                           if(activePatternResult7.$==1)
+                            {
+                             tupledArg4=activePatternResult7.$0[1];
+                             activePatternResult8=_this["|Next|Empty|"](tupledArg4[0],tupledArg4[1]);
+                             if(activePatternResult8.$==0)
+                              {
+                               if(activePatternResult8.$0[0]===63)
+                                {
+                                 next2=activePatternResult8.$0[1];
+                                 threshold1=activePatternResult7.$0[0];
+                                 return{
+                                  $:1,
+                                  $0:[{
+                                   $:4,
+                                   $0:{
+                                    $:0,
+                                    $0:{
+                                     $:0,
+                                     $0:1,
+                                     $1:20
+                                    }
+                                   },
+                                   $1:List.ofArray([[threshold1,{
+                                    $:0,
+                                    $0:{
+                                     $:0,
+                                     $0:1,
+                                     $1:1
+                                    }
+                                   }]]),
+                                   $2:0
+                                  },next2]
+                                 };
+                                }
+                               else
+                                {
+                                 activePatternResult9=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                                 if(activePatternResult9.$==1)
+                                  {
+                                   next3=activePatternResult9.$0[1];
+                                   return{
+                                    $:1,
+                                    $0:[{
+                                     $:0,
+                                     $0:activePatternResult9.$0[0]
+                                    },next3]
+                                   };
+                                  }
+                                 else
+                                  {
+                                   return{
+                                    $:0
+                                   };
+                                  }
+                                }
+                              }
+                             else
+                              {
+                               activePatternResulta=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                               if(activePatternResulta.$==1)
+                                {
+                                 next4=activePatternResulta.$0[1];
+                                 return{
+                                  $:1,
+                                  $0:[{
+                                   $:0,
+                                   $0:activePatternResulta.$0[0]
+                                  },next4]
+                                 };
+                                }
+                               else
+                                {
+                                 return{
+                                  $:0
+                                 };
+                                }
+                              }
+                            }
+                           else
+                            {
+                             activePatternResultb=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                             if(activePatternResultb.$==1)
+                              {
+                               next5=activePatternResultb.$0[1];
+                               return{
+                                $:1,
+                                $0:[{
+                                 $:0,
+                                 $0:activePatternResultb.$0[0]
+                                },next5]
+                               };
+                              }
+                             else
+                              {
+                               return{
+                                $:0
+                               };
+                              }
+                            }
+                          }
+                        }
+                       else
+                        {
+                         activePatternResultc=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                         if(activePatternResultc.$==1)
+                          {
+                           tupledArg5=activePatternResultc.$0[1];
+                           activePatternResultd=_this["|Next|Empty|"](tupledArg5[0],tupledArg5[1]);
+                           if(activePatternResultd.$==0)
+                            {
+                             if(activePatternResultd.$0[0]===63)
+                              {
+                               next6=activePatternResultd.$0[1];
+                               threshold2=activePatternResultc.$0[0];
+                               return{
+                                $:1,
+                                $0:[{
+                                 $:4,
+                                 $0:{
+                                  $:0,
                                   $0:{
                                    $:0,
-                                   $0:{
-                                    $:0,
-                                    $0:1,
-                                    $1:20
-                                   }
-                                  },
-                                  $1:List.ofArray([[threshold1,{
+                                   $0:1,
+                                   $1:20
+                                  }
+                                 },
+                                 $1:List.ofArray([[threshold2,{
+                                  $:0,
+                                  $0:{
                                    $:0,
-                                   $0:{
-                                    $:0,
-                                    $0:1,
-                                    $1:1
-                                   }
-                                  }]]),
-                                  $2:0
-                                 },next2]
-                                };
-                               }
-                              else
-                               {
-                                activePatternResult9=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                                return activePatternResult9.$==1?{
-                                 $:1,
-                                 $0:[activePatternResult9.$0[0],activePatternResult9.$0[1]]
-                                }:{
-                                 $:0
-                                };
-                               }
-                             }
-                            else
-                             {
-                              activePatternResulta=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                              return activePatternResulta.$==1?{
-                               $:1,
-                               $0:[activePatternResulta.$0[0],activePatternResulta.$0[1]]
-                              }:{
-                               $:0
-                              };
-                             }
-                           }
-                          else
-                           {
-                            activePatternResultb=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                            return activePatternResultb.$==1?{
-                             $:1,
-                             $0:[activePatternResultb.$0[0],activePatternResultb.$0[1]]
-                            }:{
-                             $:0
-                            };
-                           }
-                         }
-                       }
-                      else
-                       {
-                        activePatternResultc=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-                        if(activePatternResultc.$==1)
-                         {
-                          tupledArg6=activePatternResultc.$0[1];
-                          activePatternResultd=Impl["|Next|Empty|"](tupledArg6[0],tupledArg6[1]);
-                          if(activePatternResultd.$==0)
-                           {
-                            if(activePatternResultd.$0[0]===63)
-                             {
-                              next3=activePatternResultd.$0[1];
-                              threshold2=activePatternResultc.$0[0];
-                              return{
-                               $:1,
-                               $0:[{
-                                $:4,
+                                   $0:1,
+                                   $1:1
+                                  }
+                                 }]]),
+                                 $2:0
+                                },next6]
+                               };
+                              }
+                             else
+                              {
+                               activePatternResulte=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                               if(activePatternResulte.$==1)
+                                {
+                                 next7=activePatternResulte.$0[1];
+                                 return{
+                                  $:1,
+                                  $0:[{
+                                   $:0,
+                                   $0:activePatternResulte.$0[0]
+                                  },next7]
+                                 };
+                                }
+                               else
+                                {
+                                 return{
+                                  $:0
+                                 };
+                                }
+                              }
+                            }
+                           else
+                            {
+                             activePatternResultf=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                             if(activePatternResultf.$==1)
+                              {
+                               next8=activePatternResultf.$0[1];
+                               return{
+                                $:1,
+                                $0:[{
+                                 $:0,
+                                 $0:activePatternResultf.$0[0]
+                                },next8]
+                               };
+                              }
+                             else
+                              {
+                               return{
+                                $:0
+                               };
+                              }
+                            }
+                          }
+                         else
+                          {
+                           activePatternResult10=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                           if(activePatternResult10.$==1)
+                            {
+                             next9=activePatternResult10.$0[1];
+                             return{
+                              $:1,
+                              $0:[{
+                               $:0,
+                               $0:activePatternResult10.$0[0]
+                              },next9]
+                             };
+                            }
+                           else
+                            {
+                             return{
+                              $:0
+                             };
+                            }
+                          }
+                        }
+                      }
+                     else
+                      {
+                       activePatternResult11=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                       if(activePatternResult11.$==1)
+                        {
+                         tupledArg6=activePatternResult11.$0[1];
+                         activePatternResult12=_this["|Next|Empty|"](tupledArg6[0],tupledArg6[1]);
+                         if(activePatternResult12.$==0)
+                          {
+                           if(activePatternResult12.$0[0]===63)
+                            {
+                             nexta=activePatternResult12.$0[1];
+                             threshold3=activePatternResult11.$0[0];
+                             return{
+                              $:1,
+                              $0:[{
+                               $:4,
+                               $0:{
+                                $:0,
                                 $0:{
                                  $:0,
-                                 $0:{
-                                  $:0,
-                                  $0:1,
-                                  $1:20
-                                 }
-                                },
-                                $1:List.ofArray([[threshold2,{
-                                 $:0,
-                                 $0:{
-                                  $:0,
-                                  $0:1,
-                                  $1:1
-                                 }
-                                }]]),
-                                $2:0
-                               },next3]
-                              };
-                             }
-                            else
-                             {
-                              activePatternResulte=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                              return activePatternResulte.$==1?{
-                               $:1,
-                               $0:[activePatternResulte.$0[0],activePatternResulte.$0[1]]
-                              }:{
-                               $:0
-                              };
-                             }
-                           }
-                          else
-                           {
-                            activePatternResultf=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                            return activePatternResultf.$==1?{
-                             $:1,
-                             $0:[activePatternResultf.$0[0],activePatternResultf.$0[1]]
-                            }:{
-                             $:0
-                            };
-                           }
-                         }
-                        else
-                         {
-                          activePatternResult10=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                          return activePatternResult10.$==1?{
-                           $:1,
-                           $0:[activePatternResult10.$0[0],activePatternResult10.$0[1]]
-                          }:{
-                           $:0
-                          };
-                         }
-                       }
-                     }
-                    else
-                     {
-                      activePatternResult11=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-                      if(activePatternResult11.$==1)
-                       {
-                        tupledArg7=activePatternResult11.$0[1];
-                        activePatternResult12=Impl["|Next|Empty|"](tupledArg7[0],tupledArg7[1]);
-                        if(activePatternResult12.$==0)
-                         {
-                          if(activePatternResult12.$0[0]===63)
-                           {
-                            next4=activePatternResult12.$0[1];
-                            threshold3=activePatternResult11.$0[0];
-                            return{
-                             $:1,
-                             $0:[{
-                              $:4,
-                              $0:{
-                               $:0,
-                               $0:{
+                                 $0:1,
+                                 $1:20
+                                }
+                               },
+                               $1:List.ofArray([[threshold3,{
                                 $:0,
-                                $0:1,
-                                $1:20
-                               }
-                              },
-                              $1:List.ofArray([[threshold3,{
-                               $:0,
-                               $0:{
-                                $:0,
-                                $0:1,
-                                $1:1
-                               }
-                              }]]),
-                              $2:0
-                             },next4]
-                            };
-                           }
-                          else
-                           {
-                            activePatternResult13=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                            return activePatternResult13.$==1?{
-                             $:1,
-                             $0:[activePatternResult13.$0[0],activePatternResult13.$0[1]]
-                            }:{
-                             $:0
-                            };
-                           }
-                         }
-                        else
-                         {
-                          activePatternResult14=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                          return activePatternResult14.$==1?{
-                           $:1,
-                           $0:[activePatternResult14.$0[0],activePatternResult14.$0[1]]
-                          }:{
-                           $:0
-                          };
-                         }
-                       }
-                      else
-                       {
-                        activePatternResult15=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                        return activePatternResult15.$==1?{
-                         $:1,
-                         $0:[activePatternResult15.$0[0],activePatternResult15.$0[1]]
-                        }:{
-                         $:0
-                        };
-                       }
-                     }
-                   }
-                  else
-                   {
-                    activePatternResult16=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-                    if(activePatternResult16.$==1)
-                     {
-                      tupledArg8=activePatternResult16.$0[1];
-                      activePatternResult17=Impl["|Next|Empty|"](tupledArg8[0],tupledArg8[1]);
-                      if(activePatternResult17.$==0)
-                       {
-                        if(activePatternResult17.$0[0]===63)
-                         {
-                          next5=activePatternResult17.$0[1];
-                          threshold4=activePatternResult16.$0[0];
-                          return{
-                           $:1,
-                           $0:[{
-                            $:4,
-                            $0:{
-                             $:0,
-                             $0:{
-                              $:0,
-                              $0:1,
-                              $1:20
-                             }
-                            },
-                            $1:List.ofArray([[threshold4,{
-                             $:0,
-                             $0:{
-                              $:0,
-                              $0:1,
-                              $1:1
-                             }
-                            }]]),
-                            $2:0
-                           },next5]
-                          };
-                         }
-                        else
-                         {
-                          activePatternResult18=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                          return activePatternResult18.$==1?{
-                           $:1,
-                           $0:[activePatternResult18.$0[0],activePatternResult18.$0[1]]
-                          }:{
-                           $:0
-                          };
-                         }
-                       }
-                      else
-                       {
-                        activePatternResult19=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                        return activePatternResult19.$==1?{
-                         $:1,
-                         $0:[activePatternResult19.$0[0],activePatternResult19.$0[1]]
-                        }:{
-                         $:0
-                        };
-                       }
-                     }
-                    else
-                     {
-                      activePatternResult1a=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                      return activePatternResult1a.$==1?{
-                       $:1,
-                       $0:[activePatternResult1a.$0[0],activePatternResult1a.$0[1]]
-                      }:{
-                       $:0
-                      };
-                     }
-                   }
-                 }
-                else
-                 {
-                  activePatternResult1b=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-                  if(activePatternResult1b.$==1)
-                   {
-                    tupledArg9=activePatternResult1b.$0[1];
-                    activePatternResult1c=Impl["|Next|Empty|"](tupledArg9[0],tupledArg9[1]);
-                    if(activePatternResult1c.$==0)
-                     {
-                      if(activePatternResult1c.$0[0]===63)
-                       {
-                        next6=activePatternResult1c.$0[1];
-                        threshold5=activePatternResult1b.$0[0];
-                        return{
-                         $:1,
-                         $0:[{
-                          $:4,
-                          $0:{
-                           $:0,
-                           $0:{
-                            $:0,
-                            $0:1,
-                            $1:20
-                           }
-                          },
-                          $1:List.ofArray([[threshold5,{
-                           $:0,
-                           $0:{
-                            $:0,
-                            $0:1,
-                            $1:1
-                           }
-                          }]]),
-                          $2:0
-                         },next6]
-                        };
-                       }
-                      else
-                       {
-                        activePatternResult1d=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                        return activePatternResult1d.$==1?{
-                         $:1,
-                         $0:[activePatternResult1d.$0[0],activePatternResult1d.$0[1]]
-                        }:{
-                         $:0
-                        };
-                       }
-                     }
-                    else
-                     {
-                      activePatternResult1e=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                      return activePatternResult1e.$==1?{
-                       $:1,
-                       $0:[activePatternResult1e.$0[0],activePatternResult1e.$0[1]]
-                      }:{
-                       $:0
-                      };
-                     }
-                   }
-                  else
-                   {
-                    activePatternResult1f=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                    return activePatternResult1f.$==1?{
-                     $:1,
-                     $0:[activePatternResult1f.$0[0],activePatternResult1f.$0[1]]
-                    }:{
-                     $:0
-                    };
-                   }
-                 }
-               }
-              else
-               {
-                activePatternResult20=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-                if(activePatternResult20.$==1)
-                 {
-                  tupledArga=activePatternResult20.$0[1];
-                  activePatternResult21=Impl["|Next|Empty|"](tupledArga[0],tupledArga[1]);
-                  if(activePatternResult21.$==0)
-                   {
-                    if(activePatternResult21.$0[0]===63)
-                     {
-                      next7=activePatternResult21.$0[1];
-                      threshold6=activePatternResult20.$0[0];
-                      return{
-                       $:1,
-                       $0:[{
-                        $:4,
-                        $0:{
-                         $:0,
-                         $0:{
-                          $:0,
-                          $0:1,
-                          $1:20
-                         }
-                        },
-                        $1:List.ofArray([[threshold6,{
-                         $:0,
-                         $0:{
-                          $:0,
-                          $0:1,
-                          $1:1
-                         }
-                        }]]),
-                        $2:0
-                       },next7]
-                      };
-                     }
-                    else
-                     {
-                      activePatternResult22=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                      return activePatternResult22.$==1?{
-                       $:1,
-                       $0:[activePatternResult22.$0[0],activePatternResult22.$0[1]]
-                      }:{
-                       $:0
-                      };
-                     }
-                   }
-                  else
-                   {
-                    activePatternResult23=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                    return activePatternResult23.$==1?{
-                     $:1,
-                     $0:[activePatternResult23.$0[0],activePatternResult23.$0[1]]
-                    }:{
-                     $:0
-                    };
-                   }
-                 }
-                else
-                 {
-                  activePatternResult24=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                  return activePatternResult24.$==1?{
-                   $:1,
-                   $0:[activePatternResult24.$0[0],activePatternResult24.$0[1]]
-                  }:{
-                   $:0
-                  };
-                 }
-               }
-             }
-           }
-          else
-           {
-            activePatternResult25=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-            if(activePatternResult25.$==1)
-             {
-              tupledArgb=activePatternResult25.$0[1];
-              activePatternResult26=Impl["|Next|Empty|"](tupledArgb[0],tupledArgb[1]);
-              if(activePatternResult26.$==0)
-               {
-                if(activePatternResult26.$0[0]===63)
-                 {
-                  tupledArgc=activePatternResult26.$0[1];
-                  activePatternResult27=Impl["|Number|_|"](tupledArgc[0],tupledArgc[1]);
-                  if(activePatternResult27.$==1)
-                   {
-                    tupledArgd=activePatternResult27.$0[1];
-                    activePatternResult28=Impl["|Next|Empty|"](tupledArgd[0],tupledArgd[1]);
-                    if(activePatternResult28.$==0)
-                     {
-                      if(activePatternResult28.$0[0]===63)
-                       {
-                        critThreshold1=activePatternResult27.$0[0];
-                        next8=activePatternResult28.$0[1];
-                        threshold7=activePatternResult25.$0[0];
-                        return{
-                         $:1,
-                         $0:[{
-                          $:4,
-                          $0:{
-                           $:0,
-                           $0:{
-                            $:0,
-                            $0:1,
-                            $1:20
-                           }
-                          },
-                          $1:List.ofArray([[critThreshold1,{
-                           $:0,
-                           $0:{
-                            $:0,
-                            $0:2,
-                            $1:1
-                           }
-                          }],[threshold7,{
-                           $:0,
-                           $0:{
-                            $:0,
-                            $0:1,
-                            $1:1
-                           }
-                          }]]),
-                          $2:0
-                         },next8]
-                        };
-                       }
-                      else
-                       {
-                        activePatternResult29=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-                        if(activePatternResult29.$==1)
-                         {
-                          tupledArge=activePatternResult29.$0[1];
-                          activePatternResult2a=Impl["|Next|Empty|"](tupledArge[0],tupledArge[1]);
-                          if(activePatternResult2a.$==0)
-                           {
-                            if(activePatternResult2a.$0[0]===63)
-                             {
-                              next9=activePatternResult2a.$0[1];
-                              threshold8=activePatternResult29.$0[0];
-                              return{
-                               $:1,
-                               $0:[{
-                                $:4,
                                 $0:{
                                  $:0,
-                                 $0:{
-                                  $:0,
-                                  $0:1,
-                                  $1:20
-                                 }
-                                },
-                                $1:List.ofArray([[threshold8,{
+                                 $0:1,
+                                 $1:1
+                                }
+                               }]]),
+                               $2:0
+                              },nexta]
+                             };
+                            }
+                           else
+                            {
+                             activePatternResult13=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                             if(activePatternResult13.$==1)
+                              {
+                               nextb=activePatternResult13.$0[1];
+                               return{
+                                $:1,
+                                $0:[{
                                  $:0,
+                                 $0:activePatternResult13.$0[0]
+                                },nextb]
+                               };
+                              }
+                             else
+                              {
+                               return{
+                                $:0
+                               };
+                              }
+                            }
+                          }
+                         else
+                          {
+                           activePatternResult14=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                           if(activePatternResult14.$==1)
+                            {
+                             nextc=activePatternResult14.$0[1];
+                             return{
+                              $:1,
+                              $0:[{
+                               $:0,
+                               $0:activePatternResult14.$0[0]
+                              },nextc]
+                             };
+                            }
+                           else
+                            {
+                             return{
+                              $:0
+                             };
+                            }
+                          }
+                        }
+                       else
+                        {
+                         activePatternResult15=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                         if(activePatternResult15.$==1)
+                          {
+                           nextd=activePatternResult15.$0[1];
+                           return{
+                            $:1,
+                            $0:[{
+                             $:0,
+                             $0:activePatternResult15.$0[0]
+                            },nextd]
+                           };
+                          }
+                         else
+                          {
+                           return{
+                            $:0
+                           };
+                          }
+                        }
+                      }
+                    }
+                   else
+                    {
+                     activePatternResult16=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResult16.$==1)
+                      {
+                       tupledArg7=activePatternResult16.$0[1];
+                       activePatternResult17=_this["|Next|Empty|"](tupledArg7[0],tupledArg7[1]);
+                       if(activePatternResult17.$==0)
+                        {
+                         if(activePatternResult17.$0[0]===63)
+                          {
+                           nexte=activePatternResult17.$0[1];
+                           threshold4=activePatternResult16.$0[0];
+                           return{
+                            $:1,
+                            $0:[{
+                             $:4,
+                             $0:{
+                              $:0,
+                              $0:{
+                               $:0,
+                               $0:1,
+                               $1:20
+                              }
+                             },
+                             $1:List.ofArray([[threshold4,{
+                              $:0,
+                              $0:{
+                               $:0,
+                               $0:1,
+                               $1:1
+                              }
+                             }]]),
+                             $2:0
+                            },nexte]
+                           };
+                          }
+                         else
+                          {
+                           activePatternResult18=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                           if(activePatternResult18.$==1)
+                            {
+                             nextf=activePatternResult18.$0[1];
+                             return{
+                              $:1,
+                              $0:[{
+                               $:0,
+                               $0:activePatternResult18.$0[0]
+                              },nextf]
+                             };
+                            }
+                           else
+                            {
+                             return{
+                              $:0
+                             };
+                            }
+                          }
+                        }
+                       else
+                        {
+                         activePatternResult19=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                         if(activePatternResult19.$==1)
+                          {
+                           next10=activePatternResult19.$0[1];
+                           return{
+                            $:1,
+                            $0:[{
+                             $:0,
+                             $0:activePatternResult19.$0[0]
+                            },next10]
+                           };
+                          }
+                         else
+                          {
+                           return{
+                            $:0
+                           };
+                          }
+                        }
+                      }
+                     else
+                      {
+                       activePatternResult1a=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                       if(activePatternResult1a.$==1)
+                        {
+                         next11=activePatternResult1a.$0[1];
+                         return{
+                          $:1,
+                          $0:[{
+                           $:0,
+                           $0:activePatternResult1a.$0[0]
+                          },next11]
+                         };
+                        }
+                       else
+                        {
+                         return{
+                          $:0
+                         };
+                        }
+                      }
+                    }
+                  }
+                 else
+                  {
+                   activePatternResult1b=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                   if(activePatternResult1b.$==1)
+                    {
+                     tupledArg8=activePatternResult1b.$0[1];
+                     activePatternResult1c=_this["|Next|Empty|"](tupledArg8[0],tupledArg8[1]);
+                     if(activePatternResult1c.$==0)
+                      {
+                       if(activePatternResult1c.$0[0]===63)
+                        {
+                         next12=activePatternResult1c.$0[1];
+                         threshold5=activePatternResult1b.$0[0];
+                         return{
+                          $:1,
+                          $0:[{
+                           $:4,
+                           $0:{
+                            $:0,
+                            $0:{
+                             $:0,
+                             $0:1,
+                             $1:20
+                            }
+                           },
+                           $1:List.ofArray([[threshold5,{
+                            $:0,
+                            $0:{
+                             $:0,
+                             $0:1,
+                             $1:1
+                            }
+                           }]]),
+                           $2:0
+                          },next12]
+                         };
+                        }
+                       else
+                        {
+                         activePatternResult1d=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                         if(activePatternResult1d.$==1)
+                          {
+                           next13=activePatternResult1d.$0[1];
+                           return{
+                            $:1,
+                            $0:[{
+                             $:0,
+                             $0:activePatternResult1d.$0[0]
+                            },next13]
+                           };
+                          }
+                         else
+                          {
+                           return{
+                            $:0
+                           };
+                          }
+                        }
+                      }
+                     else
+                      {
+                       activePatternResult1e=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                       if(activePatternResult1e.$==1)
+                        {
+                         next14=activePatternResult1e.$0[1];
+                         return{
+                          $:1,
+                          $0:[{
+                           $:0,
+                           $0:activePatternResult1e.$0[0]
+                          },next14]
+                         };
+                        }
+                       else
+                        {
+                         return{
+                          $:0
+                         };
+                        }
+                      }
+                    }
+                   else
+                    {
+                     activePatternResult1f=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResult1f.$==1)
+                      {
+                       next15=activePatternResult1f.$0[1];
+                       return{
+                        $:1,
+                        $0:[{
+                         $:0,
+                         $0:activePatternResult1f.$0[0]
+                        },next15]
+                       };
+                      }
+                     else
+                      {
+                       return{
+                        $:0
+                       };
+                      }
+                    }
+                  }
+                }
+               else
+                {
+                 activePatternResult20=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                 if(activePatternResult20.$==1)
+                  {
+                   tupledArg9=activePatternResult20.$0[1];
+                   activePatternResult21=_this["|Next|Empty|"](tupledArg9[0],tupledArg9[1]);
+                   if(activePatternResult21.$==0)
+                    {
+                     if(activePatternResult21.$0[0]===63)
+                      {
+                       next16=activePatternResult21.$0[1];
+                       threshold6=activePatternResult20.$0[0];
+                       return{
+                        $:1,
+                        $0:[{
+                         $:4,
+                         $0:{
+                          $:0,
+                          $0:{
+                           $:0,
+                           $0:1,
+                           $1:20
+                          }
+                         },
+                         $1:List.ofArray([[threshold6,{
+                          $:0,
+                          $0:{
+                           $:0,
+                           $0:1,
+                           $1:1
+                          }
+                         }]]),
+                         $2:0
+                        },next16]
+                       };
+                      }
+                     else
+                      {
+                       activePatternResult22=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                       if(activePatternResult22.$==1)
+                        {
+                         next17=activePatternResult22.$0[1];
+                         return{
+                          $:1,
+                          $0:[{
+                           $:0,
+                           $0:activePatternResult22.$0[0]
+                          },next17]
+                         };
+                        }
+                       else
+                        {
+                         return{
+                          $:0
+                         };
+                        }
+                      }
+                    }
+                   else
+                    {
+                     activePatternResult23=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResult23.$==1)
+                      {
+                       next18=activePatternResult23.$0[1];
+                       return{
+                        $:1,
+                        $0:[{
+                         $:0,
+                         $0:activePatternResult23.$0[0]
+                        },next18]
+                       };
+                      }
+                     else
+                      {
+                       return{
+                        $:0
+                       };
+                      }
+                    }
+                  }
+                 else
+                  {
+                   activePatternResult24=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                   if(activePatternResult24.$==1)
+                    {
+                     next19=activePatternResult24.$0[1];
+                     return{
+                      $:1,
+                      $0:[{
+                       $:0,
+                       $0:activePatternResult24.$0[0]
+                      },next19]
+                     };
+                    }
+                   else
+                    {
+                     return{
+                      $:0
+                     };
+                    }
+                  }
+                }
+              }
+            }
+           else
+            {
+             activePatternResult25=_this["|Number|_|"](_arg10[0],_arg10[1]);
+             if(activePatternResult25.$==1)
+              {
+               tupledArga=activePatternResult25.$0[1];
+               activePatternResult26=_this["|Next|Empty|"](tupledArga[0],tupledArga[1]);
+               if(activePatternResult26.$==0)
+                {
+                 if(activePatternResult26.$0[0]===63)
+                  {
+                   tupledArgb=activePatternResult26.$0[1];
+                   activePatternResult27=_this["|Number|_|"](tupledArgb[0],tupledArgb[1]);
+                   if(activePatternResult27.$==1)
+                    {
+                     tupledArgc=activePatternResult27.$0[1];
+                     activePatternResult28=_this["|Next|Empty|"](tupledArgc[0],tupledArgc[1]);
+                     if(activePatternResult28.$==0)
+                      {
+                       if(activePatternResult28.$0[0]===63)
+                        {
+                         critThreshold1=activePatternResult27.$0[0];
+                         next1a=activePatternResult28.$0[1];
+                         threshold7=activePatternResult25.$0[0];
+                         return{
+                          $:1,
+                          $0:[{
+                           $:4,
+                           $0:{
+                            $:0,
+                            $0:{
+                             $:0,
+                             $0:1,
+                             $1:20
+                            }
+                           },
+                           $1:List.ofArray([[critThreshold1,{
+                            $:0,
+                            $0:{
+                             $:0,
+                             $0:2,
+                             $1:1
+                            }
+                           }],[threshold7,{
+                            $:0,
+                            $0:{
+                             $:0,
+                             $0:1,
+                             $1:1
+                            }
+                           }]]),
+                           $2:0
+                          },next1a]
+                         };
+                        }
+                       else
+                        {
+                         activePatternResult29=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                         if(activePatternResult29.$==1)
+                          {
+                           tupledArgd=activePatternResult29.$0[1];
+                           activePatternResult2a=_this["|Next|Empty|"](tupledArgd[0],tupledArgd[1]);
+                           if(activePatternResult2a.$==0)
+                            {
+                             if(activePatternResult2a.$0[0]===63)
+                              {
+                               next1b=activePatternResult2a.$0[1];
+                               threshold8=activePatternResult29.$0[0];
+                               return{
+                                $:1,
+                                $0:[{
+                                 $:4,
                                  $0:{
                                   $:0,
-                                  $0:1,
-                                  $1:1
-                                 }
-                                }]]),
-                                $2:0
-                               },next9]
-                              };
-                             }
-                            else
-                             {
-                              activePatternResult2b=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                              return activePatternResult2b.$==1?{
-                               $:1,
-                               $0:[activePatternResult2b.$0[0],activePatternResult2b.$0[1]]
-                              }:{
-                               $:0
-                              };
-                             }
-                           }
-                          else
-                           {
-                            activePatternResult2c=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                            return activePatternResult2c.$==1?{
-                             $:1,
-                             $0:[activePatternResult2c.$0[0],activePatternResult2c.$0[1]]
-                            }:{
-                             $:0
-                            };
-                           }
-                         }
-                        else
-                         {
-                          activePatternResult2d=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                          return activePatternResult2d.$==1?{
-                           $:1,
-                           $0:[activePatternResult2d.$0[0],activePatternResult2d.$0[1]]
-                          }:{
-                           $:0
-                          };
-                         }
-                       }
-                     }
-                    else
-                     {
-                      activePatternResult2e=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-                      if(activePatternResult2e.$==1)
-                       {
-                        tupledArgf=activePatternResult2e.$0[1];
-                        activePatternResult2f=Impl["|Next|Empty|"](tupledArgf[0],tupledArgf[1]);
-                        if(activePatternResult2f.$==0)
-                         {
-                          if(activePatternResult2f.$0[0]===63)
-                           {
-                            nexta=activePatternResult2f.$0[1];
-                            threshold9=activePatternResult2e.$0[0];
-                            return{
-                             $:1,
-                             $0:[{
-                              $:4,
+                                  $0:{
+                                   $:0,
+                                   $0:1,
+                                   $1:20
+                                  }
+                                 },
+                                 $1:List.ofArray([[threshold8,{
+                                  $:0,
+                                  $0:{
+                                   $:0,
+                                   $0:1,
+                                   $1:1
+                                  }
+                                 }]]),
+                                 $2:0
+                                },next1b]
+                               };
+                              }
+                             else
+                              {
+                               activePatternResult2b=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                               if(activePatternResult2b.$==1)
+                                {
+                                 next1c=activePatternResult2b.$0[1];
+                                 return{
+                                  $:1,
+                                  $0:[{
+                                   $:0,
+                                   $0:activePatternResult2b.$0[0]
+                                  },next1c]
+                                 };
+                                }
+                               else
+                                {
+                                 return{
+                                  $:0
+                                 };
+                                }
+                              }
+                            }
+                           else
+                            {
+                             activePatternResult2c=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                             if(activePatternResult2c.$==1)
+                              {
+                               next1d=activePatternResult2c.$0[1];
+                               return{
+                                $:1,
+                                $0:[{
+                                 $:0,
+                                 $0:activePatternResult2c.$0[0]
+                                },next1d]
+                               };
+                              }
+                             else
+                              {
+                               return{
+                                $:0
+                               };
+                              }
+                            }
+                          }
+                         else
+                          {
+                           activePatternResult2d=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                           if(activePatternResult2d.$==1)
+                            {
+                             next1e=activePatternResult2d.$0[1];
+                             return{
+                              $:1,
+                              $0:[{
+                               $:0,
+                               $0:activePatternResult2d.$0[0]
+                              },next1e]
+                             };
+                            }
+                           else
+                            {
+                             return{
+                              $:0
+                             };
+                            }
+                          }
+                        }
+                      }
+                     else
+                      {
+                       activePatternResult2e=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                       if(activePatternResult2e.$==1)
+                        {
+                         tupledArge=activePatternResult2e.$0[1];
+                         activePatternResult2f=_this["|Next|Empty|"](tupledArge[0],tupledArge[1]);
+                         if(activePatternResult2f.$==0)
+                          {
+                           if(activePatternResult2f.$0[0]===63)
+                            {
+                             next1f=activePatternResult2f.$0[1];
+                             threshold9=activePatternResult2e.$0[0];
+                             return{
+                              $:1,
+                              $0:[{
+                               $:4,
+                               $0:{
+                                $:0,
+                                $0:{
+                                 $:0,
+                                 $0:1,
+                                 $1:20
+                                }
+                               },
+                               $1:List.ofArray([[threshold9,{
+                                $:0,
+                                $0:{
+                                 $:0,
+                                 $0:1,
+                                 $1:1
+                                }
+                               }]]),
+                               $2:0
+                              },next1f]
+                             };
+                            }
+                           else
+                            {
+                             activePatternResult30=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                             if(activePatternResult30.$==1)
+                              {
+                               next20=activePatternResult30.$0[1];
+                               return{
+                                $:1,
+                                $0:[{
+                                 $:0,
+                                 $0:activePatternResult30.$0[0]
+                                },next20]
+                               };
+                              }
+                             else
+                              {
+                               return{
+                                $:0
+                               };
+                              }
+                            }
+                          }
+                         else
+                          {
+                           activePatternResult31=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                           if(activePatternResult31.$==1)
+                            {
+                             next21=activePatternResult31.$0[1];
+                             return{
+                              $:1,
+                              $0:[{
+                               $:0,
+                               $0:activePatternResult31.$0[0]
+                              },next21]
+                             };
+                            }
+                           else
+                            {
+                             return{
+                              $:0
+                             };
+                            }
+                          }
+                        }
+                       else
+                        {
+                         activePatternResult32=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                         if(activePatternResult32.$==1)
+                          {
+                           next22=activePatternResult32.$0[1];
+                           return{
+                            $:1,
+                            $0:[{
+                             $:0,
+                             $0:activePatternResult32.$0[0]
+                            },next22]
+                           };
+                          }
+                         else
+                          {
+                           return{
+                            $:0
+                           };
+                          }
+                        }
+                      }
+                    }
+                   else
+                    {
+                     activePatternResult33=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResult33.$==1)
+                      {
+                       tupledArgf=activePatternResult33.$0[1];
+                       activePatternResult34=_this["|Next|Empty|"](tupledArgf[0],tupledArgf[1]);
+                       if(activePatternResult34.$==0)
+                        {
+                         if(activePatternResult34.$0[0]===63)
+                          {
+                           next23=activePatternResult34.$0[1];
+                           thresholda=activePatternResult33.$0[0];
+                           return{
+                            $:1,
+                            $0:[{
+                             $:4,
+                             $0:{
+                              $:0,
                               $0:{
                                $:0,
-                               $0:{
-                                $:0,
-                                $0:1,
-                                $1:20
-                               }
-                              },
-                              $1:List.ofArray([[threshold9,{
-                               $:0,
-                               $0:{
-                                $:0,
-                                $0:1,
-                                $1:1
-                               }
-                              }]]),
-                              $2:0
-                             },nexta]
-                            };
-                           }
-                          else
-                           {
-                            activePatternResult30=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                            return activePatternResult30.$==1?{
-                             $:1,
-                             $0:[activePatternResult30.$0[0],activePatternResult30.$0[1]]
-                            }:{
-                             $:0
-                            };
-                           }
-                         }
-                        else
-                         {
-                          activePatternResult31=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                          return activePatternResult31.$==1?{
-                           $:1,
-                           $0:[activePatternResult31.$0[0],activePatternResult31.$0[1]]
-                          }:{
-                           $:0
-                          };
-                         }
-                       }
-                      else
-                       {
-                        activePatternResult32=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                        return activePatternResult32.$==1?{
-                         $:1,
-                         $0:[activePatternResult32.$0[0],activePatternResult32.$0[1]]
-                        }:{
-                         $:0
-                        };
-                       }
-                     }
-                   }
-                  else
-                   {
-                    activePatternResult33=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-                    if(activePatternResult33.$==1)
-                     {
-                      tupledArg10=activePatternResult33.$0[1];
-                      activePatternResult34=Impl["|Next|Empty|"](tupledArg10[0],tupledArg10[1]);
-                      if(activePatternResult34.$==0)
-                       {
-                        if(activePatternResult34.$0[0]===63)
-                         {
-                          nextb=activePatternResult34.$0[1];
-                          thresholda=activePatternResult33.$0[0];
-                          return{
-                           $:1,
-                           $0:[{
-                            $:4,
-                            $0:{
-                             $:0,
-                             $0:{
+                               $0:1,
+                               $1:20
+                              }
+                             },
+                             $1:List.ofArray([[thresholda,{
                               $:0,
-                              $0:1,
-                              $1:20
-                             }
-                            },
-                            $1:List.ofArray([[thresholda,{
-                             $:0,
-                             $0:{
-                              $:0,
-                              $0:1,
-                              $1:1
-                             }
-                            }]]),
-                            $2:0
-                           },nextb]
-                          };
-                         }
-                        else
-                         {
-                          activePatternResult35=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                          return activePatternResult35.$==1?{
-                           $:1,
-                           $0:[activePatternResult35.$0[0],activePatternResult35.$0[1]]
-                          }:{
-                           $:0
-                          };
-                         }
-                       }
-                      else
-                       {
-                        activePatternResult36=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                        return activePatternResult36.$==1?{
-                         $:1,
-                         $0:[activePatternResult36.$0[0],activePatternResult36.$0[1]]
-                        }:{
-                         $:0
-                        };
-                       }
-                     }
-                    else
-                     {
-                      activePatternResult37=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                      return activePatternResult37.$==1?{
-                       $:1,
-                       $0:[activePatternResult37.$0[0],activePatternResult37.$0[1]]
-                      }:{
-                       $:0
-                      };
-                     }
-                   }
-                 }
-                else
-                 {
-                  activePatternResult38=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-                  if(activePatternResult38.$==1)
-                   {
-                    tupledArg11=activePatternResult38.$0[1];
-                    activePatternResult39=Impl["|Next|Empty|"](tupledArg11[0],tupledArg11[1]);
-                    if(activePatternResult39.$==0)
-                     {
-                      if(activePatternResult39.$0[0]===63)
-                       {
-                        nextc=activePatternResult39.$0[1];
-                        thresholdb=activePatternResult38.$0[0];
-                        return{
-                         $:1,
-                         $0:[{
-                          $:4,
-                          $0:{
-                           $:0,
-                           $0:{
-                            $:0,
-                            $0:1,
-                            $1:20
-                           }
-                          },
-                          $1:List.ofArray([[thresholdb,{
-                           $:0,
-                           $0:{
-                            $:0,
-                            $0:1,
-                            $1:1
-                           }
-                          }]]),
-                          $2:0
-                         },nextc]
-                        };
-                       }
-                      else
-                       {
-                        activePatternResult3a=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                        return activePatternResult3a.$==1?{
-                         $:1,
-                         $0:[activePatternResult3a.$0[0],activePatternResult3a.$0[1]]
-                        }:{
-                         $:0
-                        };
-                       }
-                     }
-                    else
-                     {
-                      activePatternResult3b=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                      return activePatternResult3b.$==1?{
-                       $:1,
-                       $0:[activePatternResult3b.$0[0],activePatternResult3b.$0[1]]
-                      }:{
-                       $:0
-                      };
-                     }
-                   }
-                  else
-                   {
-                    activePatternResult3c=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                    return activePatternResult3c.$==1?{
-                     $:1,
-                     $0:[activePatternResult3c.$0[0],activePatternResult3c.$0[1]]
-                    }:{
-                     $:0
-                    };
-                   }
-                 }
-               }
-              else
-               {
-                activePatternResult3d=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-                if(activePatternResult3d.$==1)
-                 {
-                  tupledArg12=activePatternResult3d.$0[1];
-                  activePatternResult3e=Impl["|Next|Empty|"](tupledArg12[0],tupledArg12[1]);
-                  if(activePatternResult3e.$==0)
-                   {
-                    if(activePatternResult3e.$0[0]===63)
-                     {
-                      nextd=activePatternResult3e.$0[1];
-                      thresholdc=activePatternResult3d.$0[0];
-                      return{
-                       $:1,
-                       $0:[{
-                        $:4,
-                        $0:{
-                         $:0,
-                         $0:{
-                          $:0,
-                          $0:1,
-                          $1:20
-                         }
-                        },
-                        $1:List.ofArray([[thresholdc,{
-                         $:0,
-                         $0:{
-                          $:0,
-                          $0:1,
-                          $1:1
-                         }
-                        }]]),
-                        $2:0
-                       },nextd]
-                      };
-                     }
-                    else
-                     {
-                      activePatternResult3f=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                      return activePatternResult3f.$==1?{
-                       $:1,
-                       $0:[activePatternResult3f.$0[0],activePatternResult3f.$0[1]]
-                      }:{
-                       $:0
-                      };
-                     }
-                   }
-                  else
-                   {
-                    activePatternResult40=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                    return activePatternResult40.$==1?{
-                     $:1,
-                     $0:[activePatternResult40.$0[0],activePatternResult40.$0[1]]
-                    }:{
-                     $:0
-                    };
-                   }
-                 }
-                else
-                 {
-                  activePatternResult41=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                  return activePatternResult41.$==1?{
-                   $:1,
-                   $0:[activePatternResult41.$0[0],activePatternResult41.$0[1]]
-                  }:{
-                   $:0
-                  };
-                 }
-               }
-             }
-            else
-             {
-              activePatternResult42=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-              if(activePatternResult42.$==1)
-               {
-                tupledArg13=activePatternResult42.$0[1];
-                activePatternResult43=Impl["|Next|Empty|"](tupledArg13[0],tupledArg13[1]);
-                if(activePatternResult43.$==0)
-                 {
-                  if(activePatternResult43.$0[0]===63)
-                   {
-                    nexte=activePatternResult43.$0[1];
-                    thresholdd=activePatternResult42.$0[0];
-                    return{
-                     $:1,
-                     $0:[{
-                      $:4,
-                      $0:{
-                       $:0,
-                       $0:{
-                        $:0,
-                        $0:1,
-                        $1:20
-                       }
-                      },
-                      $1:List.ofArray([[thresholdd,{
-                       $:0,
-                       $0:{
-                        $:0,
-                        $0:1,
-                        $1:1
-                       }
-                      }]]),
-                      $2:0
-                     },nexte]
-                    };
-                   }
-                  else
-                   {
-                    activePatternResult44=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                    return activePatternResult44.$==1?{
-                     $:1,
-                     $0:[activePatternResult44.$0[0],activePatternResult44.$0[1]]
-                    }:{
-                     $:0
-                    };
-                   }
-                 }
-                else
-                 {
-                  activePatternResult45=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                  return activePatternResult45.$==1?{
-                   $:1,
-                   $0:[activePatternResult45.$0[0],activePatternResult45.$0[1]]
-                  }:{
-                   $:0
-                  };
-                 }
-               }
-              else
-               {
-                activePatternResult46=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                return activePatternResult46.$==1?{
-                 $:1,
-                 $0:[activePatternResult46.$0[0],activePatternResult46.$0[1]]
-                }:{
-                 $:0
-                };
-               }
-             }
-           }
-         }
-        else
-         {
-          activePatternResult47=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-          if(activePatternResult47.$==1)
-           {
-            tupledArg14=activePatternResult47.$0[1];
-            activePatternResult48=Impl["|Next|Empty|"](tupledArg14[0],tupledArg14[1]);
-            if(activePatternResult48.$==0)
-             {
-              if(activePatternResult48.$0[0]===63)
-               {
-                tupledArg15=activePatternResult48.$0[1];
-                activePatternResult49=Impl["|Number|_|"](tupledArg15[0],tupledArg15[1]);
-                if(activePatternResult49.$==1)
-                 {
-                  tupledArg16=activePatternResult49.$0[1];
-                  activePatternResult4a=Impl["|Next|Empty|"](tupledArg16[0],tupledArg16[1]);
-                  if(activePatternResult4a.$==0)
-                   {
-                    if(activePatternResult4a.$0[0]===63)
-                     {
-                      critThreshold2=activePatternResult49.$0[0];
-                      nextf=activePatternResult4a.$0[1];
-                      thresholde=activePatternResult47.$0[0];
-                      return{
-                       $:1,
-                       $0:[{
-                        $:4,
-                        $0:{
-                         $:0,
-                         $0:{
-                          $:0,
-                          $0:1,
-                          $1:20
-                         }
-                        },
-                        $1:List.ofArray([[critThreshold2,{
-                         $:0,
-                         $0:{
-                          $:0,
-                          $0:2,
-                          $1:1
-                         }
-                        }],[thresholde,{
-                         $:0,
-                         $0:{
-                          $:0,
-                          $0:1,
-                          $1:1
-                         }
-                        }]]),
-                        $2:0
-                       },nextf]
-                      };
-                     }
-                    else
-                     {
-                      activePatternResult4b=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-                      if(activePatternResult4b.$==1)
-                       {
-                        tupledArg17=activePatternResult4b.$0[1];
-                        activePatternResult4c=Impl["|Next|Empty|"](tupledArg17[0],tupledArg17[1]);
-                        if(activePatternResult4c.$==0)
-                         {
-                          if(activePatternResult4c.$0[0]===63)
-                           {
-                            next10=activePatternResult4c.$0[1];
-                            thresholdf=activePatternResult4b.$0[0];
-                            return{
-                             $:1,
-                             $0:[{
-                              $:4,
                               $0:{
                                $:0,
-                               $0:{
-                                $:0,
-                                $0:1,
-                                $1:20
-                               }
-                              },
-                              $1:List.ofArray([[thresholdf,{
+                               $0:1,
+                               $1:1
+                              }
+                             }]]),
+                             $2:0
+                            },next23]
+                           };
+                          }
+                         else
+                          {
+                           activePatternResult35=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                           if(activePatternResult35.$==1)
+                            {
+                             next24=activePatternResult35.$0[1];
+                             return{
+                              $:1,
+                              $0:[{
                                $:0,
+                               $0:activePatternResult35.$0[0]
+                              },next24]
+                             };
+                            }
+                           else
+                            {
+                             return{
+                              $:0
+                             };
+                            }
+                          }
+                        }
+                       else
+                        {
+                         activePatternResult36=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                         if(activePatternResult36.$==1)
+                          {
+                           next25=activePatternResult36.$0[1];
+                           return{
+                            $:1,
+                            $0:[{
+                             $:0,
+                             $0:activePatternResult36.$0[0]
+                            },next25]
+                           };
+                          }
+                         else
+                          {
+                           return{
+                            $:0
+                           };
+                          }
+                        }
+                      }
+                     else
+                      {
+                       activePatternResult37=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                       if(activePatternResult37.$==1)
+                        {
+                         next26=activePatternResult37.$0[1];
+                         return{
+                          $:1,
+                          $0:[{
+                           $:0,
+                           $0:activePatternResult37.$0[0]
+                          },next26]
+                         };
+                        }
+                       else
+                        {
+                         return{
+                          $:0
+                         };
+                        }
+                      }
+                    }
+                  }
+                 else
+                  {
+                   activePatternResult38=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                   if(activePatternResult38.$==1)
+                    {
+                     tupledArg10=activePatternResult38.$0[1];
+                     activePatternResult39=_this["|Next|Empty|"](tupledArg10[0],tupledArg10[1]);
+                     if(activePatternResult39.$==0)
+                      {
+                       if(activePatternResult39.$0[0]===63)
+                        {
+                         next27=activePatternResult39.$0[1];
+                         thresholdb=activePatternResult38.$0[0];
+                         return{
+                          $:1,
+                          $0:[{
+                           $:4,
+                           $0:{
+                            $:0,
+                            $0:{
+                             $:0,
+                             $0:1,
+                             $1:20
+                            }
+                           },
+                           $1:List.ofArray([[thresholdb,{
+                            $:0,
+                            $0:{
+                             $:0,
+                             $0:1,
+                             $1:1
+                            }
+                           }]]),
+                           $2:0
+                          },next27]
+                         };
+                        }
+                       else
+                        {
+                         activePatternResult3a=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                         if(activePatternResult3a.$==1)
+                          {
+                           next28=activePatternResult3a.$0[1];
+                           return{
+                            $:1,
+                            $0:[{
+                             $:0,
+                             $0:activePatternResult3a.$0[0]
+                            },next28]
+                           };
+                          }
+                         else
+                          {
+                           return{
+                            $:0
+                           };
+                          }
+                        }
+                      }
+                     else
+                      {
+                       activePatternResult3b=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                       if(activePatternResult3b.$==1)
+                        {
+                         next29=activePatternResult3b.$0[1];
+                         return{
+                          $:1,
+                          $0:[{
+                           $:0,
+                           $0:activePatternResult3b.$0[0]
+                          },next29]
+                         };
+                        }
+                       else
+                        {
+                         return{
+                          $:0
+                         };
+                        }
+                      }
+                    }
+                   else
+                    {
+                     activePatternResult3c=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResult3c.$==1)
+                      {
+                       next2a=activePatternResult3c.$0[1];
+                       return{
+                        $:1,
+                        $0:[{
+                         $:0,
+                         $0:activePatternResult3c.$0[0]
+                        },next2a]
+                       };
+                      }
+                     else
+                      {
+                       return{
+                        $:0
+                       };
+                      }
+                    }
+                  }
+                }
+               else
+                {
+                 activePatternResult3d=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                 if(activePatternResult3d.$==1)
+                  {
+                   tupledArg11=activePatternResult3d.$0[1];
+                   activePatternResult3e=_this["|Next|Empty|"](tupledArg11[0],tupledArg11[1]);
+                   if(activePatternResult3e.$==0)
+                    {
+                     if(activePatternResult3e.$0[0]===63)
+                      {
+                       next2b=activePatternResult3e.$0[1];
+                       thresholdc=activePatternResult3d.$0[0];
+                       return{
+                        $:1,
+                        $0:[{
+                         $:4,
+                         $0:{
+                          $:0,
+                          $0:{
+                           $:0,
+                           $0:1,
+                           $1:20
+                          }
+                         },
+                         $1:List.ofArray([[thresholdc,{
+                          $:0,
+                          $0:{
+                           $:0,
+                           $0:1,
+                           $1:1
+                          }
+                         }]]),
+                         $2:0
+                        },next2b]
+                       };
+                      }
+                     else
+                      {
+                       activePatternResult3f=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                       if(activePatternResult3f.$==1)
+                        {
+                         next2c=activePatternResult3f.$0[1];
+                         return{
+                          $:1,
+                          $0:[{
+                           $:0,
+                           $0:activePatternResult3f.$0[0]
+                          },next2c]
+                         };
+                        }
+                       else
+                        {
+                         return{
+                          $:0
+                         };
+                        }
+                      }
+                    }
+                   else
+                    {
+                     activePatternResult40=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResult40.$==1)
+                      {
+                       next2d=activePatternResult40.$0[1];
+                       return{
+                        $:1,
+                        $0:[{
+                         $:0,
+                         $0:activePatternResult40.$0[0]
+                        },next2d]
+                       };
+                      }
+                     else
+                      {
+                       return{
+                        $:0
+                       };
+                      }
+                    }
+                  }
+                 else
+                  {
+                   activePatternResult41=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                   if(activePatternResult41.$==1)
+                    {
+                     next2e=activePatternResult41.$0[1];
+                     return{
+                      $:1,
+                      $0:[{
+                       $:0,
+                       $0:activePatternResult41.$0[0]
+                      },next2e]
+                     };
+                    }
+                   else
+                    {
+                     return{
+                      $:0
+                     };
+                    }
+                  }
+                }
+              }
+             else
+              {
+               activePatternResult42=_this["|Number|_|"](_arg10[0],_arg10[1]);
+               if(activePatternResult42.$==1)
+                {
+                 tupledArg12=activePatternResult42.$0[1];
+                 activePatternResult43=_this["|Next|Empty|"](tupledArg12[0],tupledArg12[1]);
+                 if(activePatternResult43.$==0)
+                  {
+                   if(activePatternResult43.$0[0]===63)
+                    {
+                     next2f=activePatternResult43.$0[1];
+                     thresholdd=activePatternResult42.$0[0];
+                     return{
+                      $:1,
+                      $0:[{
+                       $:4,
+                       $0:{
+                        $:0,
+                        $0:{
+                         $:0,
+                         $0:1,
+                         $1:20
+                        }
+                       },
+                       $1:List.ofArray([[thresholdd,{
+                        $:0,
+                        $0:{
+                         $:0,
+                         $0:1,
+                         $1:1
+                        }
+                       }]]),
+                       $2:0
+                      },next2f]
+                     };
+                    }
+                   else
+                    {
+                     activePatternResult44=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResult44.$==1)
+                      {
+                       next30=activePatternResult44.$0[1];
+                       return{
+                        $:1,
+                        $0:[{
+                         $:0,
+                         $0:activePatternResult44.$0[0]
+                        },next30]
+                       };
+                      }
+                     else
+                      {
+                       return{
+                        $:0
+                       };
+                      }
+                    }
+                  }
+                 else
+                  {
+                   activePatternResult45=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                   if(activePatternResult45.$==1)
+                    {
+                     next31=activePatternResult45.$0[1];
+                     return{
+                      $:1,
+                      $0:[{
+                       $:0,
+                       $0:activePatternResult45.$0[0]
+                      },next31]
+                     };
+                    }
+                   else
+                    {
+                     return{
+                      $:0
+                     };
+                    }
+                  }
+                }
+               else
+                {
+                 activePatternResult46=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                 if(activePatternResult46.$==1)
+                  {
+                   next32=activePatternResult46.$0[1];
+                   return{
+                    $:1,
+                    $0:[{
+                     $:0,
+                     $0:activePatternResult46.$0[0]
+                    },next32]
+                   };
+                  }
+                 else
+                  {
+                   return{
+                    $:0
+                   };
+                  }
+                }
+              }
+            }
+          }
+         else
+          {
+           activePatternResult47=_this["|Number|_|"](_arg10[0],_arg10[1]);
+           if(activePatternResult47.$==1)
+            {
+             tupledArg13=activePatternResult47.$0[1];
+             activePatternResult48=_this["|Next|Empty|"](tupledArg13[0],tupledArg13[1]);
+             if(activePatternResult48.$==0)
+              {
+               if(activePatternResult48.$0[0]===63)
+                {
+                 tupledArg14=activePatternResult48.$0[1];
+                 activePatternResult49=_this["|Number|_|"](tupledArg14[0],tupledArg14[1]);
+                 if(activePatternResult49.$==1)
+                  {
+                   tupledArg15=activePatternResult49.$0[1];
+                   activePatternResult4a=_this["|Next|Empty|"](tupledArg15[0],tupledArg15[1]);
+                   if(activePatternResult4a.$==0)
+                    {
+                     if(activePatternResult4a.$0[0]===63)
+                      {
+                       critThreshold2=activePatternResult49.$0[0];
+                       next33=activePatternResult4a.$0[1];
+                       thresholde=activePatternResult47.$0[0];
+                       return{
+                        $:1,
+                        $0:[{
+                         $:4,
+                         $0:{
+                          $:0,
+                          $0:{
+                           $:0,
+                           $0:1,
+                           $1:20
+                          }
+                         },
+                         $1:List.ofArray([[critThreshold2,{
+                          $:0,
+                          $0:{
+                           $:0,
+                           $0:2,
+                           $1:1
+                          }
+                         }],[thresholde,{
+                          $:0,
+                          $0:{
+                           $:0,
+                           $0:1,
+                           $1:1
+                          }
+                         }]]),
+                         $2:0
+                        },next33]
+                       };
+                      }
+                     else
+                      {
+                       activePatternResult4b=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                       if(activePatternResult4b.$==1)
+                        {
+                         tupledArg16=activePatternResult4b.$0[1];
+                         activePatternResult4c=_this["|Next|Empty|"](tupledArg16[0],tupledArg16[1]);
+                         if(activePatternResult4c.$==0)
+                          {
+                           if(activePatternResult4c.$0[0]===63)
+                            {
+                             next34=activePatternResult4c.$0[1];
+                             thresholdf=activePatternResult4b.$0[0];
+                             return{
+                              $:1,
+                              $0:[{
+                               $:4,
                                $0:{
                                 $:0,
-                                $0:1,
-                                $1:1
-                               }
-                              }]]),
-                              $2:0
-                             },next10]
-                            };
-                           }
-                          else
-                           {
-                            activePatternResult4d=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                            return activePatternResult4d.$==1?{
-                             $:1,
-                             $0:[activePatternResult4d.$0[0],activePatternResult4d.$0[1]]
-                            }:{
-                             $:0
-                            };
-                           }
-                         }
-                        else
-                         {
-                          activePatternResult4e=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                          return activePatternResult4e.$==1?{
-                           $:1,
-                           $0:[activePatternResult4e.$0[0],activePatternResult4e.$0[1]]
-                          }:{
-                           $:0
-                          };
-                         }
-                       }
-                      else
-                       {
-                        activePatternResult4f=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                        return activePatternResult4f.$==1?{
-                         $:1,
-                         $0:[activePatternResult4f.$0[0],activePatternResult4f.$0[1]]
-                        }:{
-                         $:0
-                        };
-                       }
-                     }
-                   }
-                  else
-                   {
-                    activePatternResult50=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-                    if(activePatternResult50.$==1)
-                     {
-                      tupledArg18=activePatternResult50.$0[1];
-                      activePatternResult51=Impl["|Next|Empty|"](tupledArg18[0],tupledArg18[1]);
-                      if(activePatternResult51.$==0)
-                       {
-                        if(activePatternResult51.$0[0]===63)
-                         {
-                          next11=activePatternResult51.$0[1];
-                          threshold10=activePatternResult50.$0[0];
-                          return{
-                           $:1,
-                           $0:[{
-                            $:4,
+                                $0:{
+                                 $:0,
+                                 $0:1,
+                                 $1:20
+                                }
+                               },
+                               $1:List.ofArray([[thresholdf,{
+                                $:0,
+                                $0:{
+                                 $:0,
+                                 $0:1,
+                                 $1:1
+                                }
+                               }]]),
+                               $2:0
+                              },next34]
+                             };
+                            }
+                           else
+                            {
+                             activePatternResult4d=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                             if(activePatternResult4d.$==1)
+                              {
+                               next35=activePatternResult4d.$0[1];
+                               return{
+                                $:1,
+                                $0:[{
+                                 $:0,
+                                 $0:activePatternResult4d.$0[0]
+                                },next35]
+                               };
+                              }
+                             else
+                              {
+                               return{
+                                $:0
+                               };
+                              }
+                            }
+                          }
+                         else
+                          {
+                           activePatternResult4e=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                           if(activePatternResult4e.$==1)
+                            {
+                             next36=activePatternResult4e.$0[1];
+                             return{
+                              $:1,
+                              $0:[{
+                               $:0,
+                               $0:activePatternResult4e.$0[0]
+                              },next36]
+                             };
+                            }
+                           else
+                            {
+                             return{
+                              $:0
+                             };
+                            }
+                          }
+                        }
+                       else
+                        {
+                         activePatternResult4f=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                         if(activePatternResult4f.$==1)
+                          {
+                           next37=activePatternResult4f.$0[1];
+                           return{
+                            $:1,
+                            $0:[{
+                             $:0,
+                             $0:activePatternResult4f.$0[0]
+                            },next37]
+                           };
+                          }
+                         else
+                          {
+                           return{
+                            $:0
+                           };
+                          }
+                        }
+                      }
+                    }
+                   else
+                    {
+                     activePatternResult50=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResult50.$==1)
+                      {
+                       tupledArg17=activePatternResult50.$0[1];
+                       activePatternResult51=_this["|Next|Empty|"](tupledArg17[0],tupledArg17[1]);
+                       if(activePatternResult51.$==0)
+                        {
+                         if(activePatternResult51.$0[0]===63)
+                          {
+                           next38=activePatternResult51.$0[1];
+                           threshold10=activePatternResult50.$0[0];
+                           return{
+                            $:1,
+                            $0:[{
+                             $:4,
+                             $0:{
+                              $:0,
+                              $0:{
+                               $:0,
+                               $0:1,
+                               $1:20
+                              }
+                             },
+                             $1:List.ofArray([[threshold10,{
+                              $:0,
+                              $0:{
+                               $:0,
+                               $0:1,
+                               $1:1
+                              }
+                             }]]),
+                             $2:0
+                            },next38]
+                           };
+                          }
+                         else
+                          {
+                           activePatternResult52=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                           if(activePatternResult52.$==1)
+                            {
+                             next39=activePatternResult52.$0[1];
+                             return{
+                              $:1,
+                              $0:[{
+                               $:0,
+                               $0:activePatternResult52.$0[0]
+                              },next39]
+                             };
+                            }
+                           else
+                            {
+                             return{
+                              $:0
+                             };
+                            }
+                          }
+                        }
+                       else
+                        {
+                         activePatternResult53=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                         if(activePatternResult53.$==1)
+                          {
+                           next3a=activePatternResult53.$0[1];
+                           return{
+                            $:1,
+                            $0:[{
+                             $:0,
+                             $0:activePatternResult53.$0[0]
+                            },next3a]
+                           };
+                          }
+                         else
+                          {
+                           return{
+                            $:0
+                           };
+                          }
+                        }
+                      }
+                     else
+                      {
+                       activePatternResult54=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                       if(activePatternResult54.$==1)
+                        {
+                         next3b=activePatternResult54.$0[1];
+                         return{
+                          $:1,
+                          $0:[{
+                           $:0,
+                           $0:activePatternResult54.$0[0]
+                          },next3b]
+                         };
+                        }
+                       else
+                        {
+                         return{
+                          $:0
+                         };
+                        }
+                      }
+                    }
+                  }
+                 else
+                  {
+                   activePatternResult55=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                   if(activePatternResult55.$==1)
+                    {
+                     tupledArg18=activePatternResult55.$0[1];
+                     activePatternResult56=_this["|Next|Empty|"](tupledArg18[0],tupledArg18[1]);
+                     if(activePatternResult56.$==0)
+                      {
+                       if(activePatternResult56.$0[0]===63)
+                        {
+                         next3c=activePatternResult56.$0[1];
+                         threshold11=activePatternResult55.$0[0];
+                         return{
+                          $:1,
+                          $0:[{
+                           $:4,
+                           $0:{
+                            $:0,
                             $0:{
                              $:0,
-                             $0:{
-                              $:0,
-                              $0:1,
-                              $1:20
-                             }
-                            },
-                            $1:List.ofArray([[threshold10,{
-                             $:0,
-                             $0:{
-                              $:0,
-                              $0:1,
-                              $1:1
-                             }
-                            }]]),
-                            $2:0
-                           },next11]
-                          };
-                         }
-                        else
-                         {
-                          activePatternResult52=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                          return activePatternResult52.$==1?{
-                           $:1,
-                           $0:[activePatternResult52.$0[0],activePatternResult52.$0[1]]
-                          }:{
-                           $:0
-                          };
-                         }
-                       }
-                      else
-                       {
-                        activePatternResult53=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                        return activePatternResult53.$==1?{
-                         $:1,
-                         $0:[activePatternResult53.$0[0],activePatternResult53.$0[1]]
-                        }:{
-                         $:0
-                        };
-                       }
-                     }
-                    else
-                     {
-                      activePatternResult54=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                      return activePatternResult54.$==1?{
-                       $:1,
-                       $0:[activePatternResult54.$0[0],activePatternResult54.$0[1]]
-                      }:{
-                       $:0
-                      };
-                     }
-                   }
-                 }
-                else
-                 {
-                  activePatternResult55=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-                  if(activePatternResult55.$==1)
-                   {
-                    tupledArg19=activePatternResult55.$0[1];
-                    activePatternResult56=Impl["|Next|Empty|"](tupledArg19[0],tupledArg19[1]);
-                    if(activePatternResult56.$==0)
-                     {
-                      if(activePatternResult56.$0[0]===63)
-                       {
-                        next12=activePatternResult56.$0[1];
-                        threshold11=activePatternResult55.$0[0];
-                        return{
-                         $:1,
-                         $0:[{
-                          $:4,
-                          $0:{
-                           $:0,
-                           $0:{
+                             $0:1,
+                             $1:20
+                            }
+                           },
+                           $1:List.ofArray([[threshold11,{
                             $:0,
-                            $0:1,
-                            $1:20
-                           }
-                          },
-                          $1:List.ofArray([[threshold11,{
-                           $:0,
-                           $0:{
-                            $:0,
-                            $0:1,
-                            $1:1
-                           }
-                          }]]),
-                          $2:0
-                         },next12]
-                        };
-                       }
-                      else
-                       {
-                        activePatternResult57=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                        return activePatternResult57.$==1?{
-                         $:1,
-                         $0:[activePatternResult57.$0[0],activePatternResult57.$0[1]]
-                        }:{
-                         $:0
-                        };
-                       }
-                     }
-                    else
-                     {
-                      activePatternResult58=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                      return activePatternResult58.$==1?{
-                       $:1,
-                       $0:[activePatternResult58.$0[0],activePatternResult58.$0[1]]
-                      }:{
-                       $:0
-                      };
-                     }
-                   }
-                  else
-                   {
-                    activePatternResult59=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                    return activePatternResult59.$==1?{
-                     $:1,
-                     $0:[activePatternResult59.$0[0],activePatternResult59.$0[1]]
-                    }:{
-                     $:0
-                    };
-                   }
-                 }
-               }
-              else
-               {
-                activePatternResult5a=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-                if(activePatternResult5a.$==1)
-                 {
-                  tupledArg1a=activePatternResult5a.$0[1];
-                  activePatternResult5b=Impl["|Next|Empty|"](tupledArg1a[0],tupledArg1a[1]);
-                  if(activePatternResult5b.$==0)
-                   {
-                    if(activePatternResult5b.$0[0]===63)
-                     {
-                      next13=activePatternResult5b.$0[1];
-                      threshold12=activePatternResult5a.$0[0];
-                      return{
-                       $:1,
-                       $0:[{
-                        $:4,
-                        $0:{
-                         $:0,
-                         $0:{
-                          $:0,
-                          $0:1,
-                          $1:20
-                         }
-                        },
-                        $1:List.ofArray([[threshold12,{
-                         $:0,
-                         $0:{
-                          $:0,
-                          $0:1,
-                          $1:1
-                         }
-                        }]]),
-                        $2:0
-                       },next13]
-                      };
-                     }
-                    else
-                     {
-                      activePatternResult5c=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                      return activePatternResult5c.$==1?{
-                       $:1,
-                       $0:[activePatternResult5c.$0[0],activePatternResult5c.$0[1]]
-                      }:{
-                       $:0
-                      };
-                     }
-                   }
-                  else
-                   {
-                    activePatternResult5d=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                    return activePatternResult5d.$==1?{
-                     $:1,
-                     $0:[activePatternResult5d.$0[0],activePatternResult5d.$0[1]]
-                    }:{
-                     $:0
-                    };
-                   }
-                 }
-                else
-                 {
-                  activePatternResult5e=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                  return activePatternResult5e.$==1?{
-                   $:1,
-                   $0:[activePatternResult5e.$0[0],activePatternResult5e.$0[1]]
-                  }:{
-                   $:0
-                  };
-                 }
-               }
-             }
-            else
-             {
-              activePatternResult5f=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-              if(activePatternResult5f.$==1)
-               {
-                tupledArg1b=activePatternResult5f.$0[1];
-                activePatternResult60=Impl["|Next|Empty|"](tupledArg1b[0],tupledArg1b[1]);
-                if(activePatternResult60.$==0)
-                 {
-                  if(activePatternResult60.$0[0]===63)
-                   {
-                    next14=activePatternResult60.$0[1];
-                    threshold13=activePatternResult5f.$0[0];
-                    return{
-                     $:1,
-                     $0:[{
-                      $:4,
-                      $0:{
-                       $:0,
-                       $0:{
-                        $:0,
-                        $0:1,
-                        $1:20
-                       }
-                      },
-                      $1:List.ofArray([[threshold13,{
-                       $:0,
-                       $0:{
-                        $:0,
-                        $0:1,
-                        $1:1
-                       }
-                      }]]),
-                      $2:0
-                     },next14]
-                    };
-                   }
-                  else
-                   {
-                    activePatternResult61=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                    return activePatternResult61.$==1?{
-                     $:1,
-                     $0:[activePatternResult61.$0[0],activePatternResult61.$0[1]]
-                    }:{
-                     $:0
-                    };
-                   }
-                 }
-                else
-                 {
-                  activePatternResult62=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                  return activePatternResult62.$==1?{
-                   $:1,
-                   $0:[activePatternResult62.$0[0],activePatternResult62.$0[1]]
-                  }:{
-                   $:0
-                  };
-                 }
-               }
-              else
-               {
-                activePatternResult63=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                return activePatternResult63.$==1?{
-                 $:1,
-                 $0:[activePatternResult63.$0[0],activePatternResult63.$0[1]]
-                }:{
-                 $:0
-                };
-               }
-             }
-           }
-          else
-           {
-            activePatternResult64=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-            if(activePatternResult64.$==1)
-             {
-              tupledArg1c=activePatternResult64.$0[1];
-              activePatternResult65=Impl["|Next|Empty|"](tupledArg1c[0],tupledArg1c[1]);
-              if(activePatternResult65.$==0)
-               {
-                if(activePatternResult65.$0[0]===63)
-                 {
-                  next15=activePatternResult65.$0[1];
-                  threshold14=activePatternResult64.$0[0];
-                  return{
-                   $:1,
-                   $0:[{
-                    $:4,
-                    $0:{
-                     $:0,
-                     $0:{
-                      $:0,
-                      $0:1,
-                      $1:20
-                     }
-                    },
-                    $1:List.ofArray([[threshold14,{
-                     $:0,
-                     $0:{
-                      $:0,
-                      $0:1,
-                      $1:1
-                     }
-                    }]]),
-                    $2:0
-                   },next15]
-                  };
-                 }
-                else
-                 {
-                  activePatternResult66=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                  return activePatternResult66.$==1?{
-                   $:1,
-                   $0:[activePatternResult66.$0[0],activePatternResult66.$0[1]]
-                  }:{
-                   $:0
-                  };
-                 }
-               }
-              else
-               {
-                activePatternResult67=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                return activePatternResult67.$==1?{
-                 $:1,
-                 $0:[activePatternResult67.$0[0],activePatternResult67.$0[1]]
-                }:{
-                 $:0
-                };
-               }
-             }
-            else
-             {
-              activePatternResult68=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-              return activePatternResult68.$==1?{
-               $:1,
-               $0:[activePatternResult68.$0[0],activePatternResult68.$0[1]]
-              }:{
-               $:0
-              };
-             }
-           }
-         }
-       }
-      else
-       {
-        activePatternResult69=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-        if(activePatternResult69.$==1)
-         {
-          tupledArg1d=activePatternResult69.$0[1];
-          activePatternResult6a=Impl["|Next|Empty|"](tupledArg1d[0],tupledArg1d[1]);
-          if(activePatternResult6a.$==0)
-           {
-            if(activePatternResult6a.$0[0]===63)
-             {
-              tupledArg1e=activePatternResult6a.$0[1];
-              activePatternResult6b=Impl["|Number|_|"](tupledArg1e[0],tupledArg1e[1]);
-              if(activePatternResult6b.$==1)
-               {
-                tupledArg1f=activePatternResult6b.$0[1];
-                activePatternResult6c=Impl["|Next|Empty|"](tupledArg1f[0],tupledArg1f[1]);
-                if(activePatternResult6c.$==0)
-                 {
-                  if(activePatternResult6c.$0[0]===63)
-                   {
-                    critThreshold3=activePatternResult6b.$0[0];
-                    next16=activePatternResult6c.$0[1];
-                    threshold15=activePatternResult69.$0[0];
-                    return{
-                     $:1,
-                     $0:[{
-                      $:4,
-                      $0:{
-                       $:0,
-                       $0:{
-                        $:0,
-                        $0:1,
-                        $1:20
-                       }
-                      },
-                      $1:List.ofArray([[critThreshold3,{
-                       $:0,
-                       $0:{
-                        $:0,
-                        $0:2,
-                        $1:1
-                       }
-                      }],[threshold15,{
-                       $:0,
-                       $0:{
-                        $:0,
-                        $0:1,
-                        $1:1
-                       }
-                      }]]),
-                      $2:0
-                     },next16]
-                    };
-                   }
-                  else
-                   {
-                    activePatternResult6d=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-                    if(activePatternResult6d.$==1)
-                     {
-                      tupledArg20=activePatternResult6d.$0[1];
-                      activePatternResult6e=Impl["|Next|Empty|"](tupledArg20[0],tupledArg20[1]);
-                      if(activePatternResult6e.$==0)
-                       {
-                        if(activePatternResult6e.$0[0]===63)
-                         {
-                          next17=activePatternResult6e.$0[1];
-                          threshold16=activePatternResult6d.$0[0];
-                          return{
-                           $:1,
-                           $0:[{
-                            $:4,
                             $0:{
                              $:0,
-                             $0:{
-                              $:0,
-                              $0:1,
-                              $1:20
-                             }
-                            },
-                            $1:List.ofArray([[threshold16,{
+                             $0:1,
+                             $1:1
+                            }
+                           }]]),
+                           $2:0
+                          },next3c]
+                         };
+                        }
+                       else
+                        {
+                         activePatternResult57=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                         if(activePatternResult57.$==1)
+                          {
+                           next3d=activePatternResult57.$0[1];
+                           return{
+                            $:1,
+                            $0:[{
                              $:0,
-                             $0:{
-                              $:0,
-                              $0:1,
-                              $1:1
-                             }
-                            }]]),
-                            $2:0
-                           },next17]
-                          };
-                         }
-                        else
-                         {
-                          activePatternResult6f=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                          return activePatternResult6f.$==1?{
-                           $:1,
-                           $0:[activePatternResult6f.$0[0],activePatternResult6f.$0[1]]
-                          }:{
-                           $:0
-                          };
-                         }
-                       }
-                      else
-                       {
-                        activePatternResult70=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                        return activePatternResult70.$==1?{
-                         $:1,
-                         $0:[activePatternResult70.$0[0],activePatternResult70.$0[1]]
-                        }:{
-                         $:0
-                        };
-                       }
-                     }
-                    else
-                     {
-                      activePatternResult71=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                      return activePatternResult71.$==1?{
-                       $:1,
-                       $0:[activePatternResult71.$0[0],activePatternResult71.$0[1]]
-                      }:{
-                       $:0
-                      };
-                     }
-                   }
-                 }
-                else
-                 {
-                  activePatternResult72=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-                  if(activePatternResult72.$==1)
-                   {
-                    tupledArg21=activePatternResult72.$0[1];
-                    activePatternResult73=Impl["|Next|Empty|"](tupledArg21[0],tupledArg21[1]);
-                    if(activePatternResult73.$==0)
-                     {
-                      if(activePatternResult73.$0[0]===63)
-                       {
-                        next18=activePatternResult73.$0[1];
-                        threshold17=activePatternResult72.$0[0];
-                        return{
-                         $:1,
-                         $0:[{
-                          $:4,
+                             $0:activePatternResult57.$0[0]
+                            },next3d]
+                           };
+                          }
+                         else
+                          {
+                           return{
+                            $:0
+                           };
+                          }
+                        }
+                      }
+                     else
+                      {
+                       activePatternResult58=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                       if(activePatternResult58.$==1)
+                        {
+                         next3e=activePatternResult58.$0[1];
+                         return{
+                          $:1,
+                          $0:[{
+                           $:0,
+                           $0:activePatternResult58.$0[0]
+                          },next3e]
+                         };
+                        }
+                       else
+                        {
+                         return{
+                          $:0
+                         };
+                        }
+                      }
+                    }
+                   else
+                    {
+                     activePatternResult59=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResult59.$==1)
+                      {
+                       next3f=activePatternResult59.$0[1];
+                       return{
+                        $:1,
+                        $0:[{
+                         $:0,
+                         $0:activePatternResult59.$0[0]
+                        },next3f]
+                       };
+                      }
+                     else
+                      {
+                       return{
+                        $:0
+                       };
+                      }
+                    }
+                  }
+                }
+               else
+                {
+                 activePatternResult5a=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                 if(activePatternResult5a.$==1)
+                  {
+                   tupledArg19=activePatternResult5a.$0[1];
+                   activePatternResult5b=_this["|Next|Empty|"](tupledArg19[0],tupledArg19[1]);
+                   if(activePatternResult5b.$==0)
+                    {
+                     if(activePatternResult5b.$0[0]===63)
+                      {
+                       next40=activePatternResult5b.$0[1];
+                       threshold12=activePatternResult5a.$0[0];
+                       return{
+                        $:1,
+                        $0:[{
+                         $:4,
+                         $0:{
+                          $:0,
                           $0:{
                            $:0,
-                           $0:{
-                            $:0,
-                            $0:1,
-                            $1:20
-                           }
-                          },
-                          $1:List.ofArray([[threshold17,{
+                           $0:1,
+                           $1:20
+                          }
+                         },
+                         $1:List.ofArray([[threshold12,{
+                          $:0,
+                          $0:{
                            $:0,
-                           $0:{
-                            $:0,
-                            $0:1,
-                            $1:1
-                           }
-                          }]]),
-                          $2:0
-                         },next18]
-                        };
-                       }
-                      else
-                       {
-                        activePatternResult74=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                        return activePatternResult74.$==1?{
-                         $:1,
-                         $0:[activePatternResult74.$0[0],activePatternResult74.$0[1]]
-                        }:{
-                         $:0
-                        };
-                       }
-                     }
-                    else
-                     {
-                      activePatternResult75=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                      return activePatternResult75.$==1?{
-                       $:1,
-                       $0:[activePatternResult75.$0[0],activePatternResult75.$0[1]]
-                      }:{
-                       $:0
-                      };
-                     }
-                   }
-                  else
-                   {
-                    activePatternResult76=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                    return activePatternResult76.$==1?{
-                     $:1,
-                     $0:[activePatternResult76.$0[0],activePatternResult76.$0[1]]
-                    }:{
-                     $:0
-                    };
-                   }
-                 }
-               }
-              else
-               {
-                activePatternResult77=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-                if(activePatternResult77.$==1)
-                 {
-                  tupledArg22=activePatternResult77.$0[1];
-                  activePatternResult78=Impl["|Next|Empty|"](tupledArg22[0],tupledArg22[1]);
-                  if(activePatternResult78.$==0)
-                   {
-                    if(activePatternResult78.$0[0]===63)
-                     {
-                      next19=activePatternResult78.$0[1];
-                      threshold18=activePatternResult77.$0[0];
-                      return{
-                       $:1,
-                       $0:[{
-                        $:4,
+                           $0:1,
+                           $1:1
+                          }
+                         }]]),
+                         $2:0
+                        },next40]
+                       };
+                      }
+                     else
+                      {
+                       activePatternResult5c=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                       if(activePatternResult5c.$==1)
+                        {
+                         next41=activePatternResult5c.$0[1];
+                         return{
+                          $:1,
+                          $0:[{
+                           $:0,
+                           $0:activePatternResult5c.$0[0]
+                          },next41]
+                         };
+                        }
+                       else
+                        {
+                         return{
+                          $:0
+                         };
+                        }
+                      }
+                    }
+                   else
+                    {
+                     activePatternResult5d=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResult5d.$==1)
+                      {
+                       next42=activePatternResult5d.$0[1];
+                       return{
+                        $:1,
+                        $0:[{
+                         $:0,
+                         $0:activePatternResult5d.$0[0]
+                        },next42]
+                       };
+                      }
+                     else
+                      {
+                       return{
+                        $:0
+                       };
+                      }
+                    }
+                  }
+                 else
+                  {
+                   activePatternResult5e=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                   if(activePatternResult5e.$==1)
+                    {
+                     next43=activePatternResult5e.$0[1];
+                     return{
+                      $:1,
+                      $0:[{
+                       $:0,
+                       $0:activePatternResult5e.$0[0]
+                      },next43]
+                     };
+                    }
+                   else
+                    {
+                     return{
+                      $:0
+                     };
+                    }
+                  }
+                }
+              }
+             else
+              {
+               activePatternResult5f=_this["|Number|_|"](_arg10[0],_arg10[1]);
+               if(activePatternResult5f.$==1)
+                {
+                 tupledArg1a=activePatternResult5f.$0[1];
+                 activePatternResult60=_this["|Next|Empty|"](tupledArg1a[0],tupledArg1a[1]);
+                 if(activePatternResult60.$==0)
+                  {
+                   if(activePatternResult60.$0[0]===63)
+                    {
+                     next44=activePatternResult60.$0[1];
+                     threshold13=activePatternResult5f.$0[0];
+                     return{
+                      $:1,
+                      $0:[{
+                       $:4,
+                       $0:{
+                        $:0,
                         $0:{
                          $:0,
-                         $0:{
-                          $:0,
-                          $0:1,
-                          $1:20
-                         }
-                        },
-                        $1:List.ofArray([[threshold18,{
+                         $0:1,
+                         $1:20
+                        }
+                       },
+                       $1:List.ofArray([[threshold13,{
+                        $:0,
+                        $0:{
                          $:0,
-                         $0:{
-                          $:0,
-                          $0:1,
-                          $1:1
-                         }
-                        }]]),
-                        $2:0
-                       },next19]
-                      };
-                     }
-                    else
-                     {
-                      activePatternResult79=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                      return activePatternResult79.$==1?{
-                       $:1,
-                       $0:[activePatternResult79.$0[0],activePatternResult79.$0[1]]
-                      }:{
-                       $:0
-                      };
-                     }
-                   }
-                  else
-                   {
-                    activePatternResult7a=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                    return activePatternResult7a.$==1?{
-                     $:1,
-                     $0:[activePatternResult7a.$0[0],activePatternResult7a.$0[1]]
-                    }:{
-                     $:0
-                    };
-                   }
-                 }
-                else
-                 {
-                  activePatternResult7b=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                  return activePatternResult7b.$==1?{
-                   $:1,
-                   $0:[activePatternResult7b.$0[0],activePatternResult7b.$0[1]]
-                  }:{
-                   $:0
-                  };
-                 }
-               }
-             }
-            else
-             {
-              activePatternResult7c=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-              if(activePatternResult7c.$==1)
-               {
-                tupledArg23=activePatternResult7c.$0[1];
-                activePatternResult7d=Impl["|Next|Empty|"](tupledArg23[0],tupledArg23[1]);
-                if(activePatternResult7d.$==0)
-                 {
-                  if(activePatternResult7d.$0[0]===63)
-                   {
-                    next1a=activePatternResult7d.$0[1];
-                    threshold19=activePatternResult7c.$0[0];
-                    return{
-                     $:1,
-                     $0:[{
-                      $:4,
+                         $0:1,
+                         $1:1
+                        }
+                       }]]),
+                       $2:0
+                      },next44]
+                     };
+                    }
+                   else
+                    {
+                     activePatternResult61=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResult61.$==1)
+                      {
+                       next45=activePatternResult61.$0[1];
+                       return{
+                        $:1,
+                        $0:[{
+                         $:0,
+                         $0:activePatternResult61.$0[0]
+                        },next45]
+                       };
+                      }
+                     else
+                      {
+                       return{
+                        $:0
+                       };
+                      }
+                    }
+                  }
+                 else
+                  {
+                   activePatternResult62=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                   if(activePatternResult62.$==1)
+                    {
+                     next46=activePatternResult62.$0[1];
+                     return{
+                      $:1,
+                      $0:[{
+                       $:0,
+                       $0:activePatternResult62.$0[0]
+                      },next46]
+                     };
+                    }
+                   else
+                    {
+                     return{
+                      $:0
+                     };
+                    }
+                  }
+                }
+               else
+                {
+                 activePatternResult63=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                 if(activePatternResult63.$==1)
+                  {
+                   next47=activePatternResult63.$0[1];
+                   return{
+                    $:1,
+                    $0:[{
+                     $:0,
+                     $0:activePatternResult63.$0[0]
+                    },next47]
+                   };
+                  }
+                 else
+                  {
+                   return{
+                    $:0
+                   };
+                  }
+                }
+              }
+            }
+           else
+            {
+             activePatternResult64=_this["|Number|_|"](_arg10[0],_arg10[1]);
+             if(activePatternResult64.$==1)
+              {
+               tupledArg1b=activePatternResult64.$0[1];
+               activePatternResult65=_this["|Next|Empty|"](tupledArg1b[0],tupledArg1b[1]);
+               if(activePatternResult65.$==0)
+                {
+                 if(activePatternResult65.$0[0]===63)
+                  {
+                   next48=activePatternResult65.$0[1];
+                   threshold14=activePatternResult64.$0[0];
+                   return{
+                    $:1,
+                    $0:[{
+                     $:4,
+                     $0:{
+                      $:0,
                       $0:{
                        $:0,
-                       $0:{
-                        $:0,
-                        $0:1,
-                        $1:20
-                       }
-                      },
-                      $1:List.ofArray([[threshold19,{
+                       $0:1,
+                       $1:20
+                      }
+                     },
+                     $1:List.ofArray([[threshold14,{
+                      $:0,
+                      $0:{
                        $:0,
+                       $0:1,
+                       $1:1
+                      }
+                     }]]),
+                     $2:0
+                    },next48]
+                   };
+                  }
+                 else
+                  {
+                   activePatternResult66=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                   if(activePatternResult66.$==1)
+                    {
+                     next49=activePatternResult66.$0[1];
+                     return{
+                      $:1,
+                      $0:[{
+                       $:0,
+                       $0:activePatternResult66.$0[0]
+                      },next49]
+                     };
+                    }
+                   else
+                    {
+                     return{
+                      $:0
+                     };
+                    }
+                  }
+                }
+               else
+                {
+                 activePatternResult67=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                 if(activePatternResult67.$==1)
+                  {
+                   next4a=activePatternResult67.$0[1];
+                   return{
+                    $:1,
+                    $0:[{
+                     $:0,
+                     $0:activePatternResult67.$0[0]
+                    },next4a]
+                   };
+                  }
+                 else
+                  {
+                   return{
+                    $:0
+                   };
+                  }
+                }
+              }
+             else
+              {
+               activePatternResult68=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+               if(activePatternResult68.$==1)
+                {
+                 next4b=activePatternResult68.$0[1];
+                 return{
+                  $:1,
+                  $0:[{
+                   $:0,
+                   $0:activePatternResult68.$0[0]
+                  },next4b]
+                 };
+                }
+               else
+                {
+                 return{
+                  $:0
+                 };
+                }
+              }
+            }
+          }
+        }
+       else
+        {
+         activePatternResult69=_this["|Number|_|"](_arg10[0],_arg10[1]);
+         if(activePatternResult69.$==1)
+          {
+           tupledArg1c=activePatternResult69.$0[1];
+           activePatternResult6a=_this["|Next|Empty|"](tupledArg1c[0],tupledArg1c[1]);
+           if(activePatternResult6a.$==0)
+            {
+             if(activePatternResult6a.$0[0]===63)
+              {
+               tupledArg1d=activePatternResult6a.$0[1];
+               activePatternResult6b=_this["|Number|_|"](tupledArg1d[0],tupledArg1d[1]);
+               if(activePatternResult6b.$==1)
+                {
+                 tupledArg1e=activePatternResult6b.$0[1];
+                 activePatternResult6c=_this["|Next|Empty|"](tupledArg1e[0],tupledArg1e[1]);
+                 if(activePatternResult6c.$==0)
+                  {
+                   if(activePatternResult6c.$0[0]===63)
+                    {
+                     critThreshold3=activePatternResult6b.$0[0];
+                     next4c=activePatternResult6c.$0[1];
+                     threshold15=activePatternResult69.$0[0];
+                     return{
+                      $:1,
+                      $0:[{
+                       $:4,
                        $0:{
                         $:0,
-                        $0:1,
-                        $1:1
-                       }
-                      }]]),
-                      $2:0
-                     },next1a]
-                    };
-                   }
-                  else
-                   {
-                    activePatternResult7e=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                    return activePatternResult7e.$==1?{
-                     $:1,
-                     $0:[activePatternResult7e.$0[0],activePatternResult7e.$0[1]]
-                    }:{
-                     $:0
-                    };
-                   }
-                 }
-                else
-                 {
-                  activePatternResult7f=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                  return activePatternResult7f.$==1?{
-                   $:1,
-                   $0:[activePatternResult7f.$0[0],activePatternResult7f.$0[1]]
-                  }:{
-                   $:0
-                  };
-                 }
-               }
-              else
-               {
-                activePatternResult80=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                return activePatternResult80.$==1?{
-                 $:1,
-                 $0:[activePatternResult80.$0[0],activePatternResult80.$0[1]]
-                }:{
-                 $:0
-                };
-               }
-             }
-           }
-          else
-           {
-            activePatternResult81=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-            if(activePatternResult81.$==1)
-             {
-              tupledArg24=activePatternResult81.$0[1];
-              activePatternResult82=Impl["|Next|Empty|"](tupledArg24[0],tupledArg24[1]);
-              if(activePatternResult82.$==0)
-               {
-                if(activePatternResult82.$0[0]===63)
-                 {
-                  next1b=activePatternResult82.$0[1];
-                  threshold1a=activePatternResult81.$0[0];
-                  return{
-                   $:1,
-                   $0:[{
-                    $:4,
+                        $0:{
+                         $:0,
+                         $0:1,
+                         $1:20
+                        }
+                       },
+                       $1:List.ofArray([[critThreshold3,{
+                        $:0,
+                        $0:{
+                         $:0,
+                         $0:2,
+                         $1:1
+                        }
+                       }],[threshold15,{
+                        $:0,
+                        $0:{
+                         $:0,
+                         $0:1,
+                         $1:1
+                        }
+                       }]]),
+                       $2:0
+                      },next4c]
+                     };
+                    }
+                   else
+                    {
+                     activePatternResult6d=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResult6d.$==1)
+                      {
+                       tupledArg1f=activePatternResult6d.$0[1];
+                       activePatternResult6e=_this["|Next|Empty|"](tupledArg1f[0],tupledArg1f[1]);
+                       if(activePatternResult6e.$==0)
+                        {
+                         if(activePatternResult6e.$0[0]===63)
+                          {
+                           next4d=activePatternResult6e.$0[1];
+                           threshold16=activePatternResult6d.$0[0];
+                           return{
+                            $:1,
+                            $0:[{
+                             $:4,
+                             $0:{
+                              $:0,
+                              $0:{
+                               $:0,
+                               $0:1,
+                               $1:20
+                              }
+                             },
+                             $1:List.ofArray([[threshold16,{
+                              $:0,
+                              $0:{
+                               $:0,
+                               $0:1,
+                               $1:1
+                              }
+                             }]]),
+                             $2:0
+                            },next4d]
+                           };
+                          }
+                         else
+                          {
+                           activePatternResult6f=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                           if(activePatternResult6f.$==1)
+                            {
+                             next4e=activePatternResult6f.$0[1];
+                             return{
+                              $:1,
+                              $0:[{
+                               $:0,
+                               $0:activePatternResult6f.$0[0]
+                              },next4e]
+                             };
+                            }
+                           else
+                            {
+                             return{
+                              $:0
+                             };
+                            }
+                          }
+                        }
+                       else
+                        {
+                         activePatternResult70=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                         if(activePatternResult70.$==1)
+                          {
+                           next4f=activePatternResult70.$0[1];
+                           return{
+                            $:1,
+                            $0:[{
+                             $:0,
+                             $0:activePatternResult70.$0[0]
+                            },next4f]
+                           };
+                          }
+                         else
+                          {
+                           return{
+                            $:0
+                           };
+                          }
+                        }
+                      }
+                     else
+                      {
+                       activePatternResult71=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                       if(activePatternResult71.$==1)
+                        {
+                         next50=activePatternResult71.$0[1];
+                         return{
+                          $:1,
+                          $0:[{
+                           $:0,
+                           $0:activePatternResult71.$0[0]
+                          },next50]
+                         };
+                        }
+                       else
+                        {
+                         return{
+                          $:0
+                         };
+                        }
+                      }
+                    }
+                  }
+                 else
+                  {
+                   activePatternResult72=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                   if(activePatternResult72.$==1)
+                    {
+                     tupledArg20=activePatternResult72.$0[1];
+                     activePatternResult73=_this["|Next|Empty|"](tupledArg20[0],tupledArg20[1]);
+                     if(activePatternResult73.$==0)
+                      {
+                       if(activePatternResult73.$0[0]===63)
+                        {
+                         next51=activePatternResult73.$0[1];
+                         threshold17=activePatternResult72.$0[0];
+                         return{
+                          $:1,
+                          $0:[{
+                           $:4,
+                           $0:{
+                            $:0,
+                            $0:{
+                             $:0,
+                             $0:1,
+                             $1:20
+                            }
+                           },
+                           $1:List.ofArray([[threshold17,{
+                            $:0,
+                            $0:{
+                             $:0,
+                             $0:1,
+                             $1:1
+                            }
+                           }]]),
+                           $2:0
+                          },next51]
+                         };
+                        }
+                       else
+                        {
+                         activePatternResult74=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                         if(activePatternResult74.$==1)
+                          {
+                           next52=activePatternResult74.$0[1];
+                           return{
+                            $:1,
+                            $0:[{
+                             $:0,
+                             $0:activePatternResult74.$0[0]
+                            },next52]
+                           };
+                          }
+                         else
+                          {
+                           return{
+                            $:0
+                           };
+                          }
+                        }
+                      }
+                     else
+                      {
+                       activePatternResult75=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                       if(activePatternResult75.$==1)
+                        {
+                         next53=activePatternResult75.$0[1];
+                         return{
+                          $:1,
+                          $0:[{
+                           $:0,
+                           $0:activePatternResult75.$0[0]
+                          },next53]
+                         };
+                        }
+                       else
+                        {
+                         return{
+                          $:0
+                         };
+                        }
+                      }
+                    }
+                   else
+                    {
+                     activePatternResult76=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResult76.$==1)
+                      {
+                       next54=activePatternResult76.$0[1];
+                       return{
+                        $:1,
+                        $0:[{
+                         $:0,
+                         $0:activePatternResult76.$0[0]
+                        },next54]
+                       };
+                      }
+                     else
+                      {
+                       return{
+                        $:0
+                       };
+                      }
+                    }
+                  }
+                }
+               else
+                {
+                 activePatternResult77=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                 if(activePatternResult77.$==1)
+                  {
+                   tupledArg21=activePatternResult77.$0[1];
+                   activePatternResult78=_this["|Next|Empty|"](tupledArg21[0],tupledArg21[1]);
+                   if(activePatternResult78.$==0)
+                    {
+                     if(activePatternResult78.$0[0]===63)
+                      {
+                       next55=activePatternResult78.$0[1];
+                       threshold18=activePatternResult77.$0[0];
+                       return{
+                        $:1,
+                        $0:[{
+                         $:4,
+                         $0:{
+                          $:0,
+                          $0:{
+                           $:0,
+                           $0:1,
+                           $1:20
+                          }
+                         },
+                         $1:List.ofArray([[threshold18,{
+                          $:0,
+                          $0:{
+                           $:0,
+                           $0:1,
+                           $1:1
+                          }
+                         }]]),
+                         $2:0
+                        },next55]
+                       };
+                      }
+                     else
+                      {
+                       activePatternResult79=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                       if(activePatternResult79.$==1)
+                        {
+                         next56=activePatternResult79.$0[1];
+                         return{
+                          $:1,
+                          $0:[{
+                           $:0,
+                           $0:activePatternResult79.$0[0]
+                          },next56]
+                         };
+                        }
+                       else
+                        {
+                         return{
+                          $:0
+                         };
+                        }
+                      }
+                    }
+                   else
+                    {
+                     activePatternResult7a=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResult7a.$==1)
+                      {
+                       next57=activePatternResult7a.$0[1];
+                       return{
+                        $:1,
+                        $0:[{
+                         $:0,
+                         $0:activePatternResult7a.$0[0]
+                        },next57]
+                       };
+                      }
+                     else
+                      {
+                       return{
+                        $:0
+                       };
+                      }
+                    }
+                  }
+                 else
+                  {
+                   activePatternResult7b=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                   if(activePatternResult7b.$==1)
+                    {
+                     next58=activePatternResult7b.$0[1];
+                     return{
+                      $:1,
+                      $0:[{
+                       $:0,
+                       $0:activePatternResult7b.$0[0]
+                      },next58]
+                     };
+                    }
+                   else
+                    {
+                     return{
+                      $:0
+                     };
+                    }
+                  }
+                }
+              }
+             else
+              {
+               activePatternResult7c=_this["|Number|_|"](_arg10[0],_arg10[1]);
+               if(activePatternResult7c.$==1)
+                {
+                 tupledArg22=activePatternResult7c.$0[1];
+                 activePatternResult7d=_this["|Next|Empty|"](tupledArg22[0],tupledArg22[1]);
+                 if(activePatternResult7d.$==0)
+                  {
+                   if(activePatternResult7d.$0[0]===63)
+                    {
+                     next59=activePatternResult7d.$0[1];
+                     threshold19=activePatternResult7c.$0[0];
+                     return{
+                      $:1,
+                      $0:[{
+                       $:4,
+                       $0:{
+                        $:0,
+                        $0:{
+                         $:0,
+                         $0:1,
+                         $1:20
+                        }
+                       },
+                       $1:List.ofArray([[threshold19,{
+                        $:0,
+                        $0:{
+                         $:0,
+                         $0:1,
+                         $1:1
+                        }
+                       }]]),
+                       $2:0
+                      },next59]
+                     };
+                    }
+                   else
+                    {
+                     activePatternResult7e=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResult7e.$==1)
+                      {
+                       next5a=activePatternResult7e.$0[1];
+                       return{
+                        $:1,
+                        $0:[{
+                         $:0,
+                         $0:activePatternResult7e.$0[0]
+                        },next5a]
+                       };
+                      }
+                     else
+                      {
+                       return{
+                        $:0
+                       };
+                      }
+                    }
+                  }
+                 else
+                  {
+                   activePatternResult7f=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                   if(activePatternResult7f.$==1)
+                    {
+                     next5b=activePatternResult7f.$0[1];
+                     return{
+                      $:1,
+                      $0:[{
+                       $:0,
+                       $0:activePatternResult7f.$0[0]
+                      },next5b]
+                     };
+                    }
+                   else
+                    {
+                     return{
+                      $:0
+                     };
+                    }
+                  }
+                }
+               else
+                {
+                 activePatternResult80=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                 if(activePatternResult80.$==1)
+                  {
+                   next5c=activePatternResult80.$0[1];
+                   return{
+                    $:1,
+                    $0:[{
+                     $:0,
+                     $0:activePatternResult80.$0[0]
+                    },next5c]
+                   };
+                  }
+                 else
+                  {
+                   return{
+                    $:0
+                   };
+                  }
+                }
+              }
+            }
+           else
+            {
+             activePatternResult81=_this["|Number|_|"](_arg10[0],_arg10[1]);
+             if(activePatternResult81.$==1)
+              {
+               tupledArg23=activePatternResult81.$0[1];
+               activePatternResult82=_this["|Next|Empty|"](tupledArg23[0],tupledArg23[1]);
+               if(activePatternResult82.$==0)
+                {
+                 if(activePatternResult82.$0[0]===63)
+                  {
+                   next5d=activePatternResult82.$0[1];
+                   threshold1a=activePatternResult81.$0[0];
+                   return{
+                    $:1,
+                    $0:[{
+                     $:4,
+                     $0:{
+                      $:0,
+                      $0:{
+                       $:0,
+                       $0:1,
+                       $1:20
+                      }
+                     },
+                     $1:List.ofArray([[threshold1a,{
+                      $:0,
+                      $0:{
+                       $:0,
+                       $0:1,
+                       $1:1
+                      }
+                     }]]),
+                     $2:0
+                    },next5d]
+                   };
+                  }
+                 else
+                  {
+                   activePatternResult83=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                   if(activePatternResult83.$==1)
+                    {
+                     next5e=activePatternResult83.$0[1];
+                     return{
+                      $:1,
+                      $0:[{
+                       $:0,
+                       $0:activePatternResult83.$0[0]
+                      },next5e]
+                     };
+                    }
+                   else
+                    {
+                     return{
+                      $:0
+                     };
+                    }
+                  }
+                }
+               else
+                {
+                 activePatternResult84=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                 if(activePatternResult84.$==1)
+                  {
+                   next5f=activePatternResult84.$0[1];
+                   return{
+                    $:1,
+                    $0:[{
+                     $:0,
+                     $0:activePatternResult84.$0[0]
+                    },next5f]
+                   };
+                  }
+                 else
+                  {
+                   return{
+                    $:0
+                   };
+                  }
+                }
+              }
+             else
+              {
+               activePatternResult85=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+               if(activePatternResult85.$==1)
+                {
+                 next60=activePatternResult85.$0[1];
+                 return{
+                  $:1,
+                  $0:[{
+                   $:0,
+                   $0:activePatternResult85.$0[0]
+                  },next60]
+                 };
+                }
+               else
+                {
+                 return{
+                  $:0
+                 };
+                }
+              }
+            }
+          }
+         else
+          {
+           activePatternResult86=_this["|Number|_|"](_arg10[0],_arg10[1]);
+           if(activePatternResult86.$==1)
+            {
+             tupledArg24=activePatternResult86.$0[1];
+             activePatternResult87=_this["|Next|Empty|"](tupledArg24[0],tupledArg24[1]);
+             if(activePatternResult87.$==0)
+              {
+               if(activePatternResult87.$0[0]===63)
+                {
+                 next61=activePatternResult87.$0[1];
+                 threshold1b=activePatternResult86.$0[0];
+                 return{
+                  $:1,
+                  $0:[{
+                   $:4,
+                   $0:{
+                    $:0,
                     $0:{
                      $:0,
-                     $0:{
-                      $:0,
-                      $0:1,
-                      $1:20
-                     }
-                    },
-                    $1:List.ofArray([[threshold1a,{
+                     $0:1,
+                     $1:20
+                    }
+                   },
+                   $1:List.ofArray([[threshold1b,{
+                    $:0,
+                    $0:{
                      $:0,
-                     $0:{
-                      $:0,
-                      $0:1,
-                      $1:1
-                     }
-                    }]]),
-                    $2:0
-                   },next1b]
-                  };
-                 }
-                else
-                 {
-                  activePatternResult83=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                  return activePatternResult83.$==1?{
-                   $:1,
-                   $0:[activePatternResult83.$0[0],activePatternResult83.$0[1]]
-                  }:{
-                   $:0
-                  };
-                 }
-               }
-              else
-               {
-                activePatternResult84=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                return activePatternResult84.$==1?{
-                 $:1,
-                 $0:[activePatternResult84.$0[0],activePatternResult84.$0[1]]
-                }:{
-                 $:0
-                };
-               }
-             }
-            else
-             {
-              activePatternResult85=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-              return activePatternResult85.$==1?{
-               $:1,
-               $0:[activePatternResult85.$0[0],activePatternResult85.$0[1]]
-              }:{
-               $:0
-              };
-             }
-           }
-         }
-        else
-         {
-          activePatternResult86=Impl["|Number|_|"](_arg2[0],_arg2[1]);
-          if(activePatternResult86.$==1)
-           {
-            tupledArg25=activePatternResult86.$0[1];
-            activePatternResult87=Impl["|Next|Empty|"](tupledArg25[0],tupledArg25[1]);
-            if(activePatternResult87.$==0)
-             {
-              if(activePatternResult87.$0[0]===63)
-               {
-                next1c=activePatternResult87.$0[1];
-                threshold1b=activePatternResult86.$0[0];
-                return{
-                 $:1,
-                 $0:[{
-                  $:4,
-                  $0:{
+                     $0:1,
+                     $1:1
+                    }
+                   }]]),
+                   $2:0
+                  },next61]
+                 };
+                }
+               else
+                {
+                 activePatternResult88=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                 if(activePatternResult88.$==1)
+                  {
+                   next62=activePatternResult88.$0[1];
+                   return{
+                    $:1,
+                    $0:[{
+                     $:0,
+                     $0:activePatternResult88.$0[0]
+                    },next62]
+                   };
+                  }
+                 else
+                  {
+                   return{
+                    $:0
+                   };
+                  }
+                }
+              }
+             else
+              {
+               activePatternResult89=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+               if(activePatternResult89.$==1)
+                {
+                 next63=activePatternResult89.$0[1];
+                 return{
+                  $:1,
+                  $0:[{
                    $:0,
-                   $0:{
-                    $:0,
-                    $0:1,
-                    $1:20
-                   }
-                  },
-                  $1:List.ofArray([[threshold1b,{
-                   $:0,
-                   $0:{
-                    $:0,
-                    $0:1,
-                    $1:1
-                   }
-                  }]]),
-                  $2:0
-                 },next1c]
-                };
-               }
-              else
-               {
-                activePatternResult88=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-                return activePatternResult88.$==1?{
-                 $:1,
-                 $0:[activePatternResult88.$0[0],activePatternResult88.$0[1]]
-                }:{
-                 $:0
-                };
-               }
-             }
-            else
-             {
-              activePatternResult89=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-              return activePatternResult89.$==1?{
-               $:1,
-               $0:[activePatternResult89.$0[0],activePatternResult89.$0[1]]
-              }:{
-               $:0
-              };
-             }
-           }
-          else
-           {
-            activePatternResult8a=Impl["|SumSimplesExpression|_|"](_arg2[0],_arg2[1]);
-            return activePatternResult8a.$==1?{
-             $:1,
-             $0:[activePatternResult8a.$0[0],activePatternResult8a.$0[1]]
-            }:{
-             $:0
-            };
-           }
-         }
-       }
+                   $0:activePatternResult89.$0[0]
+                  },next63]
+                 };
+                }
+               else
+                {
+                 return{
+                  $:0
+                 };
+                }
+              }
+            }
+           else
+            {
+             activePatternResult8a=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+             if(activePatternResult8a.$==1)
+              {
+               next64=activePatternResult8a.$0[1];
+               return{
+                $:1,
+                $0:[{
+                 $:0,
+                 $0:activePatternResult8a.$0[0]
+                },next64]
+               };
+              }
+             else
+              {
+               return{
+                $:0
+               };
+              }
+            }
+          }
+        }
+      };
+      return function(tupledArg)
+      {
+       return _this.memoize(pattern,tupledArg[0],tupledArg[1]);
+      };
+     },
+     "|CompoundExpression|_|":function()
+     {
+      var pattern,_this=this;
+      pattern=function(_arg8)
+      {
+       var activePatternResult,activePatternResult1,tupledArg,activePatternResult2,activePatternResult3,activePatternResult4,activePatternResult5,activePatternResult6,activePatternResult7;
+       activePatternResult=_this["|Next|Empty|"](_arg8[0],_arg8[1]);
+       if(activePatternResult.$==0)
+        {
+         if(activePatternResult.$0[0]===40)
+          {
+           activePatternResult1=(Lazy.Force(_this["|CompoundExpressionSum|_|@81"]))(activePatternResult.$0[1]);
+           if(activePatternResult1.$==1)
+            {
+             tupledArg=activePatternResult1.$0[1];
+             activePatternResult2=_this["|Next|Empty|"](tupledArg[0],tupledArg[1]);
+             if(activePatternResult2.$==0)
+              {
+               if(activePatternResult2.$0[0]===41)
+                {
+                 return{
+                  $:1,
+                  $0:[activePatternResult1.$0[0],activePatternResult2.$0[1]]
+                 };
+                }
+               else
+                {
+                 activePatternResult3=(Lazy.Force(_this["|CompoundExpressionSum|_|@81"]))(_arg8);
+                 return activePatternResult3.$==1?{
+                  $:1,
+                  $0:[activePatternResult3.$0[0],activePatternResult3.$0[1]]
+                 }:{
+                  $:0
+                 };
+                }
+              }
+             else
+              {
+               activePatternResult4=(Lazy.Force(_this["|CompoundExpressionSum|_|@81"]))(_arg8);
+               return activePatternResult4.$==1?{
+                $:1,
+                $0:[activePatternResult4.$0[0],activePatternResult4.$0[1]]
+               }:{
+                $:0
+               };
+              }
+            }
+           else
+            {
+             activePatternResult5=(Lazy.Force(_this["|CompoundExpressionSum|_|@81"]))(_arg8);
+             return activePatternResult5.$==1?{
+              $:1,
+              $0:[activePatternResult5.$0[0],activePatternResult5.$0[1]]
+             }:{
+              $:0
+             };
+            }
+          }
+         else
+          {
+           activePatternResult6=(Lazy.Force(_this["|CompoundExpressionSum|_|@81"]))(_arg8);
+           return activePatternResult6.$==1?{
+            $:1,
+            $0:[activePatternResult6.$0[0],activePatternResult6.$0[1]]
+           }:{
+            $:0
+           };
+          }
+        }
+       else
+        {
+         activePatternResult7=(Lazy.Force(_this["|CompoundExpressionSum|_|@81"]))(_arg8);
+         return activePatternResult7.$==1?{
+          $:1,
+          $0:[activePatternResult7.$0[0],activePatternResult7.$0[1]]
+         }:{
+          $:0
+         };
+        }
+      };
+      return function(tupledArg)
+      {
+       return _this.memoize(pattern,tupledArg[0],tupledArg[1]);
+      };
      },
      "|MaybeChars|":function(_,_1,_2)
      {
-      var _arg1,activePatternResult,tupledArg;
-      _arg1=[_1,_2];
-      activePatternResult=Impl["|Char|_|"](_,_arg1[0],_arg1[1]);
+      var _arg3,activePatternResult,tupledArg;
+      _arg3=[_1,_2];
+      activePatternResult=this["|Char|_|"](_,_arg3[0],_arg3[1]);
       if(activePatternResult.$==1)
        {
         tupledArg=activePatternResult.$0;
-        return Impl["|MaybeChars|"](_,tupledArg[0],tupledArg[1]);
+        return this["|MaybeChars|"](_,tupledArg[0],tupledArg[1]);
        }
       else
        {
-        return _arg1;
+        return _arg3;
        }
      },
      "|NextWord|_|":function(_,_1,_2)
      {
-      var input,letters,__NextChar___,activePatternResult2;
+      var input,letters,__NextChar___,_3=this,activePatternResult2;
       input=[_1,_2];
       letters=List.ofSeq(_);
-      __NextChar___=function(letters1,_arg1)
+      __NextChar___=function(letters1,_arg6)
       {
        var activePatternResult,rest,matchValue,activePatternResult1;
-       activePatternResult=Impl["|Next|Empty|"](_arg1[0],_arg1[1]);
+       activePatternResult=_3["|Next|Empty|"](_arg6[0],_arg6[1]);
        if(activePatternResult.$==0)
         {
          if(activePatternResult.$0[0]===List.head(letters1))
@@ -20045,17 +21288,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      },
      "|Number|_|":function(_,_1)
      {
-      var _arg1,_arg10_,_arg11_,activePatternResult,i1;
-      _arg1=[_,_1];
-      _arg10_=_arg1[0];
-      _arg11_=_arg1[1];
-      activePatternResult=Impl["|Chars|_|"](Impl.numeric(),_arg10_,_arg11_);
+      var _arg7,activePatternResult,i1;
+      _arg7=[_,_1];
+      activePatternResult=this["|Chars|_|"](this.numeric,_arg7[0],_arg7[1]);
       if(activePatternResult.$==1)
        {
         i1=activePatternResult.$0;
         return{
          $:1,
-         $0:[parseInt(Impl.sub(_arg1[0],_arg1[1],i1[0],i1[1])),i1]
+         $0:[parseInt(this.sub(_arg7[0],_arg7[1],i1[0],i1[1])),i1]
         };
        }
       else
@@ -20067,20 +21308,18 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      },
      "|SimpleExpression|_|":function(_,_1)
      {
-      var input,makeRoll,activePatternResult6,tupledArg3,activePatternResult7,activePatternResult8,tupledArg4,activePatternResult9,tupledArg5,activePatternResulta,activePatternResultb,tupledArg6,activePatternResultc,next,activePatternResultd,next1,activePatternResulte,next2,activePatternResultf,next3,activePatternResult10,tupledArg7,activePatternResult11,next4,activePatternResult12,next5,activePatternResult13,next6,activePatternResult14,next7,activePatternResult15,tupledArg8,activePatternResult16,next8,activePatternResult17,next9,activePatternResult18,nexta,activePatternResult19,nextb,activePatternResult1a,tupledArg9,activePatternResult1b,nextc,activePatternResult1c,nextd,activePatternResult1d,nexte,activePatternResult1e,nextf,activePatternResult1f,tupledArga,activePatternResult20,tupledArgb,activePatternResult21,activePatternResult22,tupledArgc,activePatternResult23,next10,activePatternResult24,next11,activePatternResult25,next12,activePatternResult26,next13,activePatternResult27,tupledArgd,activePatternResult28,next14,activePatternResult29,next15,activePatternResult2a,next16,activePatternResult2b,next17,activePatternResult2c,tupledArge,activePatternResult2d,next18,activePatternResult2e,next19,activePatternResult2f,next1a,activePatternResult30,next1b,activePatternResult31,tupledArgf,activePatternResult32,next1c,activePatternResult33,next1d,activePatternResult34,next1e,activePatternResult35,next1f,activePatternResult36,tupledArg10,activePatternResult37,tupledArg11,activePatternResult38,activePatternResult39,tupledArg12,activePatternResult3a,next20,activePatternResult3b,next21,activePatternResult3c,next22,activePatternResult3d,next23,activePatternResult3e,tupledArg13,activePatternResult3f,next24,activePatternResult40,next25,activePatternResult41,next26,activePatternResult42,next27,activePatternResult43,tupledArg14,activePatternResult44,next28,activePatternResult45,next29,activePatternResult46,next2a,activePatternResult47,next2b,activePatternResult48,tupledArg15,activePatternResult49,next2c,activePatternResult4a,next2d,activePatternResult4b,next2e,activePatternResult4c,next2f;
+      var input,makeRoll,_2=this,activePatternResult6,tupledArg3,activePatternResult7,activePatternResult8,tupledArg4,activePatternResult9,tupledArg5,activePatternResulta,activePatternResultb,tupledArg6,activePatternResultc,next,activePatternResultd,next1,activePatternResulte,next2,activePatternResultf,next3,activePatternResult10,tupledArg7,activePatternResult11,next4,activePatternResult12,next5,activePatternResult13,next6,activePatternResult14,next7,activePatternResult15,tupledArg8,activePatternResult16,next8,activePatternResult17,next9,activePatternResult18,nexta,activePatternResult19,nextb,activePatternResult1a,tupledArg9,activePatternResult1b,nextc,activePatternResult1c,nextd,activePatternResult1d,nexte,activePatternResult1e,nextf,activePatternResult1f,tupledArga,activePatternResult20,tupledArgb,activePatternResult21,activePatternResult22,tupledArgc,activePatternResult23,next10,activePatternResult24,next11,activePatternResult25,next12,activePatternResult26,next13,activePatternResult27,tupledArgd,activePatternResult28,next14,activePatternResult29,next15,activePatternResult2a,next16,activePatternResult2b,next17,activePatternResult2c,tupledArge,activePatternResult2d,next18,activePatternResult2e,next19,activePatternResult2f,next1a,activePatternResult30,next1b,activePatternResult31,tupledArgf,activePatternResult32,next1c,activePatternResult33,next1d,activePatternResult34,next1e,activePatternResult35,next1f,activePatternResult36,tupledArg10,activePatternResult37,tupledArg11,activePatternResult38,activePatternResult39,tupledArg12,activePatternResult3a,next20,activePatternResult3b,next21,activePatternResult3c,next22,activePatternResult3d,next23,activePatternResult3e,tupledArg13,activePatternResult3f,next24,activePatternResult40,next25,activePatternResult41,next26,activePatternResult42,next27,activePatternResult43,tupledArg14,activePatternResult44,next28,activePatternResult45,next29,activePatternResult46,next2a,activePatternResult47,next2b,activePatternResult48,tupledArg15,activePatternResult49,next2c,activePatternResult4a,next2d,activePatternResult4b,next2e,activePatternResult4c,next2f;
       input=[_,_1];
       makeRoll=function(n,d,input1)
       {
-       var _arg10_,_arg11_,activePatternResult,tupledArg,_arg10_1,_arg11_1,activePatternResult1,s,i,matchValue,_arg10_2,_arg11_2,activePatternResult2,tupledArg1,activePatternResult3,s1,i1,matchValue1,_arg10_3,_arg11_3,activePatternResult4,tupledArg2,activePatternResult5,s2,i2,matchValue2;
-       _arg10_=input1[0];
-       _arg11_=input1[1];
-       activePatternResult=Impl["|Char|_|"](Impl.advantageDisadvantage(),_arg10_,_arg11_);
+       var alphabet,activePatternResult,alphabet1,tupledArg,activePatternResult1,s,i,matchValue,alphabet2,activePatternResult2,tupledArg1,activePatternResult3,s1,i1,matchValue1,alphabet3,activePatternResult4,tupledArg2,activePatternResult5,s2,i2,matchValue2;
+       alphabet=_2.advantageDisadvantage;
+       activePatternResult=_2["|Char|_|"](alphabet,input1[0],input1[1]);
        if(activePatternResult.$==1)
         {
+         alphabet1=_2.arithmeticOperators;
          tupledArg=activePatternResult.$0;
-         _arg10_1=tupledArg[0];
-         _arg11_1=tupledArg[1];
-         activePatternResult1=Impl["|Char|_|"](Impl.arithmeticOperators(),_arg10_1,_arg11_1);
+         activePatternResult1=_2["|Char|_|"](alphabet1,tupledArg[0],tupledArg[1]);
          if(activePatternResult1.$==1)
           {
            s=input1[0];
@@ -20109,13 +21348,12 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
           }
          else
           {
-           _arg10_2=input1[0];
-           _arg11_2=input1[1];
-           activePatternResult2=Impl["|Char|_|"](Impl.advantageDisadvantage(),_arg10_2,_arg11_2);
+           alphabet2=_2.advantageDisadvantage;
+           activePatternResult2=_2["|Char|_|"](alphabet2,input1[0],input1[1]);
            if(activePatternResult2.$==1)
             {
              tupledArg1=activePatternResult2.$0;
-             activePatternResult3=Impl["|Next|Empty|"](tupledArg1[0],tupledArg1[1]);
+             activePatternResult3=_2["|Next|Empty|"](tupledArg1[0],tupledArg1[1]);
              if(activePatternResult3.$==1)
               {
                s1=input1[0];
@@ -20169,13 +21407,12 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
         }
        else
         {
-         _arg10_3=input1[0];
-         _arg11_3=input1[1];
-         activePatternResult4=Impl["|Char|_|"](Impl.advantageDisadvantage(),_arg10_3,_arg11_3);
+         alphabet3=_2.advantageDisadvantage;
+         activePatternResult4=_2["|Char|_|"](alphabet3,input1[0],input1[1]);
          if(activePatternResult4.$==1)
           {
            tupledArg2=activePatternResult4.$0;
-           activePatternResult5=Impl["|Next|Empty|"](tupledArg2[0],tupledArg2[1]);
+           activePatternResult5=_2["|Next|Empty|"](tupledArg2[0],tupledArg2[1]);
            if(activePatternResult5.$==1)
             {
              s2=input1[0];
@@ -20227,41 +21464,41 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
           }
         }
       };
-      activePatternResult6=Impl["|Next|Empty|"](input[0],input[1]);
+      activePatternResult6=_2["|Next|Empty|"](input[0],input[1]);
       if(activePatternResult6.$==0)
        {
         if(activePatternResult6.$0[0]===100)
          {
           tupledArg3=activePatternResult6.$0[1];
-          activePatternResult7=Impl["|Number|_|"](tupledArg3[0],tupledArg3[1]);
+          activePatternResult7=_2["|Number|_|"](tupledArg3[0],tupledArg3[1]);
           if(activePatternResult7.$==1)
            {
             return makeRoll(1,activePatternResult7.$0[0],activePatternResult7.$0[1]);
            }
           else
            {
-            activePatternResult8=Impl["|Number|_|"](input[0],input[1]);
+            activePatternResult8=_2["|Number|_|"](input[0],input[1]);
             if(activePatternResult8.$==1)
              {
               tupledArg4=activePatternResult8.$0[1];
-              activePatternResult9=Impl["|Next|Empty|"](tupledArg4[0],tupledArg4[1]);
+              activePatternResult9=_2["|Next|Empty|"](tupledArg4[0],tupledArg4[1]);
               if(activePatternResult9.$==0)
                {
                 if(activePatternResult9.$0[0]===100)
                  {
                   tupledArg5=activePatternResult9.$0[1];
-                  activePatternResulta=Impl["|Number|_|"](tupledArg5[0],tupledArg5[1]);
+                  activePatternResulta=_2["|Number|_|"](tupledArg5[0],tupledArg5[1]);
                   if(activePatternResulta.$==1)
                    {
                     return makeRoll(activePatternResult8.$0[0],activePatternResulta.$0[0],activePatternResulta.$0[1]);
                    }
                   else
                    {
-                    activePatternResultb=Impl["|Number|_|"](input[0],input[1]);
+                    activePatternResultb=_2["|Number|_|"](input[0],input[1]);
                     if(activePatternResultb.$==1)
                      {
                       tupledArg6=activePatternResultb.$0[1];
-                      activePatternResultc=Impl["|Next|Empty|"](tupledArg6[0],tupledArg6[1]);
+                      activePatternResultc=_2["|Next|Empty|"](tupledArg6[0],tupledArg6[1]);
                       if(activePatternResultc.$==0)
                        {
                         if(activePatternResultc.$0[0]===100)
@@ -20278,7 +21515,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                          }
                         else
                          {
-                          activePatternResultd=Impl["|Number|_|"](input[0],input[1]);
+                          activePatternResultd=_2["|Number|_|"](input[0],input[1]);
                           if(activePatternResultd.$==1)
                            {
                             next1=activePatternResultd.$0[1];
@@ -20301,7 +21538,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                        }
                       else
                        {
-                        activePatternResulte=Impl["|Number|_|"](input[0],input[1]);
+                        activePatternResulte=_2["|Number|_|"](input[0],input[1]);
                         if(activePatternResulte.$==1)
                          {
                           next2=activePatternResulte.$0[1];
@@ -20324,7 +21561,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                      }
                     else
                      {
-                      activePatternResultf=Impl["|Number|_|"](input[0],input[1]);
+                      activePatternResultf=_2["|Number|_|"](input[0],input[1]);
                       if(activePatternResultf.$==1)
                        {
                         next3=activePatternResultf.$0[1];
@@ -20348,11 +21585,11 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult10=Impl["|Number|_|"](input[0],input[1]);
+                  activePatternResult10=_2["|Number|_|"](input[0],input[1]);
                   if(activePatternResult10.$==1)
                    {
                     tupledArg7=activePatternResult10.$0[1];
-                    activePatternResult11=Impl["|Next|Empty|"](tupledArg7[0],tupledArg7[1]);
+                    activePatternResult11=_2["|Next|Empty|"](tupledArg7[0],tupledArg7[1]);
                     if(activePatternResult11.$==0)
                      {
                       if(activePatternResult11.$0[0]===100)
@@ -20369,7 +21606,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                        }
                       else
                        {
-                        activePatternResult12=Impl["|Number|_|"](input[0],input[1]);
+                        activePatternResult12=_2["|Number|_|"](input[0],input[1]);
                         if(activePatternResult12.$==1)
                          {
                           next5=activePatternResult12.$0[1];
@@ -20392,7 +21629,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                      }
                     else
                      {
-                      activePatternResult13=Impl["|Number|_|"](input[0],input[1]);
+                      activePatternResult13=_2["|Number|_|"](input[0],input[1]);
                       if(activePatternResult13.$==1)
                        {
                         next6=activePatternResult13.$0[1];
@@ -20415,7 +21652,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                    }
                   else
                    {
-                    activePatternResult14=Impl["|Number|_|"](input[0],input[1]);
+                    activePatternResult14=_2["|Number|_|"](input[0],input[1]);
                     if(activePatternResult14.$==1)
                      {
                       next7=activePatternResult14.$0[1];
@@ -20439,11 +21676,11 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult15=Impl["|Number|_|"](input[0],input[1]);
+                activePatternResult15=_2["|Number|_|"](input[0],input[1]);
                 if(activePatternResult15.$==1)
                  {
                   tupledArg8=activePatternResult15.$0[1];
-                  activePatternResult16=Impl["|Next|Empty|"](tupledArg8[0],tupledArg8[1]);
+                  activePatternResult16=_2["|Next|Empty|"](tupledArg8[0],tupledArg8[1]);
                   if(activePatternResult16.$==0)
                    {
                     if(activePatternResult16.$0[0]===100)
@@ -20460,7 +21697,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                      }
                     else
                      {
-                      activePatternResult17=Impl["|Number|_|"](input[0],input[1]);
+                      activePatternResult17=_2["|Number|_|"](input[0],input[1]);
                       if(activePatternResult17.$==1)
                        {
                         next9=activePatternResult17.$0[1];
@@ -20483,7 +21720,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                    }
                   else
                    {
-                    activePatternResult18=Impl["|Number|_|"](input[0],input[1]);
+                    activePatternResult18=_2["|Number|_|"](input[0],input[1]);
                     if(activePatternResult18.$==1)
                      {
                       nexta=activePatternResult18.$0[1];
@@ -20506,7 +21743,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult19=Impl["|Number|_|"](input[0],input[1]);
+                  activePatternResult19=_2["|Number|_|"](input[0],input[1]);
                   if(activePatternResult19.$==1)
                    {
                     nextb=activePatternResult19.$0[1];
@@ -20530,11 +21767,11 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult1a=Impl["|Number|_|"](input[0],input[1]);
+              activePatternResult1a=_2["|Number|_|"](input[0],input[1]);
               if(activePatternResult1a.$==1)
                {
                 tupledArg9=activePatternResult1a.$0[1];
-                activePatternResult1b=Impl["|Next|Empty|"](tupledArg9[0],tupledArg9[1]);
+                activePatternResult1b=_2["|Next|Empty|"](tupledArg9[0],tupledArg9[1]);
                 if(activePatternResult1b.$==0)
                  {
                   if(activePatternResult1b.$0[0]===100)
@@ -20551,7 +21788,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                    }
                   else
                    {
-                    activePatternResult1c=Impl["|Number|_|"](input[0],input[1]);
+                    activePatternResult1c=_2["|Number|_|"](input[0],input[1]);
                     if(activePatternResult1c.$==1)
                      {
                       nextd=activePatternResult1c.$0[1];
@@ -20574,7 +21811,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult1d=Impl["|Number|_|"](input[0],input[1]);
+                  activePatternResult1d=_2["|Number|_|"](input[0],input[1]);
                   if(activePatternResult1d.$==1)
                    {
                     nexte=activePatternResult1d.$0[1];
@@ -20597,7 +21834,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult1e=Impl["|Number|_|"](input[0],input[1]);
+                activePatternResult1e=_2["|Number|_|"](input[0],input[1]);
                 if(activePatternResult1e.$==1)
                  {
                   nextf=activePatternResult1e.$0[1];
@@ -20622,28 +21859,28 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
          }
         else
          {
-          activePatternResult1f=Impl["|Number|_|"](input[0],input[1]);
+          activePatternResult1f=_2["|Number|_|"](input[0],input[1]);
           if(activePatternResult1f.$==1)
            {
             tupledArga=activePatternResult1f.$0[1];
-            activePatternResult20=Impl["|Next|Empty|"](tupledArga[0],tupledArga[1]);
+            activePatternResult20=_2["|Next|Empty|"](tupledArga[0],tupledArga[1]);
             if(activePatternResult20.$==0)
              {
               if(activePatternResult20.$0[0]===100)
                {
                 tupledArgb=activePatternResult20.$0[1];
-                activePatternResult21=Impl["|Number|_|"](tupledArgb[0],tupledArgb[1]);
+                activePatternResult21=_2["|Number|_|"](tupledArgb[0],tupledArgb[1]);
                 if(activePatternResult21.$==1)
                  {
                   return makeRoll(activePatternResult1f.$0[0],activePatternResult21.$0[0],activePatternResult21.$0[1]);
                  }
                 else
                  {
-                  activePatternResult22=Impl["|Number|_|"](input[0],input[1]);
+                  activePatternResult22=_2["|Number|_|"](input[0],input[1]);
                   if(activePatternResult22.$==1)
                    {
                     tupledArgc=activePatternResult22.$0[1];
-                    activePatternResult23=Impl["|Next|Empty|"](tupledArgc[0],tupledArgc[1]);
+                    activePatternResult23=_2["|Next|Empty|"](tupledArgc[0],tupledArgc[1]);
                     if(activePatternResult23.$==0)
                      {
                       if(activePatternResult23.$0[0]===100)
@@ -20660,7 +21897,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                        }
                       else
                        {
-                        activePatternResult24=Impl["|Number|_|"](input[0],input[1]);
+                        activePatternResult24=_2["|Number|_|"](input[0],input[1]);
                         if(activePatternResult24.$==1)
                          {
                           next11=activePatternResult24.$0[1];
@@ -20683,7 +21920,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                      }
                     else
                      {
-                      activePatternResult25=Impl["|Number|_|"](input[0],input[1]);
+                      activePatternResult25=_2["|Number|_|"](input[0],input[1]);
                       if(activePatternResult25.$==1)
                        {
                         next12=activePatternResult25.$0[1];
@@ -20706,7 +21943,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                    }
                   else
                    {
-                    activePatternResult26=Impl["|Number|_|"](input[0],input[1]);
+                    activePatternResult26=_2["|Number|_|"](input[0],input[1]);
                     if(activePatternResult26.$==1)
                      {
                       next13=activePatternResult26.$0[1];
@@ -20730,11 +21967,11 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult27=Impl["|Number|_|"](input[0],input[1]);
+                activePatternResult27=_2["|Number|_|"](input[0],input[1]);
                 if(activePatternResult27.$==1)
                  {
                   tupledArgd=activePatternResult27.$0[1];
-                  activePatternResult28=Impl["|Next|Empty|"](tupledArgd[0],tupledArgd[1]);
+                  activePatternResult28=_2["|Next|Empty|"](tupledArgd[0],tupledArgd[1]);
                   if(activePatternResult28.$==0)
                    {
                     if(activePatternResult28.$0[0]===100)
@@ -20751,7 +21988,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                      }
                     else
                      {
-                      activePatternResult29=Impl["|Number|_|"](input[0],input[1]);
+                      activePatternResult29=_2["|Number|_|"](input[0],input[1]);
                       if(activePatternResult29.$==1)
                        {
                         next15=activePatternResult29.$0[1];
@@ -20774,7 +22011,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                    }
                   else
                    {
-                    activePatternResult2a=Impl["|Number|_|"](input[0],input[1]);
+                    activePatternResult2a=_2["|Number|_|"](input[0],input[1]);
                     if(activePatternResult2a.$==1)
                      {
                       next16=activePatternResult2a.$0[1];
@@ -20797,7 +22034,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult2b=Impl["|Number|_|"](input[0],input[1]);
+                  activePatternResult2b=_2["|Number|_|"](input[0],input[1]);
                   if(activePatternResult2b.$==1)
                    {
                     next17=activePatternResult2b.$0[1];
@@ -20821,11 +22058,11 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult2c=Impl["|Number|_|"](input[0],input[1]);
+              activePatternResult2c=_2["|Number|_|"](input[0],input[1]);
               if(activePatternResult2c.$==1)
                {
                 tupledArge=activePatternResult2c.$0[1];
-                activePatternResult2d=Impl["|Next|Empty|"](tupledArge[0],tupledArge[1]);
+                activePatternResult2d=_2["|Next|Empty|"](tupledArge[0],tupledArge[1]);
                 if(activePatternResult2d.$==0)
                  {
                   if(activePatternResult2d.$0[0]===100)
@@ -20842,7 +22079,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                    }
                   else
                    {
-                    activePatternResult2e=Impl["|Number|_|"](input[0],input[1]);
+                    activePatternResult2e=_2["|Number|_|"](input[0],input[1]);
                     if(activePatternResult2e.$==1)
                      {
                       next19=activePatternResult2e.$0[1];
@@ -20865,7 +22102,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult2f=Impl["|Number|_|"](input[0],input[1]);
+                  activePatternResult2f=_2["|Number|_|"](input[0],input[1]);
                   if(activePatternResult2f.$==1)
                    {
                     next1a=activePatternResult2f.$0[1];
@@ -20888,7 +22125,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult30=Impl["|Number|_|"](input[0],input[1]);
+                activePatternResult30=_2["|Number|_|"](input[0],input[1]);
                 if(activePatternResult30.$==1)
                  {
                   next1b=activePatternResult30.$0[1];
@@ -20912,11 +22149,11 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            }
           else
            {
-            activePatternResult31=Impl["|Number|_|"](input[0],input[1]);
+            activePatternResult31=_2["|Number|_|"](input[0],input[1]);
             if(activePatternResult31.$==1)
              {
               tupledArgf=activePatternResult31.$0[1];
-              activePatternResult32=Impl["|Next|Empty|"](tupledArgf[0],tupledArgf[1]);
+              activePatternResult32=_2["|Next|Empty|"](tupledArgf[0],tupledArgf[1]);
               if(activePatternResult32.$==0)
                {
                 if(activePatternResult32.$0[0]===100)
@@ -20933,7 +22170,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult33=Impl["|Number|_|"](input[0],input[1]);
+                  activePatternResult33=_2["|Number|_|"](input[0],input[1]);
                   if(activePatternResult33.$==1)
                    {
                     next1d=activePatternResult33.$0[1];
@@ -20956,7 +22193,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult34=Impl["|Number|_|"](input[0],input[1]);
+                activePatternResult34=_2["|Number|_|"](input[0],input[1]);
                 if(activePatternResult34.$==1)
                  {
                   next1e=activePatternResult34.$0[1];
@@ -20979,7 +22216,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult35=Impl["|Number|_|"](input[0],input[1]);
+              activePatternResult35=_2["|Number|_|"](input[0],input[1]);
               if(activePatternResult35.$==1)
                {
                 next1f=activePatternResult35.$0[1];
@@ -21004,28 +22241,28 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
        }
       else
        {
-        activePatternResult36=Impl["|Number|_|"](input[0],input[1]);
+        activePatternResult36=_2["|Number|_|"](input[0],input[1]);
         if(activePatternResult36.$==1)
          {
           tupledArg10=activePatternResult36.$0[1];
-          activePatternResult37=Impl["|Next|Empty|"](tupledArg10[0],tupledArg10[1]);
+          activePatternResult37=_2["|Next|Empty|"](tupledArg10[0],tupledArg10[1]);
           if(activePatternResult37.$==0)
            {
             if(activePatternResult37.$0[0]===100)
              {
               tupledArg11=activePatternResult37.$0[1];
-              activePatternResult38=Impl["|Number|_|"](tupledArg11[0],tupledArg11[1]);
+              activePatternResult38=_2["|Number|_|"](tupledArg11[0],tupledArg11[1]);
               if(activePatternResult38.$==1)
                {
                 return makeRoll(activePatternResult36.$0[0],activePatternResult38.$0[0],activePatternResult38.$0[1]);
                }
               else
                {
-                activePatternResult39=Impl["|Number|_|"](input[0],input[1]);
+                activePatternResult39=_2["|Number|_|"](input[0],input[1]);
                 if(activePatternResult39.$==1)
                  {
                   tupledArg12=activePatternResult39.$0[1];
-                  activePatternResult3a=Impl["|Next|Empty|"](tupledArg12[0],tupledArg12[1]);
+                  activePatternResult3a=_2["|Next|Empty|"](tupledArg12[0],tupledArg12[1]);
                   if(activePatternResult3a.$==0)
                    {
                     if(activePatternResult3a.$0[0]===100)
@@ -21042,7 +22279,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                      }
                     else
                      {
-                      activePatternResult3b=Impl["|Number|_|"](input[0],input[1]);
+                      activePatternResult3b=_2["|Number|_|"](input[0],input[1]);
                       if(activePatternResult3b.$==1)
                        {
                         next21=activePatternResult3b.$0[1];
@@ -21065,7 +22302,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                    }
                   else
                    {
-                    activePatternResult3c=Impl["|Number|_|"](input[0],input[1]);
+                    activePatternResult3c=_2["|Number|_|"](input[0],input[1]);
                     if(activePatternResult3c.$==1)
                      {
                       next22=activePatternResult3c.$0[1];
@@ -21088,7 +22325,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult3d=Impl["|Number|_|"](input[0],input[1]);
+                  activePatternResult3d=_2["|Number|_|"](input[0],input[1]);
                   if(activePatternResult3d.$==1)
                    {
                     next23=activePatternResult3d.$0[1];
@@ -21112,11 +22349,11 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult3e=Impl["|Number|_|"](input[0],input[1]);
+              activePatternResult3e=_2["|Number|_|"](input[0],input[1]);
               if(activePatternResult3e.$==1)
                {
                 tupledArg13=activePatternResult3e.$0[1];
-                activePatternResult3f=Impl["|Next|Empty|"](tupledArg13[0],tupledArg13[1]);
+                activePatternResult3f=_2["|Next|Empty|"](tupledArg13[0],tupledArg13[1]);
                 if(activePatternResult3f.$==0)
                  {
                   if(activePatternResult3f.$0[0]===100)
@@ -21133,7 +22370,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                    }
                   else
                    {
-                    activePatternResult40=Impl["|Number|_|"](input[0],input[1]);
+                    activePatternResult40=_2["|Number|_|"](input[0],input[1]);
                     if(activePatternResult40.$==1)
                      {
                       next25=activePatternResult40.$0[1];
@@ -21156,7 +22393,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult41=Impl["|Number|_|"](input[0],input[1]);
+                  activePatternResult41=_2["|Number|_|"](input[0],input[1]);
                   if(activePatternResult41.$==1)
                    {
                     next26=activePatternResult41.$0[1];
@@ -21179,7 +22416,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult42=Impl["|Number|_|"](input[0],input[1]);
+                activePatternResult42=_2["|Number|_|"](input[0],input[1]);
                 if(activePatternResult42.$==1)
                  {
                   next27=activePatternResult42.$0[1];
@@ -21203,11 +22440,11 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            }
           else
            {
-            activePatternResult43=Impl["|Number|_|"](input[0],input[1]);
+            activePatternResult43=_2["|Number|_|"](input[0],input[1]);
             if(activePatternResult43.$==1)
              {
               tupledArg14=activePatternResult43.$0[1];
-              activePatternResult44=Impl["|Next|Empty|"](tupledArg14[0],tupledArg14[1]);
+              activePatternResult44=_2["|Next|Empty|"](tupledArg14[0],tupledArg14[1]);
               if(activePatternResult44.$==0)
                {
                 if(activePatternResult44.$0[0]===100)
@@ -21224,7 +22461,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult45=Impl["|Number|_|"](input[0],input[1]);
+                  activePatternResult45=_2["|Number|_|"](input[0],input[1]);
                   if(activePatternResult45.$==1)
                    {
                     next29=activePatternResult45.$0[1];
@@ -21247,7 +22484,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult46=Impl["|Number|_|"](input[0],input[1]);
+                activePatternResult46=_2["|Number|_|"](input[0],input[1]);
                 if(activePatternResult46.$==1)
                  {
                   next2a=activePatternResult46.$0[1];
@@ -21270,7 +22507,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult47=Impl["|Number|_|"](input[0],input[1]);
+              activePatternResult47=_2["|Number|_|"](input[0],input[1]);
               if(activePatternResult47.$==1)
                {
                 next2b=activePatternResult47.$0[1];
@@ -21294,11 +22531,11 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
          }
         else
          {
-          activePatternResult48=Impl["|Number|_|"](input[0],input[1]);
+          activePatternResult48=_2["|Number|_|"](input[0],input[1]);
           if(activePatternResult48.$==1)
            {
             tupledArg15=activePatternResult48.$0[1];
-            activePatternResult49=Impl["|Next|Empty|"](tupledArg15[0],tupledArg15[1]);
+            activePatternResult49=_2["|Next|Empty|"](tupledArg15[0],tupledArg15[1]);
             if(activePatternResult49.$==0)
              {
               if(activePatternResult49.$0[0]===100)
@@ -21315,7 +22552,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult4a=Impl["|Number|_|"](input[0],input[1]);
+                activePatternResult4a=_2["|Number|_|"](input[0],input[1]);
                 if(activePatternResult4a.$==1)
                  {
                   next2d=activePatternResult4a.$0[1];
@@ -21338,7 +22575,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult4b=Impl["|Number|_|"](input[0],input[1]);
+              activePatternResult4b=_2["|Number|_|"](input[0],input[1]);
               if(activePatternResult4b.$==1)
                {
                 next2e=activePatternResult4b.$0[1];
@@ -21361,7 +22598,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            }
           else
            {
-            activePatternResult4c=Impl["|Number|_|"](input[0],input[1]);
+            activePatternResult4c=_2["|Number|_|"](input[0],input[1]);
             if(activePatternResult4c.$==1)
              {
               next2f=activePatternResult4c.$0[1];
@@ -21383,227 +22620,44 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            }
          }
        }
-     },
-     "|SumSimplesExpression|_|":function(_,_1)
-     {
-      var input,__Helper___,activePatternResult9,next5,terms;
-      input=[_,_1];
-      __Helper___=function(positive,_arg3)
-      {
-       var activePatternResult,lhs,next,lhs1,lhs2,activePatternResult1,activePatternResult2,next1,activePatternResult3,activePatternResult4,next2,activePatternResult5,activePatternResult6,next3,activePatternResult7,activePatternResult8,next4;
-       activePatternResult=Impl["|SimpleExpression|_|"](_arg3[0],_arg3[1]);
-       if(activePatternResult.$==1)
-        {
-         lhs=activePatternResult.$0[0];
-         next=activePatternResult.$0[1];
-         lhs1={
-          $:0,
-          $0:lhs
-         };
-         lhs2=positive?lhs1:{
-          $:2,
-          $0:-1,
-          $1:lhs1
-         };
-         activePatternResult1=Impl["|Next|Empty|"](next[0],next[1]);
-         if(activePatternResult1.$==0)
-          {
-           if(activePatternResult1.$0[0]===43)
-            {
-             activePatternResult2=__Helper___(true,activePatternResult1.$0[1]);
-             if(activePatternResult2.$==1)
-              {
-               next1=activePatternResult2.$0[1];
-               return{
-                $:1,
-                $0:[Runtime.New(T,{
-                 $:1,
-                 $0:lhs2,
-                 $1:activePatternResult2.$0[0]
-                }),next1]
-               };
-              }
-             else
-              {
-               activePatternResult3=Impl["|Next|Empty|"](next[0],next[1]);
-               if(activePatternResult3.$==0)
-                {
-                 if(activePatternResult3.$0[0]===45)
-                  {
-                   activePatternResult4=__Helper___(false,activePatternResult3.$0[1]);
-                   if(activePatternResult4.$==1)
-                    {
-                     next2=activePatternResult4.$0[1];
-                     return{
-                      $:1,
-                      $0:[Runtime.New(T,{
-                       $:1,
-                       $0:lhs2,
-                       $1:activePatternResult4.$0[0]
-                      }),next2]
-                     };
-                    }
-                   else
-                    {
-                     return{
-                      $:1,
-                      $0:[List.ofArray([lhs2]),next]
-                     };
-                    }
-                  }
-                 else
-                  {
-                   return{
-                    $:1,
-                    $0:[List.ofArray([lhs2]),next]
-                   };
-                  }
-                }
-               else
-                {
-                 return{
-                  $:1,
-                  $0:[List.ofArray([lhs2]),next]
-                 };
-                }
-              }
-            }
-           else
-            {
-             activePatternResult5=Impl["|Next|Empty|"](next[0],next[1]);
-             if(activePatternResult5.$==0)
-              {
-               if(activePatternResult5.$0[0]===45)
-                {
-                 activePatternResult6=__Helper___(false,activePatternResult5.$0[1]);
-                 if(activePatternResult6.$==1)
-                  {
-                   next3=activePatternResult6.$0[1];
-                   return{
-                    $:1,
-                    $0:[Runtime.New(T,{
-                     $:1,
-                     $0:lhs2,
-                     $1:activePatternResult6.$0[0]
-                    }),next3]
-                   };
-                  }
-                 else
-                  {
-                   return{
-                    $:1,
-                    $0:[List.ofArray([lhs2]),next]
-                   };
-                  }
-                }
-               else
-                {
-                 return{
-                  $:1,
-                  $0:[List.ofArray([lhs2]),next]
-                 };
-                }
-              }
-             else
-              {
-               return{
-                $:1,
-                $0:[List.ofArray([lhs2]),next]
-               };
-              }
-            }
-          }
-         else
-          {
-           activePatternResult7=Impl["|Next|Empty|"](next[0],next[1]);
-           if(activePatternResult7.$==0)
-            {
-             if(activePatternResult7.$0[0]===45)
-              {
-               activePatternResult8=__Helper___(false,activePatternResult7.$0[1]);
-               if(activePatternResult8.$==1)
-                {
-                 next4=activePatternResult8.$0[1];
-                 return{
-                  $:1,
-                  $0:[Runtime.New(T,{
-                   $:1,
-                   $0:lhs2,
-                   $1:activePatternResult8.$0[0]
-                  }),next4]
-                 };
-                }
-               else
-                {
-                 return{
-                  $:1,
-                  $0:[List.ofArray([lhs2]),next]
-                 };
-                }
-              }
-             else
-              {
-               return{
-                $:1,
-                $0:[List.ofArray([lhs2]),next]
-               };
-              }
-            }
-           else
-            {
-             return{
-              $:1,
-              $0:[List.ofArray([lhs2]),next]
-             };
-            }
-          }
-        }
-       else
-        {
-         return{
-          $:0
-         };
-        }
-      };
-      activePatternResult9=__Helper___(true,input);
-      if(activePatternResult9.$==1)
-       {
-        next5=activePatternResult9.$0[1];
-        terms=activePatternResult9.$0[0];
-        return{
-         $:1,
-         $0:[terms.$==1?terms.$1.$==0?terms.$0:Seq.fold(function(lhs)
-         {
-          return function(rhs)
-          {
-           return{
-            $:1,
-            $0:lhs,
-            $1:rhs
-           };
-          };
-         },terms.$0,terms.$1):Util.nomatch(),next5]
-        };
-       }
-      else
-       {
-        return{
-         $:0
-        };
-       }
      }
-    },
+    },{
+     New:function()
+     {
+      var r,alpha,alphanumeric;
+      r=Runtime.New(this,{});
+      alpha=FSharpSet.New(Seq.toList(Operators.range(65,90))).add(FSharpSet.New(Seq.toList(Operators.range(97,122))));
+      r.numeric=FSharpSet.New(Seq.toList(Operators.range(48,57)));
+      r.arithmeticOperators=FSharpSet.New(List.ofArray([43,45]));
+      r.advantageDisadvantage=FSharpSet.New(List.ofArray([65,68,97,100]));
+      alphanumeric=alpha.add(r.numeric);
+      r.memo=[FSharpMap.New1([])];
+      r["|CompoundExpression|_|@77"]=Lazy.Create(function()
+      {
+       return r["|CompoundExpression|_|"]();
+      });
+      r["|CompoundExpressionSum|_|@81"]=Lazy.Create(function()
+      {
+       return r["|CompoundExpressionSum|_|"]();
+      });
+      r["|CompoundExpressionTerm|_|@86"]=Lazy.Create(function()
+      {
+       return r["|CompoundExpressionTerm|_|"]();
+      });
+      r["|CompoundExpression|_|@77-1"]=Lazy.Force(r["|CompoundExpression|_|@77"]);
+      Lazy.Force(r["|CompoundExpressionSum|_|@81"]);
+      Lazy.Force(r["|CompoundExpressionTerm|_|@86"]);
+      return r;
+     }
+    }),
     Parse:function(txt)
     {
-     return Impl.parseCompound(txt);
+     return Impl.New().parseCompound(txt);
     },
-    ParseCommand:Runtime.Field(function()
+    ParseCommand:function(txt)
     {
-     return function(txt)
-     {
-      return Impl.parseCommand(txt);
-     };
-    })
+     return Impl.New().parseCommand(txt);
+    }
    },
    Roll:{
     Client:{
@@ -21624,7 +22678,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
        spec=Var.Get(rvInput);
        try
        {
-        arg00=(Parser.ParseCommand())(spec);
+        arg00=Parser.ParseCommand(spec);
         todo=RollRecord.Create(spec,Dice.Instance().Resolve2(arg00));
         return Client1.Rolls().Add(todo);
        }
@@ -21705,13 +22759,16 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
   Random=Runtime.Safe(Global.WebSharper.Random);
   Seq1=Runtime.Safe(Global.Seq);
   Collections=Runtime.Safe(Global.WebSharper.Collections);
-  FSharpSet=Runtime.Safe(Collections.FSharpSet);
-  Parser=Runtime.Safe(mdw.Parser);
-  Impl=Runtime.Safe(Parser.Impl);
+  MapModule=Runtime.Safe(Collections.MapModule);
+  Unchecked=Runtime.Safe(Global.WebSharper.Unchecked);
   PrintfHelpers=Runtime.Safe(Global.WebSharper.PrintfHelpers);
   Strings=Runtime.Safe(Global.WebSharper.Strings);
+  Lazy=Runtime.Safe(Global.WebSharper.Lazy);
   parseInt=Runtime.Safe(Global.parseInt);
-  T=Runtime.Safe(List.T);
+  FSharpSet=Runtime.Safe(Collections.FSharpSet);
+  FSharpMap=Runtime.Safe(Collections.FSharpMap);
+  Parser=Runtime.Safe(mdw.Parser);
+  Impl=Runtime.Safe(Parser.Impl);
   jQuery=Runtime.Safe(Global.jQuery);
   UI=Runtime.Safe(Global.WebSharper.UI);
   Next=Runtime.Safe(UI.Next);
@@ -21723,6 +22780,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
   AttrProxy=Runtime.Safe(Client.AttrProxy);
   RollRecord=Runtime.Safe(Client1.RollRecord);
   alert=Runtime.Safe(Global.alert);
+  T=Runtime.Safe(List.T);
   Key=Runtime.Safe(Next.Key);
   ListModel=Runtime.Safe(Next.ListModel);
   return View=Runtime.Safe(Next.View);
@@ -21732,12 +22790,6 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
   Client1.Rolls();
   Client1.RollForm();
   Client1.Main();
-  Parser.ParseCommand();
-  Impl.numeric();
-  Impl.arithmeticOperators();
-  Impl.alphanumeric();
-  Impl.alpha();
-  Impl.advantageDisadvantage();
   Dice.Instance();
   return;
  });
