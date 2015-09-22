@@ -10,3 +10,4 @@ open mdw.DataDefs
 
 
 (|CompoundExpression|_|) ("avg.20d6-(d4-d4)", 0)
+System.Text.RegularExpressions.Regex.Replace("333d4->22", "\d+", "X")
