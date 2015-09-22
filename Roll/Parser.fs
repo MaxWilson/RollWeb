@@ -75,15 +75,12 @@ type Impl() =
         | Chars numeric i1 as i0 -> (System.Int32.Parse(sub i0 i1), i1) |> Some
         | _ -> None
     and (|CompoundExpression|_|) = memoize (function
-        | Next('(', CompoundExpressionSum(lhs, Next(')', next))) -> Some(lhs, next)
-        | CompoundExpressionSum(lhs, next) -> Some(lhs, next)
-        | _ -> None)
-    and (|CompoundExpressionSum|_|) = memoize (function
-        | CompoundExpressionSum(lhs, Next('+', CompoundExpression(rhs, next))) -> Some(Sum(lhs, rhs), next)
-        | CompoundExpressionSum(lhs, Next('-', CompoundExpression(rhs, next))) -> Some(Sum(lhs, MultByConstant(-1, rhs)), next)
+        | CompoundExpression(lhs, Next('+', CompoundExpressionTerm(rhs, next))) -> Some(Sum(lhs, rhs), next)
+        | CompoundExpression(lhs, Next('-', CompoundExpressionTerm(rhs, next))) -> Some(Sum(lhs, MultByConstant(-1, rhs)), next)
         | CompoundExpressionTerm(lhs, next) -> Some(lhs, next)
         | _ -> None)
     and (|CompoundExpressionTerm|_|) = memoize (function
+        | Next('(', CompoundExpression(lhs, Next(')', next))) -> Some(lhs, next)
         | Number(n, Next('.', CompoundExpression(v, next))) -> 
             Some(Repeat(n, v), next)
         | Number(threshold, Next('?', Number(critThreshold, Next('?', next)))) -> 
