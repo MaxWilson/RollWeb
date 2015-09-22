@@ -9,4 +9,4 @@ open mdw
 open mdw.DataDefs
 
 
-(|SumCompoundExpressions|_|) ("20d6-d4-d4", 0)
+(|CompoundExpression|_|) ("avg.20d6-(d4-d4)", 0)

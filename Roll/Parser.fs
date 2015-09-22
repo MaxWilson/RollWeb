@@ -75,8 +75,12 @@ type Impl() =
         | Chars numeric i1 as i0 -> (System.Int32.Parse(sub i0 i1), i1) |> Some
         | _ -> None
     and (|CompoundExpression|_|) = memoize (function
-        | CompoundExpression(lhs, Next('+', CompoundExpressionTerm(rhs, next))) -> Some(Sum(lhs, rhs), next)
-        | CompoundExpression(lhs, Next('-', CompoundExpressionTerm(rhs, next))) -> Some(Sum(lhs, MultByConstant(-1, rhs)), next)
+        | Next('(', CompoundExpressionSum(lhs, Next(')', next))) -> Some(lhs, next)
+        | CompoundExpressionSum(lhs, next) -> Some(lhs, next)
+        | _ -> None)
+    and (|CompoundExpressionSum|_|) = memoize (function
+        | CompoundExpressionSum(lhs, Next('+', CompoundExpression(rhs, next))) -> Some(Sum(lhs, rhs), next)
+        | CompoundExpressionSum(lhs, Next('-', CompoundExpression(rhs, next))) -> Some(Sum(lhs, MultByConstant(-1, rhs)), next)
         | CompoundExpressionTerm(lhs, next) -> Some(lhs, next)
         | _ -> None)
     and (|CompoundExpressionTerm|_|) = memoize (function
@@ -113,7 +117,7 @@ type Impl() =
         | Number (n, next) -> Some (Simple(n, 1), next)
         | _ -> None
     and (|CommandExpression|_|) = function
-        | NextWord "avg." (CompoundExpressionTerm(v, next)) -> Some (Average(v), next)
+        | NextWord "avg." (CompoundExpression(v, next)) -> Some (Average(v), next)
         | CompoundExpression(v, next) -> Some (Roll(v), next)
         | _ -> None
         
