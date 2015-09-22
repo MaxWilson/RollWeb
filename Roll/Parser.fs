@@ -53,6 +53,11 @@ type Impl() =
         | Char alphabet (MaybeChars alphabet it) -> Some it
         | it -> None
 
+    let (|NextChar|_|) alphabet = function
+        | Empty -> None
+        | s, i when Set.contains s.[i] alphabet -> Some(s.[i], (s, i+1))
+        | _ -> None
+
     let sub (s: string, i0) (_, i1) =
         s.Substring(i0, i1-i0)
 
@@ -83,6 +88,13 @@ type Impl() =
         | Next('(', CompoundExpression(lhs, Next(')', next))) -> Some(lhs, next)
         | Number(n, Next('.', CompoundExpression(v, next))) -> 
             Some(Repeat(n, v), next)
+        | Number(threshold, NextChar advantageDisadvantage (c, Next('?', next)))  -> 
+            let roll = 
+                if c = 'a' || c = 'A' then
+                    Adv(1, 20)
+                else
+                    Disadv(1, 20)
+            Some(Check(Single(roll), [threshold, Single(Simple(1, 1))], 0), next)
         | Number(threshold, Next('?', Number(critThreshold, Next('?', next)))) -> 
             Some(Check(Single(Simple(1, 20)), [critThreshold, Single(Simple(2, 1)); threshold, Single(Simple(1, 1)) ], 0), next)
         | Number(threshold, Next('?', next)) -> 
