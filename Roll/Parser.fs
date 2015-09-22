@@ -75,41 +75,19 @@ type Impl() =
         | Chars numeric i1 as i0 -> (System.Int32.Parse(sub i0 i1), i1) |> Some
         | _ -> None
     and (|CompoundExpression|_|) = memoize (function
+        | CompoundExpression(lhs, Next('+', CompoundExpressionTerm(rhs, next))) -> Some(Sum(lhs, rhs), next)
+        | CompoundExpression(lhs, Next('-', CompoundExpressionTerm(rhs, next))) -> Some(Sum(lhs, MultByConstant(-1, rhs)), next)
+        | CompoundExpressionTerm(lhs, next) -> Some(lhs, next)
+        | _ -> None)
+    and (|CompoundExpressionTerm|_|) = memoize (function
         | Number(n, Next('.', CompoundExpression(v, next))) -> 
             Some(Repeat(n, v), next)
         | Number(threshold, Next('?', Number(critThreshold, Next('?', next)))) -> 
             Some(Check(Single(Simple(1, 20)), [critThreshold, Single(Simple(2, 1)); threshold, Single(Simple(1, 1)) ], 0), next)
         | Number(threshold, Next('?', next)) -> 
             Some(Check(Single(Simple(1, 20)), [threshold, Single(Simple(1, 1))], 0), next)
-        | CompoundExpression(lhs, Next('+', CompoundExpression(rhs, next))) -> Some(Sum(lhs, rhs), next)
-        | CompoundExpression(lhs, Next('-', CompoundExpression(rhs, next))) -> Some(Sum(lhs, MultByConstant(-1, rhs)), next)
         | SimpleExpression(v, next) -> Some(Single(v), next)
-        | SumSimplesExpression(v, next) -> Some(v, next)
         | _ -> None)
-    and (|SumSimplesExpression|_|) input = 
-        // Use helper for recursion so sum can be left-associative
-        let rec (|Helper|_|) positive = function
-            | SimpleExpression(lhs, next) ->
-                let lhs = Single(lhs)
-                let lhs = if positive then lhs
-                          else MultByConstant(-1, lhs)
-                match next with
-                | Next('+', Helper true (rhs : Compound list, next : string * int)) ->
-                    Some(lhs :: rhs, next)
-                | Next('-', Helper false (rhs, next)) ->
-                    Some(lhs :: rhs, next)
-                | _ ->
-                    Some([lhs], next)
-            | _ -> None
-        match input with
-        | Helper true (terms, next) ->
-            let node = 
-                match terms with 
-                | [term] -> term
-                | head::tail -> tail |> List.fold (fun lhs rhs -> Sum(lhs, rhs)) head
-                | _ -> Util.nomatch()
-            Some(node, next)
-        | _ -> None
     and (|SimpleExpression|_|) input = 
         let makeRoll n d input = 
             match input with
@@ -135,7 +113,7 @@ type Impl() =
         | Number (n, next) -> Some (Simple(n, 1), next)
         | _ -> None
     and (|CommandExpression|_|) = function
-        | NextWord "avg." (CompoundExpression(v, next)) -> Some (Average(v), next)
+        | NextWord "avg." (CompoundExpressionTerm(v, next)) -> Some (Average(v), next)
         | CompoundExpression(v, next) -> Some (Roll(v), next)
         | _ -> None
         
