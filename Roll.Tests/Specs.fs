@@ -60,6 +60,9 @@ let ``Sums should be left-associative``() =
 [<Theory>]
 [<InlineData("3d6", null)>]
 [<InlineData("avg.3d6", "10.5")>]
+[<InlineData("avg.3d6-4", "6.5")>]
+[<InlineData("avg.3d6-(d4-d4)", "10.5")>]
+[<InlineData("avg.20d6-(d4-d4)", "70")>]
 let ``Complete-ish list of example command specs``(input: string, expectedOutput: string) =
     let spec = Parser.ParseCommand(input)
     let output = Dice.Instance.Resolve(spec)
