@@ -111,7 +111,13 @@ type Resolver(?random) =
         | Roll(spec) -> 
             let (result, explain) = this.Resolve(spec)
             (result.ToString(), explain)
-        | Average(spec) -> this.Average(spec).ToString(), "Computed"
+        | Average(spec) -> 
+            let result : float = this.Average(spec)
+            // My ad-hoc attempt to make decimals come out "naturally", 5 or 4.35
+            let result = match sprintf "%.2f" result with
+                         | v when v.EndsWith(".00") -> result.ToString()
+                         | v -> v
+            result, "Computed"
             
     member this.Average cmd =
         match cmd: Compound with
