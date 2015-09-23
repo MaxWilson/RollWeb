@@ -61,6 +61,8 @@ type Resolver(?random) =
                       ]
                       |> sumTerms
             sum |> List.ofSeq
+        | MultByConstant(k, roll) ->
+            List.map (fun (n, count) -> (n*k, count)) (enumerate roll)
         | _ -> Util.nomatch()
     let sumBy spec sumCalculator = 
         let seq = enumerate spec
