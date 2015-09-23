@@ -19434,14 +19434,45 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            target1e=activePatternResult1.$0[1];
            _double=function(_arg14)
            {
-            return _arg14.$==0?_arg14.$0.$==0?_arg14.$0.$1===1?_arg14:{
-             $:0,
-             $0:{
-              $:0,
-              $0:_arg14.$0.$0*2,
-              $1:_arg14.$0.$1
+            var rhs;
+            if(_arg14.$==1)
+             {
+              rhs=_arg14.$1;
+              return{
+               $:1,
+               $0:_double(_arg14.$0),
+               $1:_double(rhs)
+              };
              }
-            }:Util.nomatch():Util.nomatch();
+            else
+             {
+              return _arg14.$==2?{
+               $:2,
+               $0:_arg14.$0,
+               $1:_double(_arg14.$1)
+              }:_arg14.$==4?Util.nomatch():_arg14.$==3?Util.nomatch():_arg14.$0.$==1?{
+               $:0,
+               $0:{
+                $:1,
+                $0:_arg14.$0.$0*2,
+                $1:_arg14.$0.$1
+               }
+              }:_arg14.$0.$==2?{
+               $:0,
+               $0:{
+                $:2,
+                $0:_arg14.$0.$0*2,
+                $1:_arg14.$0.$1
+               }
+              }:_arg14.$0.$1===1?_arg14:{
+               $:0,
+               $0:{
+                $:0,
+                $0:_arg14.$0.$0*2,
+                $1:_arg14.$0.$1
+               }
+              };
+             }
            };
            return{
             $:1,
