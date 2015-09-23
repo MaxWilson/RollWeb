@@ -111,7 +111,14 @@ type Impl() =
                     | Single(Simple(n, 1)) as constant -> constant
                     | Single(Simple(n, d)) ->
                         Single(Simple(n*2, d))
-                    | _ -> Util.nomatch()
+                    | Single(Adv(n, d)) ->
+                        Single(Adv(n*2, d))
+                    | Single(Disadv(n, d)) ->
+                        Single(Disadv(n*2, d))
+                    | Sum(lhs, rhs) -> Sum(double lhs, double rhs)
+                    | MultByConstant(k, rhs) -> MultByConstant(k, double rhs)
+                    | Check(_) -> Util.nomatch()
+                    | Repeat(_) -> Util.nomatch()
                 Some(Check(roll, [20, double consequent; target, consequent], 0), next)
             | _ -> None
         )
