@@ -17676,10 +17676,12 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      },
      Resolve2:function(cmd)
      {
-      var patternInput,explain;
+      var result,x,patternInput,explain;
       if(cmd.$==1)
        {
-        return[this.Average(cmd.$0).toFixed(2),"Computed"];
+        result=this.Average(cmd.$0);
+        x=result.toFixed(2);
+        return[Strings.EndsWith(x,".00")?String(result):x,"Computed"];
        }
       else
        {
@@ -18002,7 +18004,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
       var pattern,_this=this;
       pattern=function(_arg13)
       {
-       var activePatternResult,activePatternResult1,tupledArg,activePatternResult2,tupledArg1,activePatternResult3,tupledArg2,activePatternResult4,activePatternResult5,alphabet,tupledArg3,activePatternResult6,tupledArg4,activePatternResult7,c,next,target,activePatternResult8,tupledArg6,activePatternResult9,next1,target1,activePatternResulta,tupledArg7,activePatternResultb,next2,target2,activePatternResultc,tupledArg8,activePatternResultd,next3,target3,activePatternResulte,tupledArg9,activePatternResultf,next4,target4,activePatternResult10,alphabet1,tupledArga,activePatternResult11,tupledArgb,activePatternResult12,c1,next5,target5,activePatternResult13,tupledArgc,activePatternResult14,next6,target6,activePatternResult15,tupledArgd,activePatternResult16,next7,target7,activePatternResult17,tupledArge,activePatternResult18,next8,target8,activePatternResult19,tupledArgf,activePatternResult1a,next9,target9,activePatternResult1b,alphabet2,tupledArg10,activePatternResult1c,tupledArg11,activePatternResult1d,c2,nexta,targeta,activePatternResult1e,tupledArg12,activePatternResult1f,nextb,targetb,activePatternResult20,tupledArg13,activePatternResult21,nextc,targetc,activePatternResult22,tupledArg14,activePatternResult23,nextd,targetd,activePatternResult24,tupledArg15,activePatternResult25,nexte,targete,activePatternResult26,alphabet3,tupledArg16,activePatternResult27,tupledArg17,activePatternResult28,c3,nextf,targetf,activePatternResult29,tupledArg18,activePatternResult2a,next10,target10,activePatternResult2b,tupledArg19,activePatternResult2c,next11,target11,activePatternResult2d,tupledArg1a,activePatternResult2e,next12,target12,activePatternResult2f,tupledArg1b,activePatternResult30,next13,target13,activePatternResult31,alphabet4,tupledArg1c,activePatternResult32,tupledArg1d,activePatternResult33,c4,next14,target14,activePatternResult34,tupledArg1e,activePatternResult35,next15,target15,activePatternResult36,tupledArg1f,activePatternResult37,next16,target16,activePatternResult38,tupledArg20,activePatternResult39,next17,target17,activePatternResult3a,tupledArg21,activePatternResult3b,next18,target18,activePatternResult3c,alphabet5,tupledArg22,activePatternResult3d,tupledArg23,activePatternResult3e,c5,next19,target19,activePatternResult3f,tupledArg24,activePatternResult40,next1a,target1a,activePatternResult41,tupledArg25,activePatternResult42,next1b,target1b,activePatternResult43,tupledArg26,activePatternResult44,next1c,target1c,activePatternResult45,tupledArg27,activePatternResult46,next1d,target1d,_arg12,activePatternResult47,activePatternResult48,consequent,next1e,roll,target1e,loop,constant,d,n;
+       var activePatternResult,activePatternResult1,tupledArg,activePatternResult2,tupledArg1,activePatternResult3,tupledArg2,activePatternResult4,activePatternResult5,alphabet,tupledArg3,activePatternResult6,tupledArg4,activePatternResult7,c,next,target,activePatternResult8,tupledArg6,activePatternResult9,next1,target1,activePatternResulta,tupledArg7,activePatternResultb,next2,target2,activePatternResultc,tupledArg8,activePatternResultd,next3,target3,activePatternResulte,tupledArg9,activePatternResultf,next4,target4,activePatternResult10,alphabet1,tupledArga,activePatternResult11,tupledArgb,activePatternResult12,c1,next5,target5,activePatternResult13,tupledArgc,activePatternResult14,next6,target6,activePatternResult15,tupledArgd,activePatternResult16,next7,target7,activePatternResult17,tupledArge,activePatternResult18,next8,target8,activePatternResult19,tupledArgf,activePatternResult1a,next9,target9,activePatternResult1b,alphabet2,tupledArg10,activePatternResult1c,tupledArg11,activePatternResult1d,c2,nexta,targeta,activePatternResult1e,tupledArg12,activePatternResult1f,nextb,targetb,activePatternResult20,tupledArg13,activePatternResult21,nextc,targetc,activePatternResult22,tupledArg14,activePatternResult23,nextd,targetd,activePatternResult24,tupledArg15,activePatternResult25,nexte,targete,activePatternResult26,alphabet3,tupledArg16,activePatternResult27,tupledArg17,activePatternResult28,c3,nextf,targetf,activePatternResult29,tupledArg18,activePatternResult2a,next10,target10,activePatternResult2b,tupledArg19,activePatternResult2c,next11,target11,activePatternResult2d,tupledArg1a,activePatternResult2e,next12,target12,activePatternResult2f,tupledArg1b,activePatternResult30,next13,target13,activePatternResult31,alphabet4,tupledArg1c,activePatternResult32,tupledArg1d,activePatternResult33,c4,next14,target14,activePatternResult34,tupledArg1e,activePatternResult35,next15,target15,activePatternResult36,tupledArg1f,activePatternResult37,next16,target16,activePatternResult38,tupledArg20,activePatternResult39,next17,target17,activePatternResult3a,tupledArg21,activePatternResult3b,next18,target18,activePatternResult3c,alphabet5,tupledArg22,activePatternResult3d,tupledArg23,activePatternResult3e,c5,next19,target19,activePatternResult3f,tupledArg24,activePatternResult40,next1a,target1a,activePatternResult41,tupledArg25,activePatternResult42,next1b,target1b,activePatternResult43,tupledArg26,activePatternResult44,next1c,target1c,activePatternResult45,tupledArg27,activePatternResult46,next1d,target1d,_arg12,activePatternResult47,activePatternResult48,consequent,next1e,roll,target1e,_double;
        activePatternResult=(Lazy.Force(_this["|CompoundExpression|_|@82"]))(_arg13);
        if(activePatternResult.$==1)
         {
@@ -19430,58 +19432,26 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            next1e=activePatternResult48.$0[1];
            roll=activePatternResult1.$0[0];
            target1e=activePatternResult1.$0[1];
-           loop=[];
-           loop[0]=0;
-           loop[1]={
+           _double=function(_arg14)
+           {
+            return _arg14.$==0?_arg14.$0.$==0?_arg14.$0.$1===1?_arg14:{
+             $:0,
+             $0:{
+              $:0,
+              $0:_arg14.$0.$0*2,
+              $1:_arg14.$0.$1
+             }
+            }:Util.nomatch():Util.nomatch();
+           };
+           return{
             $:1,
             $0:[{
              $:4,
              $0:roll,
-             $1:List.ofArray([[target1e,consequent]]),
+             $1:List.ofArray([[20,_double(consequent)],[target1e,consequent]]),
              $2:0
             },next1e]
            };
-           while(loop[0])
-            {
-             if(loop[1].$==0)
-              {
-               if(loop[1].$0.$==0)
-                {
-                 if(loop[1].$0.$1===1)
-                  {
-                   constant=loop[1];
-                   loop[1].$0.$0;
-                   loop[0]=0;
-                   loop[1]=constant;
-                  }
-                 else
-                  {
-                   d=loop[1].$0.$1;
-                   n=loop[1].$0.$0;
-                   loop[0]=0;
-                   loop[1]={
-                    $:0,
-                    $0:{
-                     $:0,
-                     $0:n*2,
-                     $1:d
-                    }
-                   };
-                  }
-                }
-               else
-                {
-                 loop[0]=0;
-                 loop[1]=Util.nomatch();
-                }
-              }
-             else
-              {
-               loop[0]=0;
-               loop[1]=Util.nomatch();
-              }
-            }
-           return loop[1];
           }
          else
           {
