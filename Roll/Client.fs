@@ -24,8 +24,7 @@ d20A means "d20 at advantage". Can also do d8A, or d20D for disadvantage, etc. N
 
 The "Explain" button shows which rolls led to that result.
 
-Concrete example: say I want an easy way to compute the average DPR of a 17th level Oath of Vengeance paladin with Hunter's Mark up against an AC 22 Ancient Red Dragon. Paladin has advantage and +11 to hit, so he hits on an 11 or better, with two attacks. I can ask for "avg.2.11A?
-You can also ask for "avg.3.15A?d8+d6+5d8" and the answer is 55.59.
+Concrete example: say I want an easy way to compute the average DPR of a 17th level Oath of Vengeance paladin with Hunter's Mark up against an AC 19 Balor. Paladin has advantage and +11 to hit with two attacks, so he hits on an 11 or better, or 16 with GWM. Is it better to use GWM power attack or not, and by how much? Power attack is "avg.2.16A?3d6+15+7d8" while regular attack is "avg.2.11A?3d6+5+7d8", and to nobody's surprise, non-power attack turns out to be better, 78 to 58.
 """
 
     type RollRecord = 
