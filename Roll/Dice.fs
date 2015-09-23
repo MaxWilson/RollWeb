@@ -114,8 +114,8 @@ type Resolver(?random) =
         | Average(spec) -> 
             let result : float = this.Average(spec)
             // My ad-hoc attempt to make decimals come out "naturally", 5 or 4.35
-            let result = match sprintf "%.2f" (result + 0.00001) with
-                         | v when v.EndsWith(".00") -> result.ToString()
+            let result = match sprintf "%.2f" result with
+                         | v when v.EndsWith(".00") -> sprintf "%.0f" result
                          | v -> v
             result, "Computed"
             
