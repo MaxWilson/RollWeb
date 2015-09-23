@@ -112,7 +112,7 @@ type Impl() =
                     | Single(Simple(n, d)) ->
                         Single(Simple(n*2, d))
                     | _ -> Util.nomatch()
-                Some(Check(roll, [target, consequent], 0), next)
+                Some(Check(roll, [20, double consequent; target, consequent], 0), next)
             | _ -> None
         )
     and (|SimpleExpression|_|) input = 
