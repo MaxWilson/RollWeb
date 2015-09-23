@@ -22250,6 +22250,10 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
        $:0
       }));
      }),
+     helpMessage:Runtime.Field(function()
+     {
+      return"Some usage examples:\r\n3d8+2 means \"roll 3d8+2 and give me the result\"\r\n2.3d8+2 means \"roll 3d8+2 twice and give me the sum\"\r\navg.3d8+2 means \"what is the average value of 3d8+2?\"\r\n13?3d8+2 means \"Roll d20, and if it's at least 13, roll 3d8+2 (doubling on crits as usual) and give me the result\"\r\navg.13?3d8+2 means \"Do the 13?3d8+2 computation but give me the average instead of any particular instance\"\r\nd20A means \"d20 at advantage\". Can also do d8A, or d20D for disadvantage, etc. Not case-sensitive.\r\n13D? means roll 13 or better at disadvantage. (It's similar to but not the same as asking for d20D.)\r\n\r\nThe \"Explain\" button shows which rolls led to that result.\r\n\r\nConcrete example: say I want an easy way to compute the average DPR of a 17th level Oath of Vengeance paladin with Hunter's Mark up against an AC 22 Ancient Red Dragon. Paladin has advantage and +11 to hit, so he hits on an 11 or better, with two attacks. I can ask for \"avg.2.11A?\r\nYou can also ask for \"avg.3.15A?d8+d6+5d8\" and the answer is 55.59.\r\n";
+     }),
      renderItem:function(m)
      {
       var arg20,arg201,arg202,arg203,arg204;
@@ -22267,8 +22271,12 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      },
      renderRolls:function(rolls)
      {
-      var arg20,arg201,arg202;
-      arg202=List.ofArray([Doc.ConvertBy(function(i)
+      var arg20,arg201,arg202,arg203;
+      arg201=function()
+      {
+       return alert(Client1.helpMessage());
+      };
+      arg203=List.ofArray([Doc.ConvertBy(function(i)
       {
        return i.Key;
       },function(m)
@@ -22278,10 +22286,10 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
       {
        return List.rev(List.ofSeq(x));
       },ListModel.View(rolls)))]);
-      arg201=List.ofArray([Doc.Element("tbody",[],arg202)]);
-      arg20=List.ofArray([Doc.Element("h1",Runtime.New(T,{
+      arg202=List.ofArray([Doc.Element("tbody",[],arg203)]);
+      arg20=List.ofArray([Doc.Link("Help",List.ofArray([AttrProxy.Create("style","float: right")]),arg201),Doc.Element("h1",Runtime.New(T,{
        $:0
-      }),List.ofArray([Doc.TextNode("Recent rolls:")])),Client1.RollForm(),Doc.Element("table",[],arg201)]);
+      }),List.ofArray([Doc.TextNode("Recent rolls:")])),Client1.RollForm(),Doc.Element("table",[],arg202)]);
       return Doc.Element("div",[],arg20);
      }
     }
@@ -22337,6 +22345,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
  });
  Runtime.OnLoad(function()
  {
+  Client1.helpMessage();
   Client1.Rolls();
   Client1.RollForm();
   Client1.Main();
