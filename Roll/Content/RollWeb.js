@@ -17676,11 +17676,10 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      },
      Resolve2:function(cmd)
      {
-      var copyOfStruct,patternInput,explain;
+      var patternInput,explain;
       if(cmd.$==1)
        {
-        copyOfStruct=this.Average(cmd.$0);
-        return[String(copyOfStruct),"Computed"];
+        return[this.Average(cmd.$0).toFixed(2),"Computed"];
        }
       else
        {
