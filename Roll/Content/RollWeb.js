@@ -17680,7 +17680,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
       if(cmd.$==1)
        {
         result=this.Average(cmd.$0);
-        x=result.toFixed(2);
+        x=(result+1E-05).toFixed(2);
         return[Strings.EndsWith(x,".00")?String(result):x,"Computed"];
        }
       else
