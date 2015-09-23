@@ -13,6 +13,21 @@ module Client =
     open System.Web.UI.WebControls
     open WebSharper.UI.Next.Html
 
+    let helpMessage = """Some usage examples:
+3d8+2 means "roll 3d8+2 and give me the result"
+2.3d8+2 means "roll 3d8+2 twice and give me the sum"
+avg.3d8+2 means "what is the average value of 3d8+2?"
+13?3d8+2 means "Roll d20, and if it's at least 13, roll 3d8+2 (doubling on crits as usual) and give me the result"
+avg.13?3d8+2 means "Do the 13?3d8+2 computation but give me the average instead of any particular instance"
+d20A means "d20 at advantage". Can also do d8A, or d20D for disadvantage, etc. Not case-sensitive.
+13D? means roll 13 or better at disadvantage. (It's similar to but not the same as asking for d20D.)
+
+The "Explain" button shows which rolls led to that result.
+
+Concrete example: say I want an easy way to compute the average DPR of a 17th level Oath of Vengeance paladin with Hunter's Mark up against an AC 22 Ancient Red Dragon. Paladin has advantage and +11 to hit, so he hits on an 11 or better, with two attacks. I can ask for "avg.2.11A?
+You can also ask for "avg.3.15A?d8+d6+5d8" and the answer is 55.59.
+"""
+
     type RollRecord = 
         { Key : Key; Description : string; Value: string; Explain: string}
         static member Create(descr, value, explain) =
@@ -57,6 +72,7 @@ module Client =
         ]
     let renderRolls rolls =
         div [        
+            Doc.Link "Help" [attr.style "float: right"] (fun _ -> JS.Alert helpMessage)
             Doc.Element "h1" [] [Doc.TextNode "Recent rolls:"]
             RollForm
             table [
