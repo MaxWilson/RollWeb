@@ -50,7 +50,7 @@ let Average() =
 [<InlineData("10.18A?", 2.775)>]
 [<InlineData("10.18D?", 0.225)>]
 [<InlineData("20.18A?100", 555.)>]
-[<InlineData("20.20?2d10", 22.)>]
+[<InlineData("20.20?1d10+d6-2", 16.)>]
 let ``Complete-ish list of example roll specs``(input: string, expectedAverage: float) =
     let spec = Parser.Parse(input)
     let round (x : float) = System.Math.Round(x, 3) // round to three places
