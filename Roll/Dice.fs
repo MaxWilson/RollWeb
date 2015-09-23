@@ -67,36 +67,51 @@ type Resolver(?random) =
         let total = Seq.sumBy snd seq |> float
         seq |> Seq.sumBy (fun (n, count) -> sumCalculator n (float count / total))  
     member this.Resolve cmd = 
-        match cmd : Simple with
-        | Simple(d, size) -> 
-            [for _ in 1..d do yield 1 + r.Next(size)]
-            |> Seq.sum
-        | Adv(d, size) -> 
-            [for _ in 1..d do yield 1 + max (r.Next(size)) (r.Next(size))]
-            |> Seq.sum
-        | Disadv(d, size) -> 
-            [for _ in 1..d do yield 1 + min (r.Next(size)) (r.Next(size))]
-            |> Seq.sum
+        let result = 
+            match cmd : Simple with
+            | Simple(d, size) -> 
+                [for _ in 1..d do yield 1 + r.Next(size)]
+                |> Seq.sum
+            | Adv(d, size) -> 
+                [for _ in 1..d do yield 1 + max (r.Next(size)) (r.Next(size))]
+                |> Seq.sum
+            | Disadv(d, size) -> 
+                [for _ in 1..d do yield 1 + min (r.Next(size)) (r.Next(size))]
+                |> Seq.sum
+        result, result.ToString() // result and explanation
     member this.Resolve cmd = 
         match cmd : Compound with
         | Single(cmd) -> this.Resolve(cmd)
-        | Sum(lhs, rhs) -> this.Resolve(lhs) + this.Resolve(rhs)
-        | MultByConstant(k, rhs) -> k * this.Resolve(rhs)
-        | Repeat(n, rhs) -> Seq.sum [for _ in 1..n do yield this.Resolve(rhs)]
+        | Sum(lhs, rhs) -> 
+            let (lhs, lexplain), (rhs, rexplain) = this.Resolve(lhs), this.Resolve(rhs)
+            (lhs + rhs), sprintf "%s + %s" lexplain rexplain
+        | MultByConstant(k, rhs) -> 
+            let result, explain = this.Resolve(rhs)
+            k * result, match k with -1 -> "-" + explain | _ -> sprintf "%d(%s)" k explain
+        | Repeat(n, rhs) -> 
+            let results = [for _ in 1..n do yield this.Resolve(rhs)]
+            let result = Seq.sum (Seq.map fst results)
+            result, sprintf "(%s)->%s" (System.String.Join(",", Seq.map snd results)) (result.ToString())
         | Check(roll, resultOptions, fallback) ->
-            let result = this.Resolve(roll)
+            let result, explain = this.Resolve(roll)
             resultOptions 
             |> Seq.tryPick (function 
                             | (threshold, roll) when result >= threshold ->
                                 this.Resolve(roll) |> Some
                             | _ -> None)
             |> function 
-                | Some(v) -> v 
-                | None -> fallback
+                | Some((v, explainResult)) -> 
+                    v, sprintf "%s->%s" explain explainResult
+                | None -> 
+                    fallback, sprintf "%s -> %s" explain (fallback.ToString()) 
+
+
     member this.Resolve cmd =
         match cmd : Command with
-        | Roll(spec) -> this.Resolve(spec).ToString()
-        | Average(spec) -> this.Average(spec).ToString()
+        | Roll(spec) -> 
+            let (result, explain) = this.Resolve(spec)
+            (result.ToString(), explain)
+        | Average(spec) -> this.Average(spec).ToString(), "Computed"
             
     member this.Average cmd =
         match cmd: Compound with
@@ -116,11 +131,11 @@ type Resolver(?random) =
                 resultOptions 
                 |> Seq.tryPick (function 
                                 | (threshold, roll) when result >= threshold ->
-                                    this.Resolve(roll) |> Some
+                                    this.Average(roll) |> Some
                                 | _ -> None)
                 |> function 
                     | Some(v) -> v 
-                    | None -> fallback
+                    | None -> fallback |> float
             sumBy roll (fun n weight -> (resolve n |> float) * weight)
 let Instance = Resolver()
 

@@ -8,5 +8,17 @@
 open mdw
 open mdw.DataDefs
 
+(|CompoundExpression|_|) ("d20:14?", 0)
 
-(|CompoundExpression|_|) ("avg.20d6-(d4-d4)", 0)
+(function
+        | Next('(', CompoundExpression(lhs, Next(')', next))) -> Some(lhs, next)
+        | CheckTerm(v, next) -> Some(v, next)
+        | Number(n, Next('.', CompoundExpression(v, next))) -> 
+            Some(Repeat(n, v), next)
+        | SimpleExpression(v, next) -> Some(Single(v), next)
+        | _ -> None) ("20.d20:14?", 0)
+
+match ("d20:14?", 0) with
+| Predicate(roll, target, ResultTerm(consequent, next)) -> Some(roll, target, consequent, next)
+| _ -> None
+System.Text.RegularExpressions.Regex.Replace("333d4->22", "\d+", "X")

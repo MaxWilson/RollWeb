@@ -19,7 +19,10 @@ let main argv =
         | StringMatch ["q"; "quit"] true -> ()
         | v -> 
             try
-                printfn "%s" (mdw.Parser.ParseCommand v |> mdw.Dice.Instance.Resolve)
+                let result, explain = (mdw.Parser.ParseCommand v |> mdw.Dice.Instance.Resolve)
+                if (explain <> result) then
+                    printfn "Computing: %s" explain
+                printfn "%s" result
             with e -> printfn "%s" (e.Message)
             loop()
     loop()
