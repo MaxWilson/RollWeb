@@ -69,6 +69,7 @@
     <None Include="Scripts\load-references.fsx" />
     <None Include="Scripts\load-project.fsx" />
     <None Include="Scripts\Script1.fsx" />
+    <Compile Include="Debug.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Roll\Roll.fsproj">

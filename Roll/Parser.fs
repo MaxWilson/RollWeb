@@ -17,24 +17,8 @@ type Impl() =
     let arithmeticOperators = Set<_>['+'; '-']
     let advantageDisadvantage = Set<_>['A'; 'D'; 'a'; 'd']
     let alphanumeric = alpha + numeric
-    let memo: Map<_,_> ref = ref (Map.empty)
-    // memoization provides better perf (linear time) AND allows left-recursive grammars to terminate
-    let memoize pattern input =
-        let key = (pattern.ToString(), input)
-        match Map.tryFind key !memo with
-        | Some(v) -> v
-        | None ->
-            let rec growSeed prev =
-                let result = pattern input
-                memo := Map.add key result !memo
-                match result, prev with
-                | None, _  ->
-                    prev
-                | Some(_, new'), Some(_, prev') when new' <= prev' ->
-                    prev
-                | _ -> growSeed result
-            memo := Map.add key None !memo // set initial seed to FAIL
-            growSeed None
+    let ctx = mdw.Packrat.ParserContext()
+    let memoize = mdw.Packrat.memoize ctx
 
     let (|Next|Empty|) = function
         | (input : string), pos when pos < input.Length -> Next(input.[pos], (input, pos+1))
@@ -79,12 +63,12 @@ type Impl() =
     let rec (|Number|_|) = function
         | Chars numeric i1 as i0 -> (System.Int32.Parse(sub i0 i1), i1) |> Some
         | _ -> None
-    and (|CompoundExpression|_|) = memoize (function
+    and (|CompoundExpression|_|) = memoize "CompoundExpression" (function
         | CompoundExpression(lhs, Next('+', CompoundExpressionTerm(rhs, next))) -> Some(Sum(lhs, rhs), next)
         | CompoundExpression(lhs, Next('-', CompoundExpressionTerm(rhs, next))) -> Some(Sum(lhs, MultByConstant(-1, rhs)), next)
         | CompoundExpressionTerm(lhs, next) -> Some(lhs, next)
         | _ -> None)
-    and (|CompoundExpressionTerm|_|) = memoize (function
+    and (|CompoundExpressionTerm|_|) = memoize "CompoundExpressionTerm"  (function
         | Next('(', CompoundExpression(lhs, Next(')', next))) -> Some(lhs, next)
         | Number(n, Next('.', CompoundExpression(v, next))) -> 
             Some(Repeat(n, v), next)
@@ -105,7 +89,7 @@ type Impl() =
             | CompoundExpression(result, next) ->
                 Some(result, next)
             | next -> Some(Single(Simple(1, 1)), next)
-        memoize (function
+        memoize "CheckTerm" (function
             | Predicate(roll, target, ResultTerm(consequent, next)) -> 
                 let rec double = function
                     | Single(Simple(n, 1)) as constant -> constant
@@ -160,6 +144,7 @@ type Impl() =
         match (txt, 0) with
         | CommandExpression(cmd, Empty) -> cmd
         | _ -> failwithf "failed to parse '%s'" txt
+    member this.Ctx = ctx
 
 let Parse txt = 
     (Impl()).parseCompound txt

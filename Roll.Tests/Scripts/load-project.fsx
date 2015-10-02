@@ -2,3 +2,4 @@
 #I __SOURCE_DIRECTORY__
 #load @"load-references.fsx"
 #load @"..\Specs.fs"
+      @"..\Debug.fs"
