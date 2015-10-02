@@ -42,7 +42,7 @@ and (|CompoundExpression|_|) = memoize "CompoundExpression" (function
     | _ -> None)
 and (|CompoundExpressionTerm|_|) = memoize "CompoundExpressionTerm"  (function
     | CheckTerm(v, next) -> Some(v, next)
-    | SimpleExpression(v, next) -> Some(Single(v), next)
+    | SimpleExpression(v, next) -> Some(v, next)
     | _ -> None)
 and (|CheckTerm|_|) = memoize "CheckTerm" (function
         | CompoundExpression(roll, Next(':', Number(target, Next('?', CompoundExpression(_, next))))) -> 
@@ -52,10 +52,9 @@ and (|CheckTerm|_|) = memoize "CheckTerm" (function
             retval
         | _ -> None
     )
-and (|SimpleExpression|_|) input = 
-    match input with
-    | Next('d', Number(dieSize, next)) -> Some(Simple(1, dieSize), next)
-    | _ -> None
+and (|SimpleExpression|_|) = memoize "SimpleExpression" (function
+    | Next('d', Number(dieSize, next)) -> Some(Single(Simple(1, dieSize)), next)
+    | _ -> None)
 
 ctx.Reset()
 match (|CompoundExpression|_|) ("d20:14?d8", 0) with

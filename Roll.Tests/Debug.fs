@@ -40,27 +40,45 @@ let ``Indirect recursion is leaving clutter on the stack; CheckTerm is still an 
         s.Substring(i0, i1-i0)
 
     let rec (|Number|_|) = function
-        | Chars numeric i1 as i0 -> (System.Int32.Parse(sub i0 i1), i1) |> Some
-        | _ -> None
+        | Chars numeric i1 as i0 -> 
+            Some (System.Int32.Parse(sub i0 i1), i1)
+        | v -> 
+            ignore v
+            None
     and (|CompoundExpression|_|) = memoize "CompoundExpression" (function
-        | CompoundExpressionTerm(lhs, next) -> Some(lhs, next)
-        | _ -> None)
+        | CompoundExpressionTerm(lhs, next) -> 
+            ignore lhs
+            Some(lhs, next)
+        | v -> 
+            ignore v
+            None)
     and (|CompoundExpressionTerm|_|) = memoize "CompoundExpressionTerm"  (function
-        | CheckTerm(v, next) -> Some(v, next)
-        | SimpleExpression(v, next) -> Some(Single(v), next)
-        | _ -> None)
+        | CheckTerm(v, next) -> 
+            ignore v
+            Some(v, next)
+        | SimpleExpression(v, next) -> 
+            ignore v
+            Some(v, next)
+        | v -> 
+            ignore v
+            None)
     and (|CheckTerm|_|) = memoize "CheckTerm" (function
-            | CompoundExpression(roll, Next(':', Number(target, Next('?', CompoundExpression(_, next))))) -> 
-                let consequent = Some(Single(Simple(1, 1)), next)
-                let retval = Some(Check(roll, [], 0), next)
-                printfn "CheckTerm=%A" retval
-                retval
-            | _ -> None
-        )
-    and (|SimpleExpression|_|) input = 
-        match input with
-        | Next('d', Number(dieSize, next)) -> Some(Simple(1, dieSize), next)
-        | _ -> None
+        | CompoundExpression(roll, Next(':', Number(target, Next('?', CompoundExpression(_, next))))) -> 
+            ignore roll
+            let consequent = Some(Single(Simple(1, 1)), next)
+            let retval = Some(Check(roll, [], 0), next)
+            printfn "CheckTerm=%A" retval
+            retval
+        | v -> 
+            ignore v
+            None)        
+    and (|SimpleExpression|_|) = memoize "SimpleExpression" (function
+        | Next('d', Number(dieSize, next)) -> 
+            ignore dieSize
+            Some(Single(Simple(1, dieSize)), next)
+        | v -> 
+            ignore v
+            None)
 
     ctx.Reset()
     match (|CompoundExpression|_|) ("d20:14?d8", 0) with
@@ -70,8 +88,8 @@ let ``Indirect recursion is leaving clutter on the stack; CheckTerm is still an 
     (Map.tryFind ("CheckTerm", ("d20:14?d8", 0)) (snd ctx.Debug)) |>
         function 
         | None -> "Never analyzed it"
-        | Some({ ans = Result }) -> 
+        | Some({ ans = result }) -> 
             // We expect this to be a fragment of text, an Ans
-            match Result with
+            match result with
             | mdw.Packrat.Ans(Some(v)) -> "Correct"
             | err -> failwithf "Error! %A" err
