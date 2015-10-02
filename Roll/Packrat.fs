@@ -21,18 +21,18 @@ type Memo<'a> = { mutable ans: Ans<'a>; mutable pos : Input }
 /// Not thread-safe for multiple threads--you'll get wrong answers if more than once logic stream
 /// is writing to these variables simultaneously.
 type ParserContext<'a>() =
-    let heads: Map<Input, Head<'a>> ref = ref Map.empty
-    let memorized = ref Map.empty
+    let mutable heads: Map<Input, Head<'a>> = Map.empty
+    let mutable memorized = Map.empty
     member this.InitializeHead(input: Input, head: Head<'a>) =
-        heads := !heads |> Map.add input head
+        heads <- heads |> Map.add input head
     member this.ClearHead(input: Input) =
-        heads := !heads |> Map.remove input
+        heads <- heads |> Map.remove input
     member this.Head(input: Input) =
-        Map.tryFind input !heads
+        Map.tryFind input heads
     member this.Memo(name : string, input : Input) : Memo<'a> option =
-        Map.tryFind (name, input) !memorized
+        Map.tryFind (name, input) memorized
     member this.Memorize(name : string, input : Input, memo: Memo<'a>) =
-        memorized := Map.add (name, input) memo !memorized
+        memorized <- Map.add (name, input) memo memorized
     member val LRStack : LR<'a> option = None with get, set
     member this.Debug = heads, memorized
     member this.PushLR(lr) =
@@ -40,6 +40,9 @@ type ParserContext<'a>() =
     member this.PopLR() =
         if this.LRStack.IsSome then
             this.LRStack <- this.LRStack.Value.rest
+    member this.Reset() =
+        heads <- Map.empty
+        memorized <- Map.empty
 
 let memoize (ctx: ParserContext<'a>) =
     let grow((name, rule): Rule<'a>, input, memo, head) = 
