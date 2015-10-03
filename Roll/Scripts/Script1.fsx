@@ -7,65 +7,31 @@
       @"..\Dice.fs"
 open mdw
 open mdw.DataDefs
+open mdw.Packrat
+#r @"..\..\packages\xunit.runner.visualstudio.2.0.1\build\_common\xunit.abstractions.dll"
+#r @"..\..\packages\xunit.assert.2.0.0\lib\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.assert.dll"
+#r @"..\..\packages\xunit.extensibility.core.2.0.0\lib\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.dll"
+open Xunit
 #nowarn "0040"
 #nowarn "0058"
 
-let numeric = Set<char>['0'..'9']
-let ctx = mdw.Packrat.ParserContext()
-let memoize = mdw.Packrat.memoize ctx
-
+type Expr = Leaf of char | Interior of Expr * Expr
+#nowarn "0040" // Allow object recursion without warnings so we can write recursive memoized rules
+[<Fact>]
 let (|Next|Empty|) = function
-    | (input : string), pos when pos < input.Length -> Next(input.[pos], (input, pos+1))
-    | _ -> Empty
-
-let (|Char|_|) alphabet = function
-    | Empty -> None
-    | s, i when Set.contains s.[i] alphabet -> Some(s, i+1)
-    | _ -> None
-
-let rec (|MaybeChars|) alphabet = function
-    | Char alphabet (MaybeChars alphabet it)
-    | it -> it
-
-let rec (|Chars|_|) alphabet = function
-    | Char alphabet (MaybeChars alphabet it) -> Some it
-    | it -> None
-
-let sub (s: string, i0) (_, i1) =
-    s.Substring(i0, i1-i0)
-
-let rec (|Number|_|) = function
-    | Chars numeric i1 as i0 -> (System.Int32.Parse(sub i0 i1), i1) |> Some
-    | _ -> None
-and (|CompoundExpression|_|) = memoize "CompoundExpression" (function
-    | CompoundExpressionTerm(lhs, next) -> Some(lhs, next)
+| (input : string), pos when pos < input.Length -> Next(input.[pos], (input, pos+1))
+| _ -> Empty
+let show = sprintf "%A" 
+let c = ParserContext()
+let rec (|Xs|_|) = memoize c "Xs" (function
+    | Xs(lhs, Next('+', Number(rhs, next))) -> Some(Interior(lhs, rhs), next)
+    | Number(v, next) -> Some(v, next)
     | _ -> None)
-and (|CompoundExpressionTerm|_|) = memoize "CompoundExpressionTerm"  (function
-    | CheckTerm(v, next) -> Some(v, next)
-    | SimpleExpression(v, next) -> Some(v, next)
+and (|Number|_|) = memoize c "Number" (function
+    | Next(c, next) when System.Char.IsDigit(c) -> Some(Leaf c, next)
     | _ -> None)
-and (|CheckTerm|_|) = memoize "CheckTerm" (function
-        | CompoundExpression(roll, Next(':', Number(target, Next('?', CompoundExpression(_, next))))) -> 
-            let consequent = Some(Single(Simple(1, 1)), next)
-            let retval = Some(Check(roll, [], 0), next)
-            printfn "CheckTerm=%A" retval
-            retval
-        | _ -> None
-    )
-and (|SimpleExpression|_|) = memoize "SimpleExpression" (function
-    | Next('d', Number(dieSize, next)) -> Some(Single(Simple(1, dieSize)), next)
-    | _ -> None)
-
-ctx.Reset()
-match (|CompoundExpression|_|) ("d20:14?d8", 0) with
-| Some(v, _) -> ()
-| None -> failwith "Failed too early to be useful"
-
-(Map.tryFind ("CheckTerm", ("d20:14?d8", 0)) (snd ctx.Debug)) |>
-    function 
-    | None -> "Never analyzed it"
-    | Some({ ans = result }) -> 
-        // We expect this to be a fragment of text, an Ans
-        match result with
-        | mdw.Packrat.Ans(Some(v)) -> "Correct"
-        | err -> sprintf "Error! %A" err
+match("1+2+3",0) with
+| Xs(v, Empty) -> 
+    // Result should be left-associative
+    Assert.Equal(show <| Interior(Interior(Leaf('1'),Leaf('2')),Leaf('3')), show v)
+| _ -> failwith "Could not parse"
