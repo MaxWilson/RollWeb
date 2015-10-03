@@ -64,8 +64,8 @@ match (|CompoundExpression|_|) ("d20:14?d8", 0) with
 (Map.tryFind ("CheckTerm", ("d20:14?d8", 0)) (snd ctx.Debug)) |>
     function 
     | None -> "Never analyzed it"
-    | Some({ ans = Result }) -> 
+    | Some({ ans = result }) -> 
         // We expect this to be a fragment of text, an Ans
-        match Result with
+        match result with
         | mdw.Packrat.Ans(Some(v)) -> "Correct"
         | err -> sprintf "Error! %A" err
