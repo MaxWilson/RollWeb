@@ -7,13 +7,19 @@
       @"..\Dice.fs"
 open mdw
 open mdw.DataDefs
-open mdw.Packrat
 #r @"..\..\packages\xunit.runner.visualstudio.2.0.1\build\_common\xunit.abstractions.dll"
 #r @"..\..\packages\xunit.assert.2.0.0\lib\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.assert.dll"
 #r @"..\..\packages\xunit.extensibility.core.2.0.0\lib\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.dll"
 open Xunit
 #nowarn "0040"
 #nowarn "0058"
+
+type ParserContext() = 
+    class end
+
+let memoize ctx =
+    fun name rule input ->
+        rule input
 
 type Expr = Leaf of char | Interior of Expr * Expr
 #nowarn "0040" // Allow object recursion without warnings so we can write recursive memoized rules
