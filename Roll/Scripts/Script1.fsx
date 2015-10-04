@@ -15,7 +15,11 @@ open Xunit
 #nowarn "0058"
 
 type Input = string * int
-type Result<'a> = | Memo of ('a * Input) option | Func of (unit -> ('a * Input) option)
+type Result<'a> = 
+    // Memoized parse result: either an AST and the rest of the input, or failure
+    | Memo of ('a * Input) option 
+    // A transformer which takes (name, rule, input) and produces a parse result 
+    | Func of ((string * (Input -> ('a * Input) option) * Input) -> ('a * Input) option)
 type ParserContext<'a>() = 
     let mutable mem = Map.empty
     let mutable callStack = []
@@ -37,8 +41,8 @@ type ParserContext<'a>() =
     member this.CallStack = callStack
     member val RecordInvolved = None with get, set
 
-let memoize (ctx : ParserContext<'a>)=
-    let rec firstTime name rule input () =
+let memoize (ctx : ParserContext<'a>) =
+    let rec firstTime(name, rule, input) =
         // grow a seed, collecting all left recursions as involved
         let involved = ref Set.empty
         ctx.RecordInvolved <- 
@@ -54,13 +58,44 @@ let memoize (ctx : ParserContext<'a>)=
             ctx.Memorize(name, input, Memo(seed))
             seed
         else
-            grow(name, rule, input)
-    and grow(name, rule, input) =
+            grow !involved (name, rule, input)
+    and grow involved (name, rule, input) =
+        for (rule, startpos) in involved do
+            ctx.Memorize(rule, startpos, Func (evalOnce (ref true)))
+        let rec loop prev =
+            match rule input, prev with
+            | Some(v, ((_, i) as next)) as ans, Some(_, (_, prevNext)) when i > prevNext ->
+                // We grew! Keep growing
+                ctx.Memorize(name, input, Memo(ans))
+                loop ans
+            | _ -> 
+                // I'm not sure about this cleanup phase
+                for (rule, startpos) in involved do
+                    ctx.Memorize(rule, startpos, Func (lrAnswer))
+                // Done. Clean up and return
+                prev
+        loop None
+    and evalOnce eval (name, rule, input)=
+        if !eval then
+            None
+        else
+            eval := false
+            let retval = rule input
+            eval := true
+            retval    
+    and lrAnswer(name, rule, input)=
+        // Since we're now done with seed-growing, memoize the current answer
+        // I'm not sure if this is actually the right thing to do... may not account well
+        // for multiple heads. But I don't have a solid repro in my mind for where this
+        // would cause problems.
+        let ans = rule input
+        ctx.Memorize(name, input, Memo(ans))
+        ans      
+    let fail(name, rule, input) =
         None
 
-    let fail() =
-        None
-    let getRule(name, rule, input) =
+    // Depending on what we're doing right now, we could handle input in one of several ways
+    let getProcessor(name, rule, input) =
         match ctx.Memo(name, input) with
         // Already computed and memoized an answer
         | Some(Memo(v)) ->
@@ -76,15 +111,16 @@ let memoize (ctx : ParserContext<'a>)=
                 ctx.RecordInvolved.Value(ctx.CallStack)
                 Func fail
             else
-                Func (firstTime name rule input)               
+                Func firstTime
             
     let rec eval name rule input =
+        let p = getProcessor(name, rule, input)
         ctx.Begin(name, input)
-        match getRule(name, rule, input) with
+        match p with
         | Memo(ans) -> 
             ctx.Return(name, input, ans)
         | Func(f) ->
-            ctx.Return(name, input, f())
+            ctx.Return(name, input, f(name, rule, input))
     eval
         
 type Expr = Leaf of char | Interior of Expr * Expr
