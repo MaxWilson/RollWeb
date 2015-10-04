@@ -15,25 +15,76 @@ open Xunit
 #nowarn "0058"
 
 type Input = string * int
-type Result<'a> = | Memo of ('a * Input) option | Func of (unit -> Result<'a>)
+type Result<'a> = | Memo of ('a * Input) option | Func of (unit -> ('a * Input) option)
 type ParserContext<'a>() = 
     let mutable mem = Map.empty
+    let mutable callStack = []
     member this.Memo(name : string, input : Input) : Result<'a> option =
         Map.tryFind (name, input) mem
     member this.Memorize(name, input, value) =
         mem <- Map.add (name, input) value mem
     member this.Reset() =
         mem <- Map.empty
+    member this.Begin(name, input) =
+        callStack <- (name, input) :: callStack
+    member this.Return(name, input, result) =
+        match callStack with
+        | (n,i)::tail when n = name && i = input ->
+            callStack <- tail
+        | _ ->
+            Util.nomatch() // should never happen if memoize is working correctly
+        result // return result for convenience
+    member this.CallStack = callStack
+    member val RecordInvolved = None with get, set
 
 let memoize (ctx : ParserContext<'a>)=
-    let firstTime name rule input () : Result<'a> =
-        Memo(None)
+    let rec firstTime name rule input () =
+        // grow a seed, collecting all left recursions as involved
+        let involved = ref Set.empty
+        ctx.RecordInvolved <- 
+            Some(fun callStack ->
+                let getCycles = function
+                | (h,_)::t -> Seq.takeWhile (fst >> ((<>)h)) t
+                | _ -> Util.nomatch()
+                involved := Set.union (Set.ofSeq (getCycles callStack)) !involved)
+        let seed = rule input
+        // tidy up to make debugging easier
+        ctx.RecordInvolved <- None
+        if Set.isEmpty !involved then
+            ctx.Memorize(name, input, Memo(seed))
+            seed
+        else
+            grow(name, rule, input)
+    and grow(name, rule, input) =
+        None
+
+    let fail() =
+        None
+    let getRule(name, rule, input) =
+        match ctx.Memo(name, input) with
+        // Already computed and memoized an answer
+        | Some(Memo(v)) ->
+            Memo(v)
+        // Already have a continuation specified
+        | Some(Func(f)) ->
+            Func(f)
+        | None ->
+            // First time at this position. Either it's the first time for this production
+            // period, or the production is already on the call stack higher up, which
+            // means we're growing a seed.
+            if List.exists (fst >> ((=) name)) ctx.CallStack then
+                ctx.RecordInvolved.Value(ctx.CallStack)
+                Func fail
+            else
+                Func (firstTime name rule input)               
+            
     let rec eval name rule input =
-        match defaultArg (ctx.Memo(name, input)) (Func (firstTime name rule input)) with
-        | Memo(ans) -> ans
+        ctx.Begin(name, input)
+        match getRule(name, rule, input) with
+        | Memo(ans) -> 
+            ctx.Return(name, input, ans)
         | Func(f) ->
-            ctx.Memorize(name, input, f())
-            eval name rule input
+            ctx.Return(name, input, f())
     eval
         
 type Expr = Leaf of char | Interior of Expr * Expr
