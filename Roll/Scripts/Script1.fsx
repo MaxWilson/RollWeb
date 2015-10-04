@@ -14,13 +14,28 @@ open Xunit
 #nowarn "0040"
 #nowarn "0058"
 
-type ParserContext() = 
-    class end
+type Input = string * int
+type Result<'a> = | Memo of ('a * Input) option | Func of (unit -> Result<'a>)
+type ParserContext<'a>() = 
+    let mutable mem = Map.empty
+    member this.Memo(name : string, input : Input) : Result<'a> option =
+        Map.tryFind (name, input) mem
+    member this.Memorize(name, input, value) =
+        mem <- Map.add (name, input) value mem
+    member this.Reset() =
+        mem <- Map.empty
 
-let memoize ctx =
-    fun name rule input ->
-        rule input
-
+let memoize (ctx : ParserContext<'a>)=
+    let firstTime name rule input () : Result<'a> =
+        Memo(None)
+    let rec eval name rule input =
+        match defaultArg (ctx.Memo(name, input)) (Func (firstTime name rule input)) with
+        | Memo(ans) -> ans
+        | Func(f) ->
+            ctx.Memorize(name, input, f())
+            eval name rule input
+    eval
+        
 type Expr = Leaf of char | Interior of Expr * Expr
 #nowarn "0040" // Allow object recursion without warnings so we can write recursive memoized rules
 [<Fact>]
