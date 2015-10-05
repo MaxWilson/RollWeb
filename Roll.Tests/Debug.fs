@@ -1,7 +1,6 @@
 ﻿module Debug
 open mdw
 open Xunit
-open mdw.Packrat
 open mdw.DataDefs
 
 (* 
@@ -12,6 +11,9 @@ This test should be kept empty in public checkins.
 
 #nowarn "0040"
 #nowarn "0058"
+// Define simple Expr for unit test
+type Expr = Leaf of char | Interior of Expr * Expr
+
 [<Fact>]
 let ``Indirect recursion is leaving clutter on the stack; CheckTerm is still an LR at the end of the algorithm instead of an Ans``() =
 
@@ -82,14 +84,14 @@ let ``Indirect recursion is leaving clutter on the stack; CheckTerm is still an 
 
     ctx.Reset()
     match (|CompoundExpression|_|) ("d20:14?d8", 0) with
-    | Some(v, _) -> ()
+    | Some(v, Empty) -> ()
     | None -> failwith "Failed too early to be useful"
 
-    (Map.tryFind ("CheckTerm", ("d20:14?d8", 0)) (snd ctx.Debug)) |>
-        function 
-        | None -> "Never analyzed it"
-        | Some({ ans = result }) -> 
-            // We expect this to be a fragment of text, an Ans
-            match result with
-            | mdw.Packrat.Ans(Some(v)) -> "Correct"
-            | err -> failwithf "Error! %A" err
+//    (Map.tryFind ("CheckTerm", ("d20:14?d8", 0)) (snd ctx.Debug)) |>
+//        function 
+//        | None -> "Never analyzed it"
+//        | Some({ ans = result }) -> 
+//            // We expect this to be a fragment of text, an Ans
+//            match result with
+//            | mdw.Packrat.Ans(Some(v)) -> "Correct"
+//            | err -> failwithf "Error! %A" err
