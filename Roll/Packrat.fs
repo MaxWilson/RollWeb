@@ -46,17 +46,16 @@ let rec firstTime (ctx: ParserContext<'a>) (name, rule, input) =
     let prevInvolved = ctx.RecordInvolved
     ctx.RecordInvolved <- 
         Some(fun callStack ->
-            if prevInvolved.IsSome then
-                prevInvolved.Value callStack 
-            let cycles = 
-                match callStack with
-                | (h,_)::t -> 
-                    if h = name then
-                        leftRecursion := true
-                    Seq.takeWhile (fst >> ((<>)h)) t
-                | _ -> Util.nomatch()
+            match callStack with
+            | (h,_)::t when h = name -> 
+                leftRecursion := true
+            | _ -> ()
             if !leftRecursion then
-                involved := Set.union (Set.ofSeq cycles) !involved)
+                // we have a left recursion!
+                let cycles = Seq.takeWhile (fst >> ((<>)name)) callStack.Tail
+                involved := Set.union (Set.ofSeq cycles) !involved
+            elif prevInvolved.IsSome then
+                prevInvolved.Value callStack)
     let seed = rule input
     // tidy up
     ctx.RecordInvolved <- prevInvolved
@@ -71,6 +70,9 @@ and grow (ctx: ParserContext<'a>) involved (name, rule, input, seed) =
     let rec loop prev =
         ctx.Memorize(name, input, Memo(prev))
         match rule input, prev with
+        | Some(v, next) as ans, None ->
+            // We grew! Keep growing
+            loop ans
         | Some(v, ((_, i) as next)) as ans, Some(_, (_, prevNext)) when i > prevNext ->
             // We grew! Keep growing
             loop ans
@@ -83,12 +85,12 @@ and grow (ctx: ParserContext<'a>) involved (name, rule, input, seed) =
     loop seed
 and evalOnce eval (name, rule, input)=
     if !eval then
-        None
-    else
         eval := false
         let retval = rule input
         eval := true
         retval    
+    else
+        None
 and lrAnswer (ctx: ParserContext<'a>)  (name, rule, input)=
     // Since we're now done with seed-growing, memoize the current answer
     // I'm not sure if this is actually the right thing to do... may not account well
@@ -112,7 +114,8 @@ let getProcessor (ctx: ParserContext<'a>) (name, rule, input) =
         // First time at this position. Either it's the first time for this production
         // period, or the production is already on the call stack higher up, which
         // means we're growing a seed.
-        if List.exists (fst >> ((=) name)) ctx.CallStack then
+        let parentFrames = ctx.CallStack.Tail
+        if List.exists ((=) (name, input)) parentFrames then
             ctx.RecordInvolved.Value(ctx.CallStack)
             Func fail
         else
@@ -122,8 +125,8 @@ let memoize (ctx : ParserContext<'a>) =
     // Depending on what we're doing right now, we could handle input in one of several ways
             
     let rec eval name rule input =
-        let p = getProcessor ctx (name, rule, input)
         ctx.Begin(name, input)
+        let p = getProcessor ctx (name, rule, input)
         match p with
         | Memo(ans) -> 
             ctx.Return(name, input, ans)

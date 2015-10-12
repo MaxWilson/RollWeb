@@ -52,7 +52,7 @@ let Average() =
 [<InlineData("10.18D?", 0.225)>] // Simple check with disadvantage
 [<InlineData("20.18A?100", 555.)>] // Check with advantage and result
 [<InlineData("20.20?1d10+d6-2", 16.)>] // Check with result
-[<InlineData("20.d20:14?", 6)>] // Check with explicit roll syntax
+[<InlineData("20.d20:14?", 7)>] // Check with explicit roll syntax
 let ``Complete-ish list of example roll specs``(input: string, expectedAverage: float) =
     let spec = Parser.Parse(input)
     let round (x : float) = System.Math.Round(x, 3) // round to three places
