@@ -53,6 +53,7 @@ let Average() =
 [<InlineData("20.18A?100", 555.)>] // Check with advantage and result
 [<InlineData("20.20?1d10+d6-2", 16.)>] // Check with result
 [<InlineData("20.d20:14?", 7)>] // Check with explicit roll syntax
+[<InlineData("20.d20a-d20d:0?", 18.)>] // Check with explicit roll syntax and complex roll
 let ``Complete-ish list of example roll specs``(input: string, expectedAverage: float) =
     let spec = Parser.Parse(input)
     let round (x : float) = System.Math.Round(x, 3) // round to three places
@@ -77,6 +78,7 @@ let ``Examples of explanations that should be checkable``(spec, expected) =
 [<InlineData("avg.3d6", "10.50")>]
 [<InlineData("avg.3d6-4", "6.50")>]
 [<InlineData("avg.3d6-(d4-d4)", "10.50")>]
+[<InlineData("avg.20d6-(d4-d4)", "70")>]
 [<InlineData("avg.20d6-(d4-d4)", "70")>]
 let ``Complete-ish list of example command specs``(input: string, expectedOutput: string) =
     let spec = Parser.ParseCommand(input)
