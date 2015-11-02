@@ -165,3 +165,4 @@ let ``More complex indirect left-recursive grammers``() =
     match("x+x",0) with
     | E(v, Empty) -> Assert.Equal(2, v)
     | _ -> failwith "Could not parse"
+

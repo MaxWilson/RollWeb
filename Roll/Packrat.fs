@@ -79,7 +79,7 @@ and grow (ctx: ParserContext<'a>) involved (name, rule, input, seed) =
         | _ -> 
             // I'm not sure about this cleanup phase
             for (rule, startpos) in involved do
-                ctx.Memorize(rule, startpos, Func (lrAnswer ctx))
+                ctx.Memorize(rule, startpos, Func (firstTime ctx))
             // Done. Clean up and return
             prev
     loop seed
