@@ -2,6 +2,7 @@
 #I __SOURCE_DIRECTORY__
 #load @"load-references.fsx"
 #load @"..\Util.fs"
+      @"..\Packrat.fs"
       @"..\DataDefs.fs"
       @"..\Parser.fs"
       @"..\Dice.fs"

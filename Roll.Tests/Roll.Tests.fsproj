@@ -25,6 +25,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>bin\Debug\Roll.Tests.XML</DocumentationFile>
+    <OtherFlags>
+    </OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -69,6 +71,7 @@
     <None Include="Scripts\load-references.fsx" />
     <None Include="Scripts\load-project.fsx" />
     <None Include="Scripts\Script1.fsx" />
+    <Compile Include="Debug.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Roll\Roll.fsproj">

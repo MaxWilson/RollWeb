@@ -4,6 +4,7 @@ open FsCheck
 open mdw
 open DataDefs
 open Dice
+open mdw.Packrat
 
 [<Fact>]
 let ``Test rolls``() =
@@ -35,22 +36,26 @@ let Rolling() =
 
 [<Fact>]
 let Average() =
+    let eq(expected, actual) = Assert.InRange(actual, expected - 0.0001, expected + 0.0001)
     Assert.Equal(3.5, Dice.Instance.Average(Single(Simple(1,6))))
     Assert.Equal(10.5, Dice.Instance.Average(Single(Simple(3,6))))
+    eq (4./216., Dice.Instance.Average(Check(Sum(Single(Simple(1,6)), Single(Simple(2,6))), [17, Single(Simple(1,1))], 0)))
 
 [<Theory>]
-[<InlineData("3d6", 10.5)>]
-[<InlineData("10.3d6", 105.)>]
-[<InlineData("10.3d6+4", 145.)>]
-[<InlineData("10.3d6-2", 85.)>]
-[<InlineData("1d2A", 1.75)>]
-[<InlineData("1d2D", 1.25)>]
-[<InlineData("20.18?", 3.)>]
-[<InlineData("(d20+11)-(d20+8)", 3.)>]
-[<InlineData("10.18A?", 2.775)>]
-[<InlineData("10.18D?", 0.225)>]
-[<InlineData("20.18A?100", 555.)>]
-[<InlineData("20.20?1d10+d6-2", 16.)>]
+[<InlineData("3d6", 10.5)>] // Basic roll
+[<InlineData("10.3d6", 105.)>] // Multiple rolls
+[<InlineData("10.3d6+4", 145.)>] // Multiple rolls with complex result
+[<InlineData("10.3d6-2", 85.)>] // Multiple rolls with subtraction
+[<InlineData("1d2A", 1.75)>] // Roll with advantage
+[<InlineData("1d2D", 1.25)>] // Roll with disadvantage
+[<InlineData("20.18?", 3.)>] // Multiple checks
+[<InlineData("(d20+11)-(d20+8)", 3.)>] // Subtraction
+[<InlineData("10.18A?", 2.775)>] // Simple check with advantage
+[<InlineData("10.18D?", 0.225)>] // Simple check with disadvantage
+[<InlineData("20.18A?100", 555.)>] // Check with advantage and result
+[<InlineData("20.20?1d10+d6-2", 16.)>] // Check with result
+[<InlineData("20.d20:14?", 7)>] // Check with explicit roll syntax
+[<InlineData("20.(d20a-d20d):0?", 16.984)>] // Check with explicit roll syntax and complex roll
 let ``Complete-ish list of example roll specs``(input: string, expectedAverage: float) =
     let spec = Parser.Parse(input)
     let round (x : float) = System.Math.Round(x, 3) // round to three places
@@ -76,6 +81,7 @@ let ``Examples of explanations that should be checkable``(spec, expected) =
 [<InlineData("avg.3d6-4", "6.50")>]
 [<InlineData("avg.3d6-(d4-d4)", "10.50")>]
 [<InlineData("avg.20d6-(d4-d4)", "70")>]
+[<InlineData("avg.20d6-(d4-d4)", "70")>]
 let ``Complete-ish list of example command specs``(input: string, expectedOutput: string) =
     let spec = Parser.ParseCommand(input)
     let output = Dice.Instance.Resolve(spec) |> fst
@@ -83,8 +89,82 @@ let ``Complete-ish list of example command specs``(input: string, expectedOutput
         Assert.Equal<string>(expectedOutput, output)
 
 [<Theory(Skip="Incomplete")>]
-[<InlineData("20.d20:14?", 6)>]
 [<InlineData("20.18?20?", 4.)>]
 [<InlineData("20.d4A+d10+d20D:18?d10+5+d6", 0.)>]
 let ``Example roll specs that aren't working yet``(input: string, expectedAverage: float) =
     Assert.Equal(expectedAverage, Dice.Instance.Average(Parser.Parse(input)))
+
+type Expr = Leaf of char | Interior of Expr * Expr
+#nowarn "0040" // Allow object recursion without warnings so we can write recursive memoized rules
+[<Fact>]
+let ``Should be able to parse direct left-recursive left-associative grammers``() =
+    let (|Next|Empty|) = function
+    | (input : string), pos when pos < input.Length -> Next(input.[pos], (input, pos+1))
+    | _ -> Empty
+    let show = sprintf "%A" 
+    let c = ParserContext()
+    let rec (|Xs|_|) = memoize c "Xs" (function
+        | Xs(lhs, Next('+', Number(rhs, next))) -> Some(Interior(lhs, rhs), next)
+        | Number(v, next) -> Some(v, next)
+        | _ -> None)
+    and (|Number|_|) = memoize c "Number" (function
+        | Next(c, next) when System.Char.IsDigit(c) -> Some(Leaf c, next)
+        | _ -> None)
+    match("1+2+3",0) with
+    | Xs(v, Empty) -> 
+        // Result should be left-associative
+        Assert.Equal(show <| Interior(Interior(Leaf('1'),Leaf('2')),Leaf('3')), show v)
+    | _ -> failwith "Could not parse"
+
+#nowarn "0040" // Allow object recursion without warnings so we can write recursive memoized rules
+[<Fact>]
+let ``Should be able to parse indirect left-recursive grammers``() =
+    let (|Next|Empty|) = function
+    | (input : string), pos when pos < input.Length -> Next(input.[pos], (input, pos+1))
+    | _ -> Empty
+
+    let c = ParserContext()
+    // define an intermediate production "E" to make recursion indirect
+    let rec (|Xs|_|) = memoize c "Xs" (function
+        | E(lhs, Next('+', Number(rhs, next))) -> Some(Interior(lhs, rhs), next)
+        | Next(c, next) when System.Char.IsDigit(c) -> Some(Leaf c, next)
+        | _ -> None)
+    and (|E|_|) = memoize c "E" (function
+        | Xs(v, next) -> Some(v, next)
+        | _ -> None)
+    and (|Number|_|) = memoize c "Number" (function
+        | Next(c, next) when System.Char.IsDigit(c) -> Some(Leaf c, next)
+        | _ -> None)
+    // It's an Xs, and it's also an E
+    match("1+2+3",0) with
+    | Xs(v, Empty) -> 
+        Assert.Equal(Interior(Interior(Leaf('1'),Leaf('2')),Leaf('3')), v)
+    | _ -> failwith "Could not parse"
+    match("1+2+3",0) with
+    | E(v, Empty) -> 
+        Assert.Equal(Interior(Interior(Leaf('1'),Leaf('2')),Leaf('3')), v)
+    | _ -> failwith "Could not parse"
+
+[<Fact>]
+let ``More complex indirect left-recursive grammers``() =
+    let (|Next|Empty|) = function
+    | (input : string), pos when pos < input.Length -> Next(input.[pos], (input, pos+1))
+    | _ -> Empty
+
+    let c = ParserContext()
+    // define an intermediate production "E" to make recursion indirect
+    let rec (|CompoundExpression|_|) = memoize c "CompoundExpression" (function
+        | E(v, Next('+', Next('x', next))) -> Some(v+1, next)
+        | Next('x', next) -> Some(1, next)
+        | _ -> None)
+    and (|E|_|) = memoize c "E" (function
+        | CompoundExpression(v, next) -> Some(v, next)
+        | _ -> None)
+    // It's an Xs, and it's also an E
+    match("x+x",0) with
+    | CompoundExpression(v, Empty) -> Assert.Equal(2, v)
+    | _ -> failwith "Could not parse"
+    match("x+x",0) with
+    | E(v, Empty) -> Assert.Equal(2, v)
+    | _ -> failwith "Could not parse"
+

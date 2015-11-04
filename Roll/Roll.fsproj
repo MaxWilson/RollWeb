@@ -106,6 +106,7 @@
   </ProjectExtensions>
   <ItemGroup>
     <Compile Include="Util.fs" />
+    <Compile Include="Packrat.fs" />
     <Compile Include="DataDefs.fs" />
     <Compile Include="Parser.fs" />
     <Compile Include="Dice.fs" />
