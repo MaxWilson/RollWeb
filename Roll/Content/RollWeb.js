@@ -17467,7 +17467,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
 
 (function()
 {
- var Global=this,Runtime=this.IntelliFactory.Runtime,mdw,Dice,Resolver,Number,Seq,Operators,String,PrintfHelpers,Strings,Arrays,List,Util,Random,Seq1,Collections,MapModule,Unchecked,Lazy,parseInt,FSharpSet,FSharpMap,Parser,Impl,jQuery,UI,Next,Client,Doc,Roll,Client1,Var,AttrProxy,RollRecord,alert,T,Key,ListModel,View;
+ var Global=this,Runtime=this.IntelliFactory.Runtime,mdw,Dice,Resolver,Number,Seq,Operators,String,PrintfHelpers,Strings,Arrays,List,Util,Random,Seq1,T,Collections,MapModule,Unchecked,FSharpMap,FSharpSet,BalancedTree,Packrat,Enumerator,Lazy,parseInt,ParserContext,Parser,Impl,jQuery,UI,Next,Client,Doc,Roll,Client1,Var,AttrProxy,RollRecord,alert,Key,ListModel,View;
  Runtime.Define(Global,{
   mdw:{
    Dice:{
@@ -17692,7 +17692,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      },
      enumerate:function(_arg2)
      {
-      var rhs,lhs,_this=this;
+      var rhs,lhs,_this=this,k;
       if(_arg2.$==0)
        {
         return this.enumerateSimple(_arg2.$0);
@@ -17712,14 +17712,25 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
             c0=matchValue[1];
             return Seq.collect(function(matchValue1)
             {
-             return[[n0+matchValue1[0],c0+matchValue1[1]]];
+             return[[n0+matchValue1[0],c0*matchValue1[1]]];
             },_this.enumerate(rhs));
            },_this.enumerate(lhs));
           }))));
          }
         else
          {
-          return Util.nomatch();
+          if(_arg2.$==2)
+           {
+            k=_arg2.$0;
+            return List.map(function(tupledArg)
+            {
+             return[tupledArg[0]*k,tupledArg[1]];
+            },_this.enumerate(_arg2.$1));
+           }
+          else
+           {
+            return Util.nomatch();
+           }
          }
        }
      },
@@ -17874,64 +17885,392 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      }
     })
    },
-   Parser:{
-    Impl:Runtime.Class({
-     memoize:function(_,_1,_2)
+   Packrat:{
+    ParserContext:Runtime.Class({
+     Begin:function(name,input)
      {
-      var input,key,matchValue,loop,result,matchValue1;
-      input=[_1,_2];
-      key=[String(_),input];
-      matchValue=MapModule.TryFind(key,this.memo[0]);
+      this.callStack=Runtime.New(T,{
+       $:1,
+       $0:[name,input],
+       $1:this.callStack
+      });
+      return;
+     },
+     ClearFunc:function(name,input)
+     {
+      this.funcs=this.funcs.Remove([name,input]);
+      return;
+     },
+     Memo:function(name,input)
+     {
+      var matchValue,matchValue1;
+      matchValue=MapModule.TryFind([name,input],this.funcs);
       if(matchValue.$==0)
        {
-        loop=[];
-        this.memo[0]=this.memo[0].Add(key,{
+        matchValue1=MapModule.TryFind([name,input],this.mem);
+        return matchValue1.$==0?{
          $:0
-        });
-        loop[1]={
-         $:0
-        };
-        loop[0]=1;
-        while(loop[0])
-         {
-          result=_(input);
-          this.memo[0]=this.memo[0].Add(key,result);
-          matchValue1=[result,loop[1]];
-          if(matchValue1[0].$==1)
-           {
-            if(matchValue1[1].$==1)
-             {
-              if(Unchecked.Compare(matchValue1[0].$0[1],matchValue1[1].$0[1])<=0)
-               {
-                matchValue1[0].$0[1];
-                matchValue1[1].$0[1];
-                loop[0]=0;
-                loop[1]=loop[1];
-               }
-              else
-               {
-                loop[1]=result;
-                loop[0]=1;
-               }
-             }
-            else
-             {
-              loop[1]=result;
-              loop[0]=1;
-             }
-           }
-          else
-           {
-            loop[0]=0;
-            loop[1]=loop[1];
-           }
+        }:{
+         $:1,
+         $0:{
+          $:0,
+          $0:matchValue1.$0
          }
-        return loop[1];
+        };
        }
       else
        {
-        return matchValue.$0;
+        return{
+         $:1,
+         $0:matchValue.$0
+        };
        }
+     },
+     Memorize:function(name,input,value)
+     {
+      var v,matchValue,input0;
+      if(value.$==1)
+       {
+        this.funcs=this.funcs.Add([name,input],value);
+        return;
+       }
+      else
+       {
+        v=value.$0;
+        matchValue=MapModule.TryFind([name,input],this.mem);
+        if(matchValue.$==1)
+         {
+          if(matchValue.$0.$==1)
+           {
+            input0=matchValue.$0.$0[1];
+            matchValue.$0.$0[0];
+            return v.$==1?Unchecked.Compare(v.$0[1],input0)===1?void(this.mem=this.mem.Add([name,input],v)):null:null;
+           }
+          else
+           {
+            this.mem=this.mem.Add([name,input],v);
+            return;
+           }
+         }
+        else
+         {
+          this.mem=this.mem.Add([name,input],v);
+          return;
+         }
+       }
+     },
+     Reset:function()
+     {
+      this.mem=FSharpMap.New1([]);
+      return;
+     },
+     Return:function(name,input,result)
+     {
+      var matchValue,i;
+      matchValue=this.callStack;
+      if(matchValue.$==1)
+       {
+        i=matchValue.$0[1];
+        if(matchValue.$0[0]===name?Unchecked.Equals(i,input):false)
+         {
+          this.callStack=matchValue.$1;
+         }
+        else
+         {
+          Util.nomatch();
+         }
+       }
+      else
+       {
+        Util.nomatch();
+       }
+      return result;
+     },
+     get_CallStack:function()
+     {
+      return this.callStack;
+     },
+     get_Memory:function()
+     {
+      return this.mem;
+     },
+     get_RecordInvolved:function()
+     {
+      return this["RecordInvolved@"];
+     },
+     set_RecordInvolved:function(v)
+     {
+      this["RecordInvolved@"]=v;
+      return;
+     }
+    },{
+     New:function()
+     {
+      var r;
+      r=Runtime.New(this,{});
+      r.mem=FSharpMap.New1([]);
+      r.funcs=FSharpMap.New1([]);
+      r.callStack=Runtime.New(T,{
+       $:0
+      });
+      r["RecordInvolved@"]={
+       $:0
+      };
+      return r;
+     }
+    }),
+    evalOnce:function(ctx,eval,name,rule,input)
+    {
+     var retval;
+     if(eval[0])
+      {
+       eval[0]=false;
+       retval=rule(input);
+       ctx.Memorize(name,input,{
+        $:0,
+        $0:retval
+       });
+       eval[0]=true;
+       return retval;
+      }
+     else
+      {
+       return{
+        $:0
+       };
+      }
+    },
+    fail:function()
+    {
+     return{
+      $:0
+     };
+    },
+    firstTime:function(ctx,name,rule,input)
+    {
+     var involved,leftRecursion,prevInvolved,seed;
+     involved=[FSharpSet.New1(null)];
+     leftRecursion=[false];
+     prevInvolved=ctx.get_RecordInvolved();
+     ctx.set_RecordInvolved({
+      $:1,
+      $0:function(callStack)
+      {
+       if(callStack.$==1)
+        {
+         if(callStack.$0[0]===name)
+          {
+           leftRecursion[0]=true;
+          }
+        }
+       if(leftRecursion[0])
+        {
+         involved[0]=FSharpSet.New1(BalancedTree.OfSeq(Seq.append(FSharpSet.New1(BalancedTree.OfSeq(Seq.takeWhile(function(x)
+         {
+          return name!==x[0];
+         },callStack.$1))),involved[0])));
+        }
+       return prevInvolved.$==1?prevInvolved.$0.call(null,callStack):null;
+      }
+     });
+     seed=rule(input);
+     ctx.set_RecordInvolved(prevInvolved);
+     if(leftRecursion[0])
+      {
+       return Packrat.grow(ctx,involved[0],name,rule,input,seed);
+      }
+     else
+      {
+       ctx.Memorize(name,input,{
+        $:0,
+        $0:seed
+       });
+       return seed;
+      }
+    },
+    getProcessor:function(ctx,name,rule,input)
+    {
+     var matchValue,parentFrames,x;
+     matchValue=ctx.Memo(name,input);
+     if(matchValue.$==0)
+      {
+       parentFrames=ctx.get_CallStack().$1;
+       x=[name,input];
+       if(Seq.exists(function(y)
+       {
+        return Unchecked.Equals(x,y);
+       },parentFrames))
+        {
+         ctx.get_RecordInvolved().$0.call(null,ctx.get_CallStack());
+         return{
+          $:1,
+          $0:function(tupledArg)
+          {
+           return Packrat.fail(tupledArg[0],tupledArg[1],tupledArg[2]);
+          }
+         };
+        }
+       else
+        {
+         return{
+          $:1,
+          $0:function(tupledArg)
+          {
+           return Packrat.firstTime(ctx,tupledArg[0],tupledArg[1],tupledArg[2]);
+          }
+         };
+        }
+      }
+     else
+      {
+       return matchValue.$0.$==1?{
+        $:1,
+        $0:matchValue.$0.$0
+       }:{
+        $:0,
+        $0:matchValue.$0.$0
+       };
+      }
+    },
+    grow:function(ctx,involved,name,rule,input,seed)
+    {
+     var enumerator,forLoopVar,eval,loop,matchValue,enumerator1,forLoopVar1,enumerator2,forLoopVar2;
+     enumerator=Enumerator.Get(involved);
+     try
+     {
+      while(enumerator.MoveNext())
+       {
+        forLoopVar=enumerator.get_Current();
+        eval=[true];
+        ctx.Memorize(forLoopVar[0],forLoopVar[1],{
+         $:1,
+         $0:function(tupledArg)
+         {
+          return Packrat.evalOnce(ctx,eval,tupledArg[0],tupledArg[1],tupledArg[2]);
+         }
+        });
+       }
+     }
+     finally
+     {
+      if(enumerator.Dispose!=undefined)
+       {
+        enumerator.Dispose();
+       }
+     }
+     loop=[];
+     loop[1]=seed;
+     loop[0]=1;
+     while(loop[0])
+      {
+       ctx.Memorize(name,input,{
+        $:0,
+        $0:loop[1]
+       });
+       matchValue=[rule(input),loop[1]];
+       if(matchValue[0].$==1)
+        {
+         if(matchValue[1].$==1)
+          {
+           matchValue[0].$0[0];
+           matchValue[0].$0[1];
+           if(matchValue[0].$0[1][1]>matchValue[1].$0[1][1])
+            {
+             matchValue[0].$0[1][1];
+             matchValue[0].$0[1];
+             matchValue[1].$0[1][1];
+             matchValue[0].$0[0];
+             loop[1]=matchValue[0];
+             loop[0]=1;
+            }
+           else
+            {
+             enumerator1=Enumerator.Get(involved);
+             try
+             {
+              while(enumerator1.MoveNext())
+               {
+                forLoopVar1=enumerator1.get_Current();
+                ctx.ClearFunc(forLoopVar1[0],forLoopVar1[1]);
+               }
+             }
+             finally
+             {
+              if(enumerator1.Dispose!=undefined)
+               {
+                enumerator1.Dispose();
+               }
+             }
+             loop[0]=0;
+             loop[1]=loop[1];
+            }
+          }
+         else
+          {
+           matchValue[0].$0[1];
+           matchValue[0].$0[0];
+           loop[1]=matchValue[0];
+           loop[0]=1;
+          }
+        }
+       else
+        {
+         enumerator2=Enumerator.Get(involved);
+         try
+         {
+          while(enumerator2.MoveNext())
+           {
+            forLoopVar2=enumerator2.get_Current();
+            ctx.ClearFunc(forLoopVar2[0],forLoopVar2[1]);
+           }
+         }
+         finally
+         {
+          if(enumerator2.Dispose!=undefined)
+           {
+            enumerator2.Dispose();
+           }
+         }
+         loop[0]=0;
+         loop[1]=loop[1];
+        }
+      }
+     return loop[1];
+    },
+    lrAnswer:function(ctx,name,rule,input)
+    {
+     var ans;
+     ans=rule(input);
+     ctx.Memorize(name,input,{
+      $:0,
+      $0:ans
+     });
+     return ans;
+    },
+    memoize:function(ctx)
+    {
+     var eval;
+     eval=function(name)
+     {
+      return function(rule)
+      {
+       return function(input)
+       {
+        var p;
+        ctx.Begin(name,input);
+        p=Packrat.getProcessor(ctx,name,rule,input);
+        return p.$==1?ctx.Return(name,input,p.$0.call(null,[name,rule,input])):ctx.Return(name,input,p.$0);
+       };
+      };
+     };
+     return eval;
+    }
+   },
+   Parser:{
+    Impl:Runtime.Class({
+     get_Ctx:function()
+     {
+      return this.ctx;
      },
      parseCommand:function(txt)
      {
@@ -17951,7 +18290,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      parseCompound:function(txt)
      {
       var activePatternResult,tupledArg;
-      activePatternResult=this["|CompoundExpression|_|@82-1"].call(null,[txt,0]);
+      activePatternResult=this["|CompoundExpression|_|@66-1"].call(null,[txt,0]);
       if(activePatternResult.$==1)
        {
         tupledArg=activePatternResult.$0[1];
@@ -18001,11 +18340,11 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      },
      "|CheckTerm|_|":function()
      {
-      var pattern,_this=this;
-      pattern=function(_arg13)
+      var _this=this;
+      return(this.memoize.call(null,"CheckTerm"))(function(_arg13)
       {
        var activePatternResult,activePatternResult1,tupledArg,activePatternResult2,tupledArg1,activePatternResult3,tupledArg2,activePatternResult4,activePatternResult5,alphabet,tupledArg3,activePatternResult6,tupledArg4,activePatternResult7,c,next,target,activePatternResult8,tupledArg6,activePatternResult9,next1,target1,activePatternResulta,tupledArg7,activePatternResultb,next2,target2,activePatternResultc,tupledArg8,activePatternResultd,next3,target3,activePatternResulte,tupledArg9,activePatternResultf,next4,target4,activePatternResult10,alphabet1,tupledArga,activePatternResult11,tupledArgb,activePatternResult12,c1,next5,target5,activePatternResult13,tupledArgc,activePatternResult14,next6,target6,activePatternResult15,tupledArgd,activePatternResult16,next7,target7,activePatternResult17,tupledArge,activePatternResult18,next8,target8,activePatternResult19,tupledArgf,activePatternResult1a,next9,target9,activePatternResult1b,alphabet2,tupledArg10,activePatternResult1c,tupledArg11,activePatternResult1d,c2,nexta,targeta,activePatternResult1e,tupledArg12,activePatternResult1f,nextb,targetb,activePatternResult20,tupledArg13,activePatternResult21,nextc,targetc,activePatternResult22,tupledArg14,activePatternResult23,nextd,targetd,activePatternResult24,tupledArg15,activePatternResult25,nexte,targete,activePatternResult26,alphabet3,tupledArg16,activePatternResult27,tupledArg17,activePatternResult28,c3,nextf,targetf,activePatternResult29,tupledArg18,activePatternResult2a,next10,target10,activePatternResult2b,tupledArg19,activePatternResult2c,next11,target11,activePatternResult2d,tupledArg1a,activePatternResult2e,next12,target12,activePatternResult2f,tupledArg1b,activePatternResult30,next13,target13,activePatternResult31,alphabet4,tupledArg1c,activePatternResult32,tupledArg1d,activePatternResult33,c4,next14,target14,activePatternResult34,tupledArg1e,activePatternResult35,next15,target15,activePatternResult36,tupledArg1f,activePatternResult37,next16,target16,activePatternResult38,tupledArg20,activePatternResult39,next17,target17,activePatternResult3a,tupledArg21,activePatternResult3b,next18,target18,activePatternResult3c,alphabet5,tupledArg22,activePatternResult3d,tupledArg23,activePatternResult3e,c5,next19,target19,activePatternResult3f,tupledArg24,activePatternResult40,next1a,target1a,activePatternResult41,tupledArg25,activePatternResult42,next1b,target1b,activePatternResult43,tupledArg26,activePatternResult44,next1c,target1c,activePatternResult45,tupledArg27,activePatternResult46,next1d,target1d,_arg12,activePatternResult47,activePatternResult48,consequent,next1e,roll,target1e,_double;
-       activePatternResult=(Lazy.Force(_this["|CompoundExpression|_|@82"]))(_arg13);
+       activePatternResult=(Lazy.Force(_this["|CompoundExpression|_|@66"]))(_arg13);
        if(activePatternResult.$==1)
         {
          tupledArg=activePatternResult.$0[1];
@@ -19411,7 +19750,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
        if(activePatternResult1.$==1)
         {
          _arg12=activePatternResult1.$0[2];
-         activePatternResult47=(Lazy.Force(_this["|CompoundExpression|_|@82"]))(_arg12);
+         activePatternResult47=(Lazy.Force(_this["|CompoundExpression|_|@66"]))(_arg12);
          activePatternResult48=activePatternResult47.$==1?{
           $:1,
           $0:[activePatternResult47.$0[0],activePatternResult47.$0[1]]
@@ -19497,11 +19836,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
           $:0
          };
         }
-      };
-      return function(tupledArg)
-      {
-       return _this.memoize(pattern,tupledArg[0],tupledArg[1]);
-      };
+      });
      },
      "|CommandExpression|_|":function(_,_1)
      {
@@ -19510,7 +19845,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
       activePatternResult=this["|NextWord|_|"]("avg.",_arg15[0],_arg15[1]);
       if(activePatternResult.$==1)
        {
-        activePatternResult1=(Lazy.Force(this["|CompoundExpression|_|@82"]))(activePatternResult.$0);
+        activePatternResult1=(Lazy.Force(this["|CompoundExpression|_|@66"]))(activePatternResult.$0);
         if(activePatternResult1.$==1)
          {
           next=activePatternResult1.$0[1];
@@ -19524,7 +19859,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
          }
         else
          {
-          activePatternResult2=(Lazy.Force(this["|CompoundExpression|_|@82"]))(_arg15);
+          activePatternResult2=(Lazy.Force(this["|CompoundExpression|_|@66"]))(_arg15);
           if(activePatternResult2.$==1)
            {
             next1=activePatternResult2.$0[1];
@@ -19546,7 +19881,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
        }
       else
        {
-        activePatternResult3=(Lazy.Force(this["|CompoundExpression|_|@82"]))(_arg15);
+        activePatternResult3=(Lazy.Force(this["|CompoundExpression|_|@66"]))(_arg15);
         if(activePatternResult3.$==1)
          {
           next2=activePatternResult3.$0[1];
@@ -19568,61 +19903,61 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      },
      "|CompoundExpressionTerm|_|":function()
      {
-      var pattern,_this=this;
-      pattern=function(_arg10)
+      var _this=this;
+      return(this.memoize.call(null,"CompoundExpressionTerm"))(function(_arg10)
       {
-       var activePatternResult,activePatternResult1,tupledArg,activePatternResult2,activePatternResult3,tupledArg1,activePatternResult4,activePatternResult5,next,activePatternResult6,activePatternResult7,next1,activePatternResult8,activePatternResult9,next2,activePatternResulta,activePatternResultb,next3,activePatternResultc,activePatternResultd,next4,activePatternResulte,tupledArg2,activePatternResultf,activePatternResult10,next5,activePatternResult11,activePatternResult12,next6,activePatternResult13,activePatternResult14,next7,activePatternResult15,activePatternResult16,next8,activePatternResult17,activePatternResult18,next9,activePatternResult19,tupledArg3,activePatternResult1a,activePatternResult1b,nexta,activePatternResult1c,activePatternResult1d,nextb,activePatternResult1e,activePatternResult1f,nextc,activePatternResult20,activePatternResult21,nextd,activePatternResult22,activePatternResult23,nexte,activePatternResult24,tupledArg4,activePatternResult25,activePatternResult26,nextf,activePatternResult27,activePatternResult28,next10,activePatternResult29,activePatternResult2a,next11,activePatternResult2b,activePatternResult2c,next12,activePatternResult2d,activePatternResult2e,next13,activePatternResult2f,tupledArg5,activePatternResult30,activePatternResult31,next14,activePatternResult32,activePatternResult33,next15,activePatternResult34,activePatternResult35,next16,activePatternResult36,activePatternResult37,next17,activePatternResult38,activePatternResult39,next18;
-       activePatternResult=_this["|Next|Empty|"](_arg10[0],_arg10[1]);
-       if(activePatternResult.$==0)
+       var activePatternResult,activePatternResult1,activePatternResult2,tupledArg,activePatternResult3,activePatternResult4,tupledArg1,activePatternResult5,activePatternResult6,next,activePatternResult7,next1,activePatternResult8,next2,activePatternResult9,next3,activePatternResulta,next4,activePatternResultb,tupledArg2,activePatternResultc,activePatternResultd,next5,activePatternResulte,next6,activePatternResultf,next7,activePatternResult10,next8,activePatternResult11,next9,activePatternResult12,tupledArg3,activePatternResult13,activePatternResult14,nexta,activePatternResult15,nextb,activePatternResult16,nextc,activePatternResult17,nextd,activePatternResult18,nexte,activePatternResult19,tupledArg4,activePatternResult1a,activePatternResult1b,nextf,activePatternResult1c,next10,activePatternResult1d,next11,activePatternResult1e,next12,activePatternResult1f,next13,activePatternResult20,tupledArg5,activePatternResult21,activePatternResult22,next14,activePatternResult23,next15,activePatternResult24,next16,activePatternResult25,next17,activePatternResult26,next18;
+       activePatternResult=(Lazy.Force(_this["|CheckTerm|_|@78"]))(_arg10);
+       if(activePatternResult.$==1)
         {
-         if(activePatternResult.$0[0]===40)
+         return{
+          $:1,
+          $0:[activePatternResult.$0[0],activePatternResult.$0[1]]
+         };
+        }
+       else
+        {
+         activePatternResult1=_this["|Next|Empty|"](_arg10[0],_arg10[1]);
+         if(activePatternResult1.$==0)
           {
-           activePatternResult1=(Lazy.Force(_this["|CompoundExpression|_|@82"]))(activePatternResult.$0[1]);
-           if(activePatternResult1.$==1)
+           if(activePatternResult1.$0[0]===40)
             {
-             tupledArg=activePatternResult1.$0[1];
-             activePatternResult2=_this["|Next|Empty|"](tupledArg[0],tupledArg[1]);
-             if(activePatternResult2.$==0)
+             activePatternResult2=(Lazy.Force(_this["|CompoundExpression|_|@66"]))(activePatternResult1.$0[1]);
+             if(activePatternResult2.$==1)
               {
-               if(activePatternResult2.$0[0]===41)
+               tupledArg=activePatternResult2.$0[1];
+               activePatternResult3=_this["|Next|Empty|"](tupledArg[0],tupledArg[1]);
+               if(activePatternResult3.$==0)
                 {
-                 return{
-                  $:1,
-                  $0:[activePatternResult1.$0[0],activePatternResult2.$0[1]]
-                 };
-                }
-               else
-                {
-                 activePatternResult3=_this["|Number|_|"](_arg10[0],_arg10[1]);
-                 if(activePatternResult3.$==1)
+                 if(activePatternResult3.$0[0]===41)
                   {
-                   tupledArg1=activePatternResult3.$0[1];
-                   activePatternResult4=_this["|Next|Empty|"](tupledArg1[0],tupledArg1[1]);
-                   if(activePatternResult4.$==0)
+                   return{
+                    $:1,
+                    $0:[activePatternResult2.$0[0],activePatternResult3.$0[1]]
+                   };
+                  }
+                 else
+                  {
+                   activePatternResult4=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                   if(activePatternResult4.$==1)
                     {
-                     if(activePatternResult4.$0[0]===46)
+                     tupledArg1=activePatternResult4.$0[1];
+                     activePatternResult5=_this["|Next|Empty|"](tupledArg1[0],tupledArg1[1]);
+                     if(activePatternResult5.$==0)
                       {
-                       activePatternResult5=(Lazy.Force(_this["|CompoundExpression|_|@82"]))(activePatternResult4.$0[1]);
-                       if(activePatternResult5.$==1)
+                       if(activePatternResult5.$0[0]===46)
                         {
-                         next=activePatternResult5.$0[1];
-                         return{
-                          $:1,
-                          $0:[{
-                           $:3,
-                           $0:activePatternResult3.$0[0],
-                           $1:activePatternResult5.$0[0]
-                          },next]
-                         };
-                        }
-                       else
-                        {
-                         activePatternResult6=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
+                         activePatternResult6=(Lazy.Force(_this["|CompoundExpression|_|@66"]))(activePatternResult5.$0[1]);
                          if(activePatternResult6.$==1)
                           {
+                           next=activePatternResult6.$0[1];
                            return{
                             $:1,
-                            $0:[activePatternResult6.$0[0],activePatternResult6.$0[1]]
+                            $0:[{
+                             $:3,
+                             $0:activePatternResult4.$0[0],
+                             $1:activePatternResult6.$0[0]
+                            },next]
                            };
                           }
                          else
@@ -19647,28 +19982,17 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                             }
                           }
                         }
-                      }
-                     else
-                      {
-                       activePatternResult8=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-                       if(activePatternResult8.$==1)
-                        {
-                         return{
-                          $:1,
-                          $0:[activePatternResult8.$0[0],activePatternResult8.$0[1]]
-                         };
-                        }
                        else
                         {
-                         activePatternResult9=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-                         if(activePatternResult9.$==1)
+                         activePatternResult8=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                         if(activePatternResult8.$==1)
                           {
-                           next2=activePatternResult9.$0[1];
+                           next2=activePatternResult8.$0[1];
                            return{
                             $:1,
                             $0:[{
                              $:0,
-                             $0:activePatternResult9.$0[0]
+                             $0:activePatternResult8.$0[0]
                             },next2]
                            };
                           }
@@ -19680,28 +20004,17 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                           }
                         }
                       }
-                    }
-                   else
-                    {
-                     activePatternResulta=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-                     if(activePatternResulta.$==1)
-                      {
-                       return{
-                        $:1,
-                        $0:[activePatternResulta.$0[0],activePatternResulta.$0[1]]
-                       };
-                      }
                      else
                       {
-                       activePatternResultb=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-                       if(activePatternResultb.$==1)
+                       activePatternResult9=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                       if(activePatternResult9.$==1)
                         {
-                         next3=activePatternResultb.$0[1];
+                         next3=activePatternResult9.$0[1];
                          return{
                           $:1,
                           $0:[{
                            $:0,
-                           $0:activePatternResultb.$0[0]
+                           $0:activePatternResult9.$0[0]
                           },next3]
                          };
                         }
@@ -19713,28 +20026,17 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                         }
                       }
                     }
-                  }
-                 else
-                  {
-                   activePatternResultc=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-                   if(activePatternResultc.$==1)
-                    {
-                     return{
-                      $:1,
-                      $0:[activePatternResultc.$0[0],activePatternResultc.$0[1]]
-                     };
-                    }
                    else
                     {
-                     activePatternResultd=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-                     if(activePatternResultd.$==1)
+                     activePatternResulta=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResulta.$==1)
                       {
-                       next4=activePatternResultd.$0[1];
+                       next4=activePatternResulta.$0[1];
                        return{
                         $:1,
                         $0:[{
                          $:0,
-                         $0:activePatternResultd.$0[0]
+                         $0:activePatternResulta.$0[0]
                         },next4]
                        };
                       }
@@ -19747,52 +20049,41 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                     }
                   }
                 }
-              }
-             else
-              {
-               activePatternResulte=_this["|Number|_|"](_arg10[0],_arg10[1]);
-               if(activePatternResulte.$==1)
+               else
                 {
-                 tupledArg2=activePatternResulte.$0[1];
-                 activePatternResultf=_this["|Next|Empty|"](tupledArg2[0],tupledArg2[1]);
-                 if(activePatternResultf.$==0)
+                 activePatternResultb=_this["|Number|_|"](_arg10[0],_arg10[1]);
+                 if(activePatternResultb.$==1)
                   {
-                   if(activePatternResultf.$0[0]===46)
+                   tupledArg2=activePatternResultb.$0[1];
+                   activePatternResultc=_this["|Next|Empty|"](tupledArg2[0],tupledArg2[1]);
+                   if(activePatternResultc.$==0)
                     {
-                     activePatternResult10=(Lazy.Force(_this["|CompoundExpression|_|@82"]))(activePatternResultf.$0[1]);
-                     if(activePatternResult10.$==1)
+                     if(activePatternResultc.$0[0]===46)
                       {
-                       next5=activePatternResult10.$0[1];
-                       return{
-                        $:1,
-                        $0:[{
-                         $:3,
-                         $0:activePatternResulte.$0[0],
-                         $1:activePatternResult10.$0[0]
-                        },next5]
-                       };
-                      }
-                     else
-                      {
-                       activePatternResult11=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-                       if(activePatternResult11.$==1)
+                       activePatternResultd=(Lazy.Force(_this["|CompoundExpression|_|@66"]))(activePatternResultc.$0[1]);
+                       if(activePatternResultd.$==1)
                         {
+                         next5=activePatternResultd.$0[1];
                          return{
                           $:1,
-                          $0:[activePatternResult11.$0[0],activePatternResult11.$0[1]]
+                          $0:[{
+                           $:3,
+                           $0:activePatternResultb.$0[0],
+                           $1:activePatternResultd.$0[0]
+                          },next5]
                          };
                         }
                        else
                         {
-                         activePatternResult12=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-                         if(activePatternResult12.$==1)
+                         activePatternResulte=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                         if(activePatternResulte.$==1)
                           {
-                           next6=activePatternResult12.$0[1];
+                           next6=activePatternResulte.$0[1];
                            return{
                             $:1,
                             $0:[{
                              $:0,
-                             $0:activePatternResult12.$0[0]
+                             $0:activePatternResulte.$0[0]
                             },next6]
                            };
                           }
@@ -19804,28 +20095,17 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                           }
                         }
                       }
-                    }
-                   else
-                    {
-                     activePatternResult13=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-                     if(activePatternResult13.$==1)
-                      {
-                       return{
-                        $:1,
-                        $0:[activePatternResult13.$0[0],activePatternResult13.$0[1]]
-                       };
-                      }
                      else
                       {
-                       activePatternResult14=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-                       if(activePatternResult14.$==1)
+                       activePatternResultf=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                       if(activePatternResultf.$==1)
                         {
-                         next7=activePatternResult14.$0[1];
+                         next7=activePatternResultf.$0[1];
                          return{
                           $:1,
                           $0:[{
                            $:0,
-                           $0:activePatternResult14.$0[0]
+                           $0:activePatternResultf.$0[0]
                           },next7]
                          };
                         }
@@ -19837,28 +20117,17 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                         }
                       }
                     }
-                  }
-                 else
-                  {
-                   activePatternResult15=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-                   if(activePatternResult15.$==1)
-                    {
-                     return{
-                      $:1,
-                      $0:[activePatternResult15.$0[0],activePatternResult15.$0[1]]
-                     };
-                    }
                    else
                     {
-                     activePatternResult16=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-                     if(activePatternResult16.$==1)
+                     activePatternResult10=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResult10.$==1)
                       {
-                       next8=activePatternResult16.$0[1];
+                       next8=activePatternResult10.$0[1];
                        return{
                         $:1,
                         $0:[{
                          $:0,
-                         $0:activePatternResult16.$0[0]
+                         $0:activePatternResult10.$0[0]
                         },next8]
                        };
                       }
@@ -19870,28 +20139,17 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                       }
                     }
                   }
-                }
-               else
-                {
-                 activePatternResult17=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-                 if(activePatternResult17.$==1)
-                  {
-                   return{
-                    $:1,
-                    $0:[activePatternResult17.$0[0],activePatternResult17.$0[1]]
-                   };
-                  }
                  else
                   {
-                   activePatternResult18=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-                   if(activePatternResult18.$==1)
+                   activePatternResult11=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                   if(activePatternResult11.$==1)
                     {
-                     next9=activePatternResult18.$0[1];
+                     next9=activePatternResult11.$0[1];
                      return{
                       $:1,
                       $0:[{
                        $:0,
-                       $0:activePatternResult18.$0[0]
+                       $0:activePatternResult11.$0[0]
                       },next9]
                      };
                     }
@@ -19904,52 +20162,41 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                   }
                 }
               }
-            }
-           else
-            {
-             activePatternResult19=_this["|Number|_|"](_arg10[0],_arg10[1]);
-             if(activePatternResult19.$==1)
+             else
               {
-               tupledArg3=activePatternResult19.$0[1];
-               activePatternResult1a=_this["|Next|Empty|"](tupledArg3[0],tupledArg3[1]);
-               if(activePatternResult1a.$==0)
+               activePatternResult12=_this["|Number|_|"](_arg10[0],_arg10[1]);
+               if(activePatternResult12.$==1)
                 {
-                 if(activePatternResult1a.$0[0]===46)
+                 tupledArg3=activePatternResult12.$0[1];
+                 activePatternResult13=_this["|Next|Empty|"](tupledArg3[0],tupledArg3[1]);
+                 if(activePatternResult13.$==0)
                   {
-                   activePatternResult1b=(Lazy.Force(_this["|CompoundExpression|_|@82"]))(activePatternResult1a.$0[1]);
-                   if(activePatternResult1b.$==1)
+                   if(activePatternResult13.$0[0]===46)
                     {
-                     nexta=activePatternResult1b.$0[1];
-                     return{
-                      $:1,
-                      $0:[{
-                       $:3,
-                       $0:activePatternResult19.$0[0],
-                       $1:activePatternResult1b.$0[0]
-                      },nexta]
-                     };
-                    }
-                   else
-                    {
-                     activePatternResult1c=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-                     if(activePatternResult1c.$==1)
+                     activePatternResult14=(Lazy.Force(_this["|CompoundExpression|_|@66"]))(activePatternResult13.$0[1]);
+                     if(activePatternResult14.$==1)
                       {
+                       nexta=activePatternResult14.$0[1];
                        return{
                         $:1,
-                        $0:[activePatternResult1c.$0[0],activePatternResult1c.$0[1]]
+                        $0:[{
+                         $:3,
+                         $0:activePatternResult12.$0[0],
+                         $1:activePatternResult14.$0[0]
+                        },nexta]
                        };
                       }
                      else
                       {
-                       activePatternResult1d=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-                       if(activePatternResult1d.$==1)
+                       activePatternResult15=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                       if(activePatternResult15.$==1)
                         {
-                         nextb=activePatternResult1d.$0[1];
+                         nextb=activePatternResult15.$0[1];
                          return{
                           $:1,
                           $0:[{
                            $:0,
-                           $0:activePatternResult1d.$0[0]
+                           $0:activePatternResult15.$0[0]
                           },nextb]
                          };
                         }
@@ -19961,28 +20208,17 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                         }
                       }
                     }
-                  }
-                 else
-                  {
-                   activePatternResult1e=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-                   if(activePatternResult1e.$==1)
-                    {
-                     return{
-                      $:1,
-                      $0:[activePatternResult1e.$0[0],activePatternResult1e.$0[1]]
-                     };
-                    }
                    else
                     {
-                     activePatternResult1f=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-                     if(activePatternResult1f.$==1)
+                     activePatternResult16=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResult16.$==1)
                       {
-                       nextc=activePatternResult1f.$0[1];
+                       nextc=activePatternResult16.$0[1];
                        return{
                         $:1,
                         $0:[{
                          $:0,
-                         $0:activePatternResult1f.$0[0]
+                         $0:activePatternResult16.$0[0]
                         },nextc]
                        };
                       }
@@ -19994,28 +20230,17 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                       }
                     }
                   }
-                }
-               else
-                {
-                 activePatternResult20=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-                 if(activePatternResult20.$==1)
-                  {
-                   return{
-                    $:1,
-                    $0:[activePatternResult20.$0[0],activePatternResult20.$0[1]]
-                   };
-                  }
                  else
                   {
-                   activePatternResult21=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-                   if(activePatternResult21.$==1)
+                   activePatternResult17=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                   if(activePatternResult17.$==1)
                     {
-                     nextd=activePatternResult21.$0[1];
+                     nextd=activePatternResult17.$0[1];
                      return{
                       $:1,
                       $0:[{
                        $:0,
-                       $0:activePatternResult21.$0[0]
+                       $0:activePatternResult17.$0[0]
                       },nextd]
                      };
                     }
@@ -20027,28 +20252,17 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                     }
                   }
                 }
-              }
-             else
-              {
-               activePatternResult22=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-               if(activePatternResult22.$==1)
-                {
-                 return{
-                  $:1,
-                  $0:[activePatternResult22.$0[0],activePatternResult22.$0[1]]
-                 };
-                }
                else
                 {
-                 activePatternResult23=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-                 if(activePatternResult23.$==1)
+                 activePatternResult18=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                 if(activePatternResult18.$==1)
                   {
-                   nexte=activePatternResult23.$0[1];
+                   nexte=activePatternResult18.$0[1];
                    return{
                     $:1,
                     $0:[{
                      $:0,
-                     $0:activePatternResult23.$0[0]
+                     $0:activePatternResult18.$0[0]
                     },nexte]
                    };
                   }
@@ -20061,52 +20275,41 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                 }
               }
             }
-          }
-         else
-          {
-           activePatternResult24=_this["|Number|_|"](_arg10[0],_arg10[1]);
-           if(activePatternResult24.$==1)
+           else
             {
-             tupledArg4=activePatternResult24.$0[1];
-             activePatternResult25=_this["|Next|Empty|"](tupledArg4[0],tupledArg4[1]);
-             if(activePatternResult25.$==0)
+             activePatternResult19=_this["|Number|_|"](_arg10[0],_arg10[1]);
+             if(activePatternResult19.$==1)
               {
-               if(activePatternResult25.$0[0]===46)
+               tupledArg4=activePatternResult19.$0[1];
+               activePatternResult1a=_this["|Next|Empty|"](tupledArg4[0],tupledArg4[1]);
+               if(activePatternResult1a.$==0)
                 {
-                 activePatternResult26=(Lazy.Force(_this["|CompoundExpression|_|@82"]))(activePatternResult25.$0[1]);
-                 if(activePatternResult26.$==1)
+                 if(activePatternResult1a.$0[0]===46)
                   {
-                   nextf=activePatternResult26.$0[1];
-                   return{
-                    $:1,
-                    $0:[{
-                     $:3,
-                     $0:activePatternResult24.$0[0],
-                     $1:activePatternResult26.$0[0]
-                    },nextf]
-                   };
-                  }
-                 else
-                  {
-                   activePatternResult27=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-                   if(activePatternResult27.$==1)
+                   activePatternResult1b=(Lazy.Force(_this["|CompoundExpression|_|@66"]))(activePatternResult1a.$0[1]);
+                   if(activePatternResult1b.$==1)
                     {
+                     nextf=activePatternResult1b.$0[1];
                      return{
                       $:1,
-                      $0:[activePatternResult27.$0[0],activePatternResult27.$0[1]]
+                      $0:[{
+                       $:3,
+                       $0:activePatternResult19.$0[0],
+                       $1:activePatternResult1b.$0[0]
+                      },nextf]
                      };
                     }
                    else
                     {
-                     activePatternResult28=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-                     if(activePatternResult28.$==1)
+                     activePatternResult1c=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                     if(activePatternResult1c.$==1)
                       {
-                       next10=activePatternResult28.$0[1];
+                       next10=activePatternResult1c.$0[1];
                        return{
                         $:1,
                         $0:[{
                          $:0,
-                         $0:activePatternResult28.$0[0]
+                         $0:activePatternResult1c.$0[0]
                         },next10]
                        };
                       }
@@ -20118,28 +20321,17 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                       }
                     }
                   }
-                }
-               else
-                {
-                 activePatternResult29=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-                 if(activePatternResult29.$==1)
-                  {
-                   return{
-                    $:1,
-                    $0:[activePatternResult29.$0[0],activePatternResult29.$0[1]]
-                   };
-                  }
                  else
                   {
-                   activePatternResult2a=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-                   if(activePatternResult2a.$==1)
+                   activePatternResult1d=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                   if(activePatternResult1d.$==1)
                     {
-                     next11=activePatternResult2a.$0[1];
+                     next11=activePatternResult1d.$0[1];
                      return{
                       $:1,
                       $0:[{
                        $:0,
-                       $0:activePatternResult2a.$0[0]
+                       $0:activePatternResult1d.$0[0]
                       },next11]
                      };
                     }
@@ -20151,28 +20343,17 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                     }
                   }
                 }
-              }
-             else
-              {
-               activePatternResult2b=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-               if(activePatternResult2b.$==1)
-                {
-                 return{
-                  $:1,
-                  $0:[activePatternResult2b.$0[0],activePatternResult2b.$0[1]]
-                 };
-                }
                else
                 {
-                 activePatternResult2c=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-                 if(activePatternResult2c.$==1)
+                 activePatternResult1e=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                 if(activePatternResult1e.$==1)
                   {
-                   next12=activePatternResult2c.$0[1];
+                   next12=activePatternResult1e.$0[1];
                    return{
                     $:1,
                     $0:[{
                      $:0,
-                     $0:activePatternResult2c.$0[0]
+                     $0:activePatternResult1e.$0[0]
                     },next12]
                    };
                   }
@@ -20184,28 +20365,17 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                   }
                 }
               }
-            }
-           else
-            {
-             activePatternResult2d=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-             if(activePatternResult2d.$==1)
-              {
-               return{
-                $:1,
-                $0:[activePatternResult2d.$0[0],activePatternResult2d.$0[1]]
-               };
-              }
              else
               {
-               activePatternResult2e=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-               if(activePatternResult2e.$==1)
+               activePatternResult1f=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+               if(activePatternResult1f.$==1)
                 {
-                 next13=activePatternResult2e.$0[1];
+                 next13=activePatternResult1f.$0[1];
                  return{
                   $:1,
                   $0:[{
                    $:0,
-                   $0:activePatternResult2e.$0[0]
+                   $0:activePatternResult1f.$0[0]
                   },next13]
                  };
                 }
@@ -20218,52 +20388,41 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
               }
             }
           }
-        }
-       else
-        {
-         activePatternResult2f=_this["|Number|_|"](_arg10[0],_arg10[1]);
-         if(activePatternResult2f.$==1)
+         else
           {
-           tupledArg5=activePatternResult2f.$0[1];
-           activePatternResult30=_this["|Next|Empty|"](tupledArg5[0],tupledArg5[1]);
-           if(activePatternResult30.$==0)
+           activePatternResult20=_this["|Number|_|"](_arg10[0],_arg10[1]);
+           if(activePatternResult20.$==1)
             {
-             if(activePatternResult30.$0[0]===46)
+             tupledArg5=activePatternResult20.$0[1];
+             activePatternResult21=_this["|Next|Empty|"](tupledArg5[0],tupledArg5[1]);
+             if(activePatternResult21.$==0)
               {
-               activePatternResult31=(Lazy.Force(_this["|CompoundExpression|_|@82"]))(activePatternResult30.$0[1]);
-               if(activePatternResult31.$==1)
+               if(activePatternResult21.$0[0]===46)
                 {
-                 next14=activePatternResult31.$0[1];
-                 return{
-                  $:1,
-                  $0:[{
-                   $:3,
-                   $0:activePatternResult2f.$0[0],
-                   $1:activePatternResult31.$0[0]
-                  },next14]
-                 };
-                }
-               else
-                {
-                 activePatternResult32=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-                 if(activePatternResult32.$==1)
+                 activePatternResult22=(Lazy.Force(_this["|CompoundExpression|_|@66"]))(activePatternResult21.$0[1]);
+                 if(activePatternResult22.$==1)
                   {
+                   next14=activePatternResult22.$0[1];
                    return{
                     $:1,
-                    $0:[activePatternResult32.$0[0],activePatternResult32.$0[1]]
+                    $0:[{
+                     $:3,
+                     $0:activePatternResult20.$0[0],
+                     $1:activePatternResult22.$0[0]
+                    },next14]
                    };
                   }
                  else
                   {
-                   activePatternResult33=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-                   if(activePatternResult33.$==1)
+                   activePatternResult23=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                   if(activePatternResult23.$==1)
                     {
-                     next15=activePatternResult33.$0[1];
+                     next15=activePatternResult23.$0[1];
                      return{
                       $:1,
                       $0:[{
                        $:0,
-                       $0:activePatternResult33.$0[0]
+                       $0:activePatternResult23.$0[0]
                       },next15]
                      };
                     }
@@ -20275,28 +20434,17 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                     }
                   }
                 }
-              }
-             else
-              {
-               activePatternResult34=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-               if(activePatternResult34.$==1)
-                {
-                 return{
-                  $:1,
-                  $0:[activePatternResult34.$0[0],activePatternResult34.$0[1]]
-                 };
-                }
                else
                 {
-                 activePatternResult35=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-                 if(activePatternResult35.$==1)
+                 activePatternResult24=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+                 if(activePatternResult24.$==1)
                   {
-                   next16=activePatternResult35.$0[1];
+                   next16=activePatternResult24.$0[1];
                    return{
                     $:1,
                     $0:[{
                      $:0,
-                     $0:activePatternResult35.$0[0]
+                     $0:activePatternResult24.$0[0]
                     },next16]
                    };
                   }
@@ -20308,28 +20456,17 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                   }
                 }
               }
-            }
-           else
-            {
-             activePatternResult36=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-             if(activePatternResult36.$==1)
-              {
-               return{
-                $:1,
-                $0:[activePatternResult36.$0[0],activePatternResult36.$0[1]]
-               };
-              }
              else
               {
-               activePatternResult37=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-               if(activePatternResult37.$==1)
+               activePatternResult25=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+               if(activePatternResult25.$==1)
                 {
-                 next17=activePatternResult37.$0[1];
+                 next17=activePatternResult25.$0[1];
                  return{
                   $:1,
                   $0:[{
                    $:0,
-                   $0:activePatternResult37.$0[0]
+                   $0:activePatternResult25.$0[0]
                   },next17]
                  };
                 }
@@ -20341,28 +20478,17 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                 }
               }
             }
-          }
-         else
-          {
-           activePatternResult38=(Lazy.Force(_this["|CheckTerm|_|@94"]))(_arg10);
-           if(activePatternResult38.$==1)
-            {
-             return{
-              $:1,
-              $0:[activePatternResult38.$0[0],activePatternResult38.$0[1]]
-             };
-            }
            else
             {
-             activePatternResult39=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
-             if(activePatternResult39.$==1)
+             activePatternResult26=_this["|SimpleExpression|_|"](_arg10[0],_arg10[1]);
+             if(activePatternResult26.$==1)
               {
-               next18=activePatternResult39.$0[1];
+               next18=activePatternResult26.$0[1];
                return{
                 $:1,
                 $0:[{
                  $:0,
-                 $0:activePatternResult39.$0[0]
+                 $0:activePatternResult26.$0[0]
                 },next18]
                };
               }
@@ -20375,19 +20501,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
             }
           }
         }
-      };
-      return function(tupledArg)
-      {
-       return _this.memoize(pattern,tupledArg[0],tupledArg[1]);
-      };
+      });
      },
      "|CompoundExpression|_|":function()
      {
-      var pattern,_this=this;
-      pattern=function(_arg9)
+      var _this=this;
+      return(this.memoize.call(null,"CompoundExpression"))(function(_arg9)
       {
        var activePatternResult,tupledArg,activePatternResult1,activePatternResult2,next,activePatternResult3,tupledArg1,activePatternResult4,activePatternResult5,next1,activePatternResult6,activePatternResult7,activePatternResult8,activePatternResult9,activePatternResulta,tupledArg2,activePatternResultb,activePatternResultc,next2,activePatternResultd,activePatternResulte,activePatternResultf,activePatternResult10,activePatternResult11,tupledArg3,activePatternResult12,activePatternResult13,next3,activePatternResult14,activePatternResult15,activePatternResult16,activePatternResult17,activePatternResult18,tupledArg4,activePatternResult19,activePatternResult1a,next4,activePatternResult1b,activePatternResult1c,activePatternResult1d,activePatternResult1e;
-       activePatternResult=(Lazy.Force(_this["|CompoundExpression|_|@82"]))(_arg9);
+       activePatternResult=(Lazy.Force(_this["|CompoundExpression|_|@66"]))(_arg9);
        if(activePatternResult.$==1)
         {
          tupledArg=activePatternResult.$0[1];
@@ -20396,7 +20518,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
           {
            if(activePatternResult1.$0[0]===43)
             {
-             activePatternResult2=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(activePatternResult1.$0[1]);
+             activePatternResult2=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(activePatternResult1.$0[1]);
              if(activePatternResult2.$==1)
               {
                next=activePatternResult2.$0[1];
@@ -20411,7 +20533,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
               }
              else
               {
-               activePatternResult3=(Lazy.Force(_this["|CompoundExpression|_|@82"]))(_arg9);
+               activePatternResult3=(Lazy.Force(_this["|CompoundExpression|_|@66"]))(_arg9);
                if(activePatternResult3.$==1)
                 {
                  tupledArg1=activePatternResult3.$0[1];
@@ -20420,7 +20542,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                   {
                    if(activePatternResult4.$0[0]===45)
                     {
-                     activePatternResult5=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(activePatternResult4.$0[1]);
+                     activePatternResult5=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(activePatternResult4.$0[1]);
                      if(activePatternResult5.$==1)
                       {
                        next1=activePatternResult5.$0[1];
@@ -20439,7 +20561,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                       }
                      else
                       {
-                       activePatternResult6=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(_arg9);
+                       activePatternResult6=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(_arg9);
                        return activePatternResult6.$==1?{
                         $:1,
                         $0:[activePatternResult6.$0[0],activePatternResult6.$0[1]]
@@ -20450,7 +20572,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                     }
                    else
                     {
-                     activePatternResult7=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(_arg9);
+                     activePatternResult7=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(_arg9);
                      return activePatternResult7.$==1?{
                       $:1,
                       $0:[activePatternResult7.$0[0],activePatternResult7.$0[1]]
@@ -20461,7 +20583,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                   }
                  else
                   {
-                   activePatternResult8=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(_arg9);
+                   activePatternResult8=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(_arg9);
                    return activePatternResult8.$==1?{
                     $:1,
                     $0:[activePatternResult8.$0[0],activePatternResult8.$0[1]]
@@ -20472,7 +20594,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                 }
                else
                 {
-                 activePatternResult9=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(_arg9);
+                 activePatternResult9=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(_arg9);
                  return activePatternResult9.$==1?{
                   $:1,
                   $0:[activePatternResult9.$0[0],activePatternResult9.$0[1]]
@@ -20484,7 +20606,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
             }
            else
             {
-             activePatternResulta=(Lazy.Force(_this["|CompoundExpression|_|@82"]))(_arg9);
+             activePatternResulta=(Lazy.Force(_this["|CompoundExpression|_|@66"]))(_arg9);
              if(activePatternResulta.$==1)
               {
                tupledArg2=activePatternResulta.$0[1];
@@ -20493,7 +20615,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                 {
                  if(activePatternResultb.$0[0]===45)
                   {
-                   activePatternResultc=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(activePatternResultb.$0[1]);
+                   activePatternResultc=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(activePatternResultb.$0[1]);
                    if(activePatternResultc.$==1)
                     {
                      next2=activePatternResultc.$0[1];
@@ -20512,7 +20634,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                     }
                    else
                     {
-                     activePatternResultd=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(_arg9);
+                     activePatternResultd=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(_arg9);
                      return activePatternResultd.$==1?{
                       $:1,
                       $0:[activePatternResultd.$0[0],activePatternResultd.$0[1]]
@@ -20523,7 +20645,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                   }
                  else
                   {
-                   activePatternResulte=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(_arg9);
+                   activePatternResulte=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(_arg9);
                    return activePatternResulte.$==1?{
                     $:1,
                     $0:[activePatternResulte.$0[0],activePatternResulte.$0[1]]
@@ -20534,7 +20656,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                 }
                else
                 {
-                 activePatternResultf=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(_arg9);
+                 activePatternResultf=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(_arg9);
                  return activePatternResultf.$==1?{
                   $:1,
                   $0:[activePatternResultf.$0[0],activePatternResultf.$0[1]]
@@ -20545,7 +20667,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
               }
              else
               {
-               activePatternResult10=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(_arg9);
+               activePatternResult10=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(_arg9);
                return activePatternResult10.$==1?{
                 $:1,
                 $0:[activePatternResult10.$0[0],activePatternResult10.$0[1]]
@@ -20557,7 +20679,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
           }
          else
           {
-           activePatternResult11=(Lazy.Force(_this["|CompoundExpression|_|@82"]))(_arg9);
+           activePatternResult11=(Lazy.Force(_this["|CompoundExpression|_|@66"]))(_arg9);
            if(activePatternResult11.$==1)
             {
              tupledArg3=activePatternResult11.$0[1];
@@ -20566,7 +20688,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
               {
                if(activePatternResult12.$0[0]===45)
                 {
-                 activePatternResult13=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(activePatternResult12.$0[1]);
+                 activePatternResult13=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(activePatternResult12.$0[1]);
                  if(activePatternResult13.$==1)
                   {
                    next3=activePatternResult13.$0[1];
@@ -20585,7 +20707,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                   }
                  else
                   {
-                   activePatternResult14=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(_arg9);
+                   activePatternResult14=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(_arg9);
                    return activePatternResult14.$==1?{
                     $:1,
                     $0:[activePatternResult14.$0[0],activePatternResult14.$0[1]]
@@ -20596,7 +20718,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                 }
                else
                 {
-                 activePatternResult15=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(_arg9);
+                 activePatternResult15=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(_arg9);
                  return activePatternResult15.$==1?{
                   $:1,
                   $0:[activePatternResult15.$0[0],activePatternResult15.$0[1]]
@@ -20607,7 +20729,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
               }
              else
               {
-               activePatternResult16=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(_arg9);
+               activePatternResult16=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(_arg9);
                return activePatternResult16.$==1?{
                 $:1,
                 $0:[activePatternResult16.$0[0],activePatternResult16.$0[1]]
@@ -20618,7 +20740,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
             }
            else
             {
-             activePatternResult17=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(_arg9);
+             activePatternResult17=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(_arg9);
              return activePatternResult17.$==1?{
               $:1,
               $0:[activePatternResult17.$0[0],activePatternResult17.$0[1]]
@@ -20630,7 +20752,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
         }
        else
         {
-         activePatternResult18=(Lazy.Force(_this["|CompoundExpression|_|@82"]))(_arg9);
+         activePatternResult18=(Lazy.Force(_this["|CompoundExpression|_|@66"]))(_arg9);
          if(activePatternResult18.$==1)
           {
            tupledArg4=activePatternResult18.$0[1];
@@ -20639,7 +20761,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
             {
              if(activePatternResult19.$0[0]===45)
               {
-               activePatternResult1a=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(activePatternResult19.$0[1]);
+               activePatternResult1a=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(activePatternResult19.$0[1]);
                if(activePatternResult1a.$==1)
                 {
                  next4=activePatternResult1a.$0[1];
@@ -20658,7 +20780,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                 }
                else
                 {
-                 activePatternResult1b=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(_arg9);
+                 activePatternResult1b=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(_arg9);
                  return activePatternResult1b.$==1?{
                   $:1,
                   $0:[activePatternResult1b.$0[0],activePatternResult1b.$0[1]]
@@ -20669,7 +20791,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
               }
              else
               {
-               activePatternResult1c=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(_arg9);
+               activePatternResult1c=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(_arg9);
                return activePatternResult1c.$==1?{
                 $:1,
                 $0:[activePatternResult1c.$0[0],activePatternResult1c.$0[1]]
@@ -20680,7 +20802,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
             }
            else
             {
-             activePatternResult1d=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(_arg9);
+             activePatternResult1d=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(_arg9);
              return activePatternResult1d.$==1?{
               $:1,
               $0:[activePatternResult1d.$0[0],activePatternResult1d.$0[1]]
@@ -20691,7 +20813,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
           }
          else
           {
-           activePatternResult1e=(Lazy.Force(_this["|CompoundExpressionTerm|_|@87"]))(_arg9);
+           activePatternResult1e=(Lazy.Force(_this["|CompoundExpressionTerm|_|@71"]))(_arg9);
            return activePatternResult1e.$==1?{
             $:1,
             $0:[activePatternResult1e.$0[0],activePatternResult1e.$0[1]]
@@ -20700,11 +20822,7 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            };
           }
         }
-      };
-      return function(tupledArg)
-      {
-       return _this.memoize(pattern,tupledArg[0],tupledArg[1]);
-      };
+      });
      },
      "|MaybeChars|":function(_,_1,_2)
      {
@@ -20848,11 +20966,11 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
      },
      "|SimpleExpression|_|":function(_,_1)
      {
-      var input,makeRoll,_2=this,activePatternResult6,tupledArg3,activePatternResult7,activePatternResult8,tupledArg4,activePatternResult9,tupledArg5,activePatternResulta,activePatternResultb,tupledArg6,activePatternResultc,next,activePatternResultd,next1,activePatternResulte,next2,activePatternResultf,next3,activePatternResult10,tupledArg7,activePatternResult11,next4,activePatternResult12,next5,activePatternResult13,next6,activePatternResult14,next7,activePatternResult15,tupledArg8,activePatternResult16,next8,activePatternResult17,next9,activePatternResult18,nexta,activePatternResult19,nextb,activePatternResult1a,tupledArg9,activePatternResult1b,nextc,activePatternResult1c,nextd,activePatternResult1d,nexte,activePatternResult1e,nextf,activePatternResult1f,tupledArga,activePatternResult20,tupledArgb,activePatternResult21,activePatternResult22,tupledArgc,activePatternResult23,next10,activePatternResult24,next11,activePatternResult25,next12,activePatternResult26,next13,activePatternResult27,tupledArgd,activePatternResult28,next14,activePatternResult29,next15,activePatternResult2a,next16,activePatternResult2b,next17,activePatternResult2c,tupledArge,activePatternResult2d,next18,activePatternResult2e,next19,activePatternResult2f,next1a,activePatternResult30,next1b,activePatternResult31,tupledArgf,activePatternResult32,next1c,activePatternResult33,next1d,activePatternResult34,next1e,activePatternResult35,next1f,activePatternResult36,tupledArg10,activePatternResult37,tupledArg11,activePatternResult38,activePatternResult39,tupledArg12,activePatternResult3a,next20,activePatternResult3b,next21,activePatternResult3c,next22,activePatternResult3d,next23,activePatternResult3e,tupledArg13,activePatternResult3f,next24,activePatternResult40,next25,activePatternResult41,next26,activePatternResult42,next27,activePatternResult43,tupledArg14,activePatternResult44,next28,activePatternResult45,next29,activePatternResult46,next2a,activePatternResult47,next2b,activePatternResult48,tupledArg15,activePatternResult49,next2c,activePatternResult4a,next2d,activePatternResult4b,next2e,activePatternResult4c,next2f;
+      var input,makeRoll,_2=this,activePatternResult4,tupledArg1,activePatternResult5,activePatternResult6,tupledArg2,activePatternResult7,tupledArg3,activePatternResult8,activePatternResult9,tupledArg4,activePatternResulta,next,activePatternResultb,next1,activePatternResultc,next2,activePatternResultd,next3,activePatternResulte,tupledArg5,activePatternResultf,next4,activePatternResult10,next5,activePatternResult11,next6,activePatternResult12,next7,activePatternResult13,tupledArg6,activePatternResult14,next8,activePatternResult15,next9,activePatternResult16,nexta,activePatternResult17,nextb,activePatternResult18,tupledArg7,activePatternResult19,nextc,activePatternResult1a,nextd,activePatternResult1b,nexte,activePatternResult1c,nextf,activePatternResult1d,tupledArg8,activePatternResult1e,tupledArg9,activePatternResult1f,activePatternResult20,tupledArga,activePatternResult21,next10,activePatternResult22,next11,activePatternResult23,next12,activePatternResult24,next13,activePatternResult25,tupledArgb,activePatternResult26,next14,activePatternResult27,next15,activePatternResult28,next16,activePatternResult29,next17,activePatternResult2a,tupledArgc,activePatternResult2b,next18,activePatternResult2c,next19,activePatternResult2d,next1a,activePatternResult2e,next1b,activePatternResult2f,tupledArgd,activePatternResult30,next1c,activePatternResult31,next1d,activePatternResult32,next1e,activePatternResult33,next1f,activePatternResult34,tupledArge,activePatternResult35,tupledArgf,activePatternResult36,activePatternResult37,tupledArg10,activePatternResult38,next20,activePatternResult39,next21,activePatternResult3a,next22,activePatternResult3b,next23,activePatternResult3c,tupledArg11,activePatternResult3d,next24,activePatternResult3e,next25,activePatternResult3f,next26,activePatternResult40,next27,activePatternResult41,tupledArg12,activePatternResult42,next28,activePatternResult43,next29,activePatternResult44,next2a,activePatternResult45,next2b,activePatternResult46,tupledArg13,activePatternResult47,next2c,activePatternResult48,next2d,activePatternResult49,next2e,activePatternResult4a,next2f;
       input=[_,_1];
       makeRoll=function(n,d,input1)
       {
-       var alphabet,activePatternResult,alphabet1,tupledArg,activePatternResult1,s,i,matchValue,alphabet2,activePatternResult2,tupledArg1,activePatternResult3,s1,i1,matchValue1,alphabet3,activePatternResult4,tupledArg2,activePatternResult5,s2,i2,matchValue2;
+       var alphabet,activePatternResult,alphabet1,tupledArg,activePatternResult1,s,i,matchValue,alphabet2,activePatternResult2,s1,i1,matchValue1,alphabet3,activePatternResult3,s2,i2,matchValue2;
        alphabet=_2.advantageDisadvantage;
        activePatternResult=_2["|Char|_|"](alphabet,input1[0],input1[1]);
        if(activePatternResult.$==1)
@@ -20892,45 +21010,29 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            activePatternResult2=_2["|Char|_|"](alphabet2,input1[0],input1[1]);
            if(activePatternResult2.$==1)
             {
-             tupledArg1=activePatternResult2.$0;
-             activePatternResult3=_2["|Next|Empty|"](tupledArg1[0],tupledArg1[1]);
-             if(activePatternResult3.$==1)
-              {
-               s1=input1[0];
-               i1=input1[1];
-               matchValue1=s1.charCodeAt(i1);
-               return{
-                $:1,
-                $0:[matchValue1===65?{
-                 $:1,
-                 $0:n,
-                 $1:d
-                }:matchValue1===68?{
-                 $:2,
-                 $0:n,
-                 $1:d
-                }:matchValue1===97?{
-                 $:1,
-                 $0:n,
-                 $1:d
-                }:matchValue1===100?{
-                 $:2,
-                 $0:n,
-                 $1:d
-                }:Util.nomatch(),[s1,i1+1]]
-               };
-              }
-             else
-              {
-               return{
-                $:1,
-                $0:[{
-                 $:0,
-                 $0:n,
-                 $1:d
-                },input1]
-               };
-              }
+             s1=input1[0];
+             i1=input1[1];
+             matchValue1=s1.charCodeAt(i1);
+             return{
+              $:1,
+              $0:[matchValue1===65?{
+               $:1,
+               $0:n,
+               $1:d
+              }:matchValue1===68?{
+               $:2,
+               $0:n,
+               $1:d
+              }:matchValue1===97?{
+               $:1,
+               $0:n,
+               $1:d
+              }:matchValue1===100?{
+               $:2,
+               $0:n,
+               $1:d
+              }:Util.nomatch(),[s1,i1+1]]
+             };
             }
            else
             {
@@ -20948,48 +21050,32 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
        else
         {
          alphabet3=_2.advantageDisadvantage;
-         activePatternResult4=_2["|Char|_|"](alphabet3,input1[0],input1[1]);
-         if(activePatternResult4.$==1)
+         activePatternResult3=_2["|Char|_|"](alphabet3,input1[0],input1[1]);
+         if(activePatternResult3.$==1)
           {
-           tupledArg2=activePatternResult4.$0;
-           activePatternResult5=_2["|Next|Empty|"](tupledArg2[0],tupledArg2[1]);
-           if(activePatternResult5.$==1)
-            {
-             s2=input1[0];
-             i2=input1[1];
-             matchValue2=s2.charCodeAt(i2);
-             return{
-              $:1,
-              $0:[matchValue2===65?{
-               $:1,
-               $0:n,
-               $1:d
-              }:matchValue2===68?{
-               $:2,
-               $0:n,
-               $1:d
-              }:matchValue2===97?{
-               $:1,
-               $0:n,
-               $1:d
-              }:matchValue2===100?{
-               $:2,
-               $0:n,
-               $1:d
-              }:Util.nomatch(),[s2,i2+1]]
-             };
-            }
-           else
-            {
-             return{
-              $:1,
-              $0:[{
-               $:0,
-               $0:n,
-               $1:d
-              },input1]
-             };
-            }
+           s2=input1[0];
+           i2=input1[1];
+           matchValue2=s2.charCodeAt(i2);
+           return{
+            $:1,
+            $0:[matchValue2===65?{
+             $:1,
+             $0:n,
+             $1:d
+            }:matchValue2===68?{
+             $:2,
+             $0:n,
+             $1:d
+            }:matchValue2===97?{
+             $:1,
+             $0:n,
+             $1:d
+            }:matchValue2===100?{
+             $:2,
+             $0:n,
+             $1:d
+            }:Util.nomatch(),[s2,i2+1]]
+           };
           }
          else
           {
@@ -21004,66 +21090,66 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
           }
         }
       };
-      activePatternResult6=_2["|Next|Empty|"](input[0],input[1]);
-      if(activePatternResult6.$==0)
+      activePatternResult4=_2["|Next|Empty|"](input[0],input[1]);
+      if(activePatternResult4.$==0)
        {
-        if(activePatternResult6.$0[0]===100)
+        if(activePatternResult4.$0[0]===100)
          {
-          tupledArg3=activePatternResult6.$0[1];
-          activePatternResult7=_2["|Number|_|"](tupledArg3[0],tupledArg3[1]);
-          if(activePatternResult7.$==1)
+          tupledArg1=activePatternResult4.$0[1];
+          activePatternResult5=_2["|Number|_|"](tupledArg1[0],tupledArg1[1]);
+          if(activePatternResult5.$==1)
            {
-            return makeRoll(1,activePatternResult7.$0[0],activePatternResult7.$0[1]);
+            return makeRoll(1,activePatternResult5.$0[0],activePatternResult5.$0[1]);
            }
           else
            {
-            activePatternResult8=_2["|Number|_|"](input[0],input[1]);
-            if(activePatternResult8.$==1)
+            activePatternResult6=_2["|Number|_|"](input[0],input[1]);
+            if(activePatternResult6.$==1)
              {
-              tupledArg4=activePatternResult8.$0[1];
-              activePatternResult9=_2["|Next|Empty|"](tupledArg4[0],tupledArg4[1]);
-              if(activePatternResult9.$==0)
+              tupledArg2=activePatternResult6.$0[1];
+              activePatternResult7=_2["|Next|Empty|"](tupledArg2[0],tupledArg2[1]);
+              if(activePatternResult7.$==0)
                {
-                if(activePatternResult9.$0[0]===100)
+                if(activePatternResult7.$0[0]===100)
                  {
-                  tupledArg5=activePatternResult9.$0[1];
-                  activePatternResulta=_2["|Number|_|"](tupledArg5[0],tupledArg5[1]);
-                  if(activePatternResulta.$==1)
+                  tupledArg3=activePatternResult7.$0[1];
+                  activePatternResult8=_2["|Number|_|"](tupledArg3[0],tupledArg3[1]);
+                  if(activePatternResult8.$==1)
                    {
-                    return makeRoll(activePatternResult8.$0[0],activePatternResulta.$0[0],activePatternResulta.$0[1]);
+                    return makeRoll(activePatternResult6.$0[0],activePatternResult8.$0[0],activePatternResult8.$0[1]);
                    }
                   else
                    {
-                    activePatternResultb=_2["|Number|_|"](input[0],input[1]);
-                    if(activePatternResultb.$==1)
+                    activePatternResult9=_2["|Number|_|"](input[0],input[1]);
+                    if(activePatternResult9.$==1)
                      {
-                      tupledArg6=activePatternResultb.$0[1];
-                      activePatternResultc=_2["|Next|Empty|"](tupledArg6[0],tupledArg6[1]);
-                      if(activePatternResultc.$==0)
+                      tupledArg4=activePatternResult9.$0[1];
+                      activePatternResulta=_2["|Next|Empty|"](tupledArg4[0],tupledArg4[1]);
+                      if(activePatternResulta.$==0)
                        {
-                        if(activePatternResultc.$0[0]===100)
+                        if(activePatternResulta.$0[0]===100)
                          {
-                          next=activePatternResultc.$0[1];
+                          next=activePatternResulta.$0[1];
                           return{
                            $:1,
                            $0:[{
                             $:0,
-                            $0:activePatternResultb.$0[0],
+                            $0:activePatternResult9.$0[0],
                             $1:6
                            },next]
                           };
                          }
                         else
                          {
-                          activePatternResultd=_2["|Number|_|"](input[0],input[1]);
-                          if(activePatternResultd.$==1)
+                          activePatternResultb=_2["|Number|_|"](input[0],input[1]);
+                          if(activePatternResultb.$==1)
                            {
-                            next1=activePatternResultd.$0[1];
+                            next1=activePatternResultb.$0[1];
                             return{
                              $:1,
                              $0:[{
                               $:0,
-                              $0:activePatternResultd.$0[0],
+                              $0:activePatternResultb.$0[0],
                               $1:1
                              },next1]
                             };
@@ -21078,15 +21164,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                        }
                       else
                        {
-                        activePatternResulte=_2["|Number|_|"](input[0],input[1]);
-                        if(activePatternResulte.$==1)
+                        activePatternResultc=_2["|Number|_|"](input[0],input[1]);
+                        if(activePatternResultc.$==1)
                          {
-                          next2=activePatternResulte.$0[1];
+                          next2=activePatternResultc.$0[1];
                           return{
                            $:1,
                            $0:[{
                             $:0,
-                            $0:activePatternResulte.$0[0],
+                            $0:activePatternResultc.$0[0],
                             $1:1
                            },next2]
                           };
@@ -21101,15 +21187,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                      }
                     else
                      {
-                      activePatternResultf=_2["|Number|_|"](input[0],input[1]);
-                      if(activePatternResultf.$==1)
+                      activePatternResultd=_2["|Number|_|"](input[0],input[1]);
+                      if(activePatternResultd.$==1)
                        {
-                        next3=activePatternResultf.$0[1];
+                        next3=activePatternResultd.$0[1];
                         return{
                          $:1,
                          $0:[{
                           $:0,
-                          $0:activePatternResultf.$0[0],
+                          $0:activePatternResultd.$0[0],
                           $1:1
                          },next3]
                         };
@@ -21125,36 +21211,36 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult10=_2["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult10.$==1)
+                  activePatternResulte=_2["|Number|_|"](input[0],input[1]);
+                  if(activePatternResulte.$==1)
                    {
-                    tupledArg7=activePatternResult10.$0[1];
-                    activePatternResult11=_2["|Next|Empty|"](tupledArg7[0],tupledArg7[1]);
-                    if(activePatternResult11.$==0)
+                    tupledArg5=activePatternResulte.$0[1];
+                    activePatternResultf=_2["|Next|Empty|"](tupledArg5[0],tupledArg5[1]);
+                    if(activePatternResultf.$==0)
                      {
-                      if(activePatternResult11.$0[0]===100)
+                      if(activePatternResultf.$0[0]===100)
                        {
-                        next4=activePatternResult11.$0[1];
+                        next4=activePatternResultf.$0[1];
                         return{
                          $:1,
                          $0:[{
                           $:0,
-                          $0:activePatternResult10.$0[0],
+                          $0:activePatternResulte.$0[0],
                           $1:6
                          },next4]
                         };
                        }
                       else
                        {
-                        activePatternResult12=_2["|Number|_|"](input[0],input[1]);
-                        if(activePatternResult12.$==1)
+                        activePatternResult10=_2["|Number|_|"](input[0],input[1]);
+                        if(activePatternResult10.$==1)
                          {
-                          next5=activePatternResult12.$0[1];
+                          next5=activePatternResult10.$0[1];
                           return{
                            $:1,
                            $0:[{
                             $:0,
-                            $0:activePatternResult12.$0[0],
+                            $0:activePatternResult10.$0[0],
                             $1:1
                            },next5]
                           };
@@ -21169,15 +21255,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                      }
                     else
                      {
-                      activePatternResult13=_2["|Number|_|"](input[0],input[1]);
-                      if(activePatternResult13.$==1)
+                      activePatternResult11=_2["|Number|_|"](input[0],input[1]);
+                      if(activePatternResult11.$==1)
                        {
-                        next6=activePatternResult13.$0[1];
+                        next6=activePatternResult11.$0[1];
                         return{
                          $:1,
                          $0:[{
                           $:0,
-                          $0:activePatternResult13.$0[0],
+                          $0:activePatternResult11.$0[0],
                           $1:1
                          },next6]
                         };
@@ -21192,15 +21278,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                    }
                   else
                    {
-                    activePatternResult14=_2["|Number|_|"](input[0],input[1]);
-                    if(activePatternResult14.$==1)
+                    activePatternResult12=_2["|Number|_|"](input[0],input[1]);
+                    if(activePatternResult12.$==1)
                      {
-                      next7=activePatternResult14.$0[1];
+                      next7=activePatternResult12.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult14.$0[0],
+                        $0:activePatternResult12.$0[0],
                         $1:1
                        },next7]
                       };
@@ -21216,36 +21302,36 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult15=_2["|Number|_|"](input[0],input[1]);
-                if(activePatternResult15.$==1)
+                activePatternResult13=_2["|Number|_|"](input[0],input[1]);
+                if(activePatternResult13.$==1)
                  {
-                  tupledArg8=activePatternResult15.$0[1];
-                  activePatternResult16=_2["|Next|Empty|"](tupledArg8[0],tupledArg8[1]);
-                  if(activePatternResult16.$==0)
+                  tupledArg6=activePatternResult13.$0[1];
+                  activePatternResult14=_2["|Next|Empty|"](tupledArg6[0],tupledArg6[1]);
+                  if(activePatternResult14.$==0)
                    {
-                    if(activePatternResult16.$0[0]===100)
+                    if(activePatternResult14.$0[0]===100)
                      {
-                      next8=activePatternResult16.$0[1];
+                      next8=activePatternResult14.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult15.$0[0],
+                        $0:activePatternResult13.$0[0],
                         $1:6
                        },next8]
                       };
                      }
                     else
                      {
-                      activePatternResult17=_2["|Number|_|"](input[0],input[1]);
-                      if(activePatternResult17.$==1)
+                      activePatternResult15=_2["|Number|_|"](input[0],input[1]);
+                      if(activePatternResult15.$==1)
                        {
-                        next9=activePatternResult17.$0[1];
+                        next9=activePatternResult15.$0[1];
                         return{
                          $:1,
                          $0:[{
                           $:0,
-                          $0:activePatternResult17.$0[0],
+                          $0:activePatternResult15.$0[0],
                           $1:1
                          },next9]
                         };
@@ -21260,15 +21346,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                    }
                   else
                    {
-                    activePatternResult18=_2["|Number|_|"](input[0],input[1]);
-                    if(activePatternResult18.$==1)
+                    activePatternResult16=_2["|Number|_|"](input[0],input[1]);
+                    if(activePatternResult16.$==1)
                      {
-                      nexta=activePatternResult18.$0[1];
+                      nexta=activePatternResult16.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult18.$0[0],
+                        $0:activePatternResult16.$0[0],
                         $1:1
                        },nexta]
                       };
@@ -21283,15 +21369,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult19=_2["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult19.$==1)
+                  activePatternResult17=_2["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult17.$==1)
                    {
-                    nextb=activePatternResult19.$0[1];
+                    nextb=activePatternResult17.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult19.$0[0],
+                      $0:activePatternResult17.$0[0],
                       $1:1
                      },nextb]
                     };
@@ -21307,36 +21393,36 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult1a=_2["|Number|_|"](input[0],input[1]);
-              if(activePatternResult1a.$==1)
+              activePatternResult18=_2["|Number|_|"](input[0],input[1]);
+              if(activePatternResult18.$==1)
                {
-                tupledArg9=activePatternResult1a.$0[1];
-                activePatternResult1b=_2["|Next|Empty|"](tupledArg9[0],tupledArg9[1]);
-                if(activePatternResult1b.$==0)
+                tupledArg7=activePatternResult18.$0[1];
+                activePatternResult19=_2["|Next|Empty|"](tupledArg7[0],tupledArg7[1]);
+                if(activePatternResult19.$==0)
                  {
-                  if(activePatternResult1b.$0[0]===100)
+                  if(activePatternResult19.$0[0]===100)
                    {
-                    nextc=activePatternResult1b.$0[1];
+                    nextc=activePatternResult19.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult1a.$0[0],
+                      $0:activePatternResult18.$0[0],
                       $1:6
                      },nextc]
                     };
                    }
                   else
                    {
-                    activePatternResult1c=_2["|Number|_|"](input[0],input[1]);
-                    if(activePatternResult1c.$==1)
+                    activePatternResult1a=_2["|Number|_|"](input[0],input[1]);
+                    if(activePatternResult1a.$==1)
                      {
-                      nextd=activePatternResult1c.$0[1];
+                      nextd=activePatternResult1a.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult1c.$0[0],
+                        $0:activePatternResult1a.$0[0],
                         $1:1
                        },nextd]
                       };
@@ -21351,15 +21437,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult1d=_2["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult1d.$==1)
+                  activePatternResult1b=_2["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult1b.$==1)
                    {
-                    nexte=activePatternResult1d.$0[1];
+                    nexte=activePatternResult1b.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult1d.$0[0],
+                      $0:activePatternResult1b.$0[0],
                       $1:1
                      },nexte]
                     };
@@ -21374,15 +21460,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult1e=_2["|Number|_|"](input[0],input[1]);
-                if(activePatternResult1e.$==1)
+                activePatternResult1c=_2["|Number|_|"](input[0],input[1]);
+                if(activePatternResult1c.$==1)
                  {
-                  nextf=activePatternResult1e.$0[1];
+                  nextf=activePatternResult1c.$0[1];
                   return{
                    $:1,
                    $0:[{
                     $:0,
-                    $0:activePatternResult1e.$0[0],
+                    $0:activePatternResult1c.$0[0],
                     $1:1
                    },nextf]
                   };
@@ -21399,53 +21485,53 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
          }
         else
          {
-          activePatternResult1f=_2["|Number|_|"](input[0],input[1]);
-          if(activePatternResult1f.$==1)
+          activePatternResult1d=_2["|Number|_|"](input[0],input[1]);
+          if(activePatternResult1d.$==1)
            {
-            tupledArga=activePatternResult1f.$0[1];
-            activePatternResult20=_2["|Next|Empty|"](tupledArga[0],tupledArga[1]);
-            if(activePatternResult20.$==0)
+            tupledArg8=activePatternResult1d.$0[1];
+            activePatternResult1e=_2["|Next|Empty|"](tupledArg8[0],tupledArg8[1]);
+            if(activePatternResult1e.$==0)
              {
-              if(activePatternResult20.$0[0]===100)
+              if(activePatternResult1e.$0[0]===100)
                {
-                tupledArgb=activePatternResult20.$0[1];
-                activePatternResult21=_2["|Number|_|"](tupledArgb[0],tupledArgb[1]);
-                if(activePatternResult21.$==1)
+                tupledArg9=activePatternResult1e.$0[1];
+                activePatternResult1f=_2["|Number|_|"](tupledArg9[0],tupledArg9[1]);
+                if(activePatternResult1f.$==1)
                  {
-                  return makeRoll(activePatternResult1f.$0[0],activePatternResult21.$0[0],activePatternResult21.$0[1]);
+                  return makeRoll(activePatternResult1d.$0[0],activePatternResult1f.$0[0],activePatternResult1f.$0[1]);
                  }
                 else
                  {
-                  activePatternResult22=_2["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult22.$==1)
+                  activePatternResult20=_2["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult20.$==1)
                    {
-                    tupledArgc=activePatternResult22.$0[1];
-                    activePatternResult23=_2["|Next|Empty|"](tupledArgc[0],tupledArgc[1]);
-                    if(activePatternResult23.$==0)
+                    tupledArga=activePatternResult20.$0[1];
+                    activePatternResult21=_2["|Next|Empty|"](tupledArga[0],tupledArga[1]);
+                    if(activePatternResult21.$==0)
                      {
-                      if(activePatternResult23.$0[0]===100)
+                      if(activePatternResult21.$0[0]===100)
                        {
-                        next10=activePatternResult23.$0[1];
+                        next10=activePatternResult21.$0[1];
                         return{
                          $:1,
                          $0:[{
                           $:0,
-                          $0:activePatternResult22.$0[0],
+                          $0:activePatternResult20.$0[0],
                           $1:6
                          },next10]
                         };
                        }
                       else
                        {
-                        activePatternResult24=_2["|Number|_|"](input[0],input[1]);
-                        if(activePatternResult24.$==1)
+                        activePatternResult22=_2["|Number|_|"](input[0],input[1]);
+                        if(activePatternResult22.$==1)
                          {
-                          next11=activePatternResult24.$0[1];
+                          next11=activePatternResult22.$0[1];
                           return{
                            $:1,
                            $0:[{
                             $:0,
-                            $0:activePatternResult24.$0[0],
+                            $0:activePatternResult22.$0[0],
                             $1:1
                            },next11]
                           };
@@ -21460,15 +21546,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                      }
                     else
                      {
-                      activePatternResult25=_2["|Number|_|"](input[0],input[1]);
-                      if(activePatternResult25.$==1)
+                      activePatternResult23=_2["|Number|_|"](input[0],input[1]);
+                      if(activePatternResult23.$==1)
                        {
-                        next12=activePatternResult25.$0[1];
+                        next12=activePatternResult23.$0[1];
                         return{
                          $:1,
                          $0:[{
                           $:0,
-                          $0:activePatternResult25.$0[0],
+                          $0:activePatternResult23.$0[0],
                           $1:1
                          },next12]
                         };
@@ -21483,15 +21569,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                    }
                   else
                    {
-                    activePatternResult26=_2["|Number|_|"](input[0],input[1]);
-                    if(activePatternResult26.$==1)
+                    activePatternResult24=_2["|Number|_|"](input[0],input[1]);
+                    if(activePatternResult24.$==1)
                      {
-                      next13=activePatternResult26.$0[1];
+                      next13=activePatternResult24.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult26.$0[0],
+                        $0:activePatternResult24.$0[0],
                         $1:1
                        },next13]
                       };
@@ -21507,36 +21593,36 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult27=_2["|Number|_|"](input[0],input[1]);
-                if(activePatternResult27.$==1)
+                activePatternResult25=_2["|Number|_|"](input[0],input[1]);
+                if(activePatternResult25.$==1)
                  {
-                  tupledArgd=activePatternResult27.$0[1];
-                  activePatternResult28=_2["|Next|Empty|"](tupledArgd[0],tupledArgd[1]);
-                  if(activePatternResult28.$==0)
+                  tupledArgb=activePatternResult25.$0[1];
+                  activePatternResult26=_2["|Next|Empty|"](tupledArgb[0],tupledArgb[1]);
+                  if(activePatternResult26.$==0)
                    {
-                    if(activePatternResult28.$0[0]===100)
+                    if(activePatternResult26.$0[0]===100)
                      {
-                      next14=activePatternResult28.$0[1];
+                      next14=activePatternResult26.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult27.$0[0],
+                        $0:activePatternResult25.$0[0],
                         $1:6
                        },next14]
                       };
                      }
                     else
                      {
-                      activePatternResult29=_2["|Number|_|"](input[0],input[1]);
-                      if(activePatternResult29.$==1)
+                      activePatternResult27=_2["|Number|_|"](input[0],input[1]);
+                      if(activePatternResult27.$==1)
                        {
-                        next15=activePatternResult29.$0[1];
+                        next15=activePatternResult27.$0[1];
                         return{
                          $:1,
                          $0:[{
                           $:0,
-                          $0:activePatternResult29.$0[0],
+                          $0:activePatternResult27.$0[0],
                           $1:1
                          },next15]
                         };
@@ -21551,15 +21637,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                    }
                   else
                    {
-                    activePatternResult2a=_2["|Number|_|"](input[0],input[1]);
-                    if(activePatternResult2a.$==1)
+                    activePatternResult28=_2["|Number|_|"](input[0],input[1]);
+                    if(activePatternResult28.$==1)
                      {
-                      next16=activePatternResult2a.$0[1];
+                      next16=activePatternResult28.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult2a.$0[0],
+                        $0:activePatternResult28.$0[0],
                         $1:1
                        },next16]
                       };
@@ -21574,15 +21660,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult2b=_2["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult2b.$==1)
+                  activePatternResult29=_2["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult29.$==1)
                    {
-                    next17=activePatternResult2b.$0[1];
+                    next17=activePatternResult29.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult2b.$0[0],
+                      $0:activePatternResult29.$0[0],
                       $1:1
                      },next17]
                     };
@@ -21598,36 +21684,36 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult2c=_2["|Number|_|"](input[0],input[1]);
-              if(activePatternResult2c.$==1)
+              activePatternResult2a=_2["|Number|_|"](input[0],input[1]);
+              if(activePatternResult2a.$==1)
                {
-                tupledArge=activePatternResult2c.$0[1];
-                activePatternResult2d=_2["|Next|Empty|"](tupledArge[0],tupledArge[1]);
-                if(activePatternResult2d.$==0)
+                tupledArgc=activePatternResult2a.$0[1];
+                activePatternResult2b=_2["|Next|Empty|"](tupledArgc[0],tupledArgc[1]);
+                if(activePatternResult2b.$==0)
                  {
-                  if(activePatternResult2d.$0[0]===100)
+                  if(activePatternResult2b.$0[0]===100)
                    {
-                    next18=activePatternResult2d.$0[1];
+                    next18=activePatternResult2b.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult2c.$0[0],
+                      $0:activePatternResult2a.$0[0],
                       $1:6
                      },next18]
                     };
                    }
                   else
                    {
-                    activePatternResult2e=_2["|Number|_|"](input[0],input[1]);
-                    if(activePatternResult2e.$==1)
+                    activePatternResult2c=_2["|Number|_|"](input[0],input[1]);
+                    if(activePatternResult2c.$==1)
                      {
-                      next19=activePatternResult2e.$0[1];
+                      next19=activePatternResult2c.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult2e.$0[0],
+                        $0:activePatternResult2c.$0[0],
                         $1:1
                        },next19]
                       };
@@ -21642,15 +21728,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult2f=_2["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult2f.$==1)
+                  activePatternResult2d=_2["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult2d.$==1)
                    {
-                    next1a=activePatternResult2f.$0[1];
+                    next1a=activePatternResult2d.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult2f.$0[0],
+                      $0:activePatternResult2d.$0[0],
                       $1:1
                      },next1a]
                     };
@@ -21665,15 +21751,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult30=_2["|Number|_|"](input[0],input[1]);
-                if(activePatternResult30.$==1)
+                activePatternResult2e=_2["|Number|_|"](input[0],input[1]);
+                if(activePatternResult2e.$==1)
                  {
-                  next1b=activePatternResult30.$0[1];
+                  next1b=activePatternResult2e.$0[1];
                   return{
                    $:1,
                    $0:[{
                     $:0,
-                    $0:activePatternResult30.$0[0],
+                    $0:activePatternResult2e.$0[0],
                     $1:1
                    },next1b]
                   };
@@ -21689,36 +21775,36 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            }
           else
            {
-            activePatternResult31=_2["|Number|_|"](input[0],input[1]);
-            if(activePatternResult31.$==1)
+            activePatternResult2f=_2["|Number|_|"](input[0],input[1]);
+            if(activePatternResult2f.$==1)
              {
-              tupledArgf=activePatternResult31.$0[1];
-              activePatternResult32=_2["|Next|Empty|"](tupledArgf[0],tupledArgf[1]);
-              if(activePatternResult32.$==0)
+              tupledArgd=activePatternResult2f.$0[1];
+              activePatternResult30=_2["|Next|Empty|"](tupledArgd[0],tupledArgd[1]);
+              if(activePatternResult30.$==0)
                {
-                if(activePatternResult32.$0[0]===100)
+                if(activePatternResult30.$0[0]===100)
                  {
-                  next1c=activePatternResult32.$0[1];
+                  next1c=activePatternResult30.$0[1];
                   return{
                    $:1,
                    $0:[{
                     $:0,
-                    $0:activePatternResult31.$0[0],
+                    $0:activePatternResult2f.$0[0],
                     $1:6
                    },next1c]
                   };
                  }
                 else
                  {
-                  activePatternResult33=_2["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult33.$==1)
+                  activePatternResult31=_2["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult31.$==1)
                    {
-                    next1d=activePatternResult33.$0[1];
+                    next1d=activePatternResult31.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult33.$0[0],
+                      $0:activePatternResult31.$0[0],
                       $1:1
                      },next1d]
                     };
@@ -21733,15 +21819,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult34=_2["|Number|_|"](input[0],input[1]);
-                if(activePatternResult34.$==1)
+                activePatternResult32=_2["|Number|_|"](input[0],input[1]);
+                if(activePatternResult32.$==1)
                  {
-                  next1e=activePatternResult34.$0[1];
+                  next1e=activePatternResult32.$0[1];
                   return{
                    $:1,
                    $0:[{
                     $:0,
-                    $0:activePatternResult34.$0[0],
+                    $0:activePatternResult32.$0[0],
                     $1:1
                    },next1e]
                   };
@@ -21756,15 +21842,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult35=_2["|Number|_|"](input[0],input[1]);
-              if(activePatternResult35.$==1)
+              activePatternResult33=_2["|Number|_|"](input[0],input[1]);
+              if(activePatternResult33.$==1)
                {
-                next1f=activePatternResult35.$0[1];
+                next1f=activePatternResult33.$0[1];
                 return{
                  $:1,
                  $0:[{
                   $:0,
-                  $0:activePatternResult35.$0[0],
+                  $0:activePatternResult33.$0[0],
                   $1:1
                  },next1f]
                 };
@@ -21781,53 +21867,53 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
        }
       else
        {
-        activePatternResult36=_2["|Number|_|"](input[0],input[1]);
-        if(activePatternResult36.$==1)
+        activePatternResult34=_2["|Number|_|"](input[0],input[1]);
+        if(activePatternResult34.$==1)
          {
-          tupledArg10=activePatternResult36.$0[1];
-          activePatternResult37=_2["|Next|Empty|"](tupledArg10[0],tupledArg10[1]);
-          if(activePatternResult37.$==0)
+          tupledArge=activePatternResult34.$0[1];
+          activePatternResult35=_2["|Next|Empty|"](tupledArge[0],tupledArge[1]);
+          if(activePatternResult35.$==0)
            {
-            if(activePatternResult37.$0[0]===100)
+            if(activePatternResult35.$0[0]===100)
              {
-              tupledArg11=activePatternResult37.$0[1];
-              activePatternResult38=_2["|Number|_|"](tupledArg11[0],tupledArg11[1]);
-              if(activePatternResult38.$==1)
+              tupledArgf=activePatternResult35.$0[1];
+              activePatternResult36=_2["|Number|_|"](tupledArgf[0],tupledArgf[1]);
+              if(activePatternResult36.$==1)
                {
-                return makeRoll(activePatternResult36.$0[0],activePatternResult38.$0[0],activePatternResult38.$0[1]);
+                return makeRoll(activePatternResult34.$0[0],activePatternResult36.$0[0],activePatternResult36.$0[1]);
                }
               else
                {
-                activePatternResult39=_2["|Number|_|"](input[0],input[1]);
-                if(activePatternResult39.$==1)
+                activePatternResult37=_2["|Number|_|"](input[0],input[1]);
+                if(activePatternResult37.$==1)
                  {
-                  tupledArg12=activePatternResult39.$0[1];
-                  activePatternResult3a=_2["|Next|Empty|"](tupledArg12[0],tupledArg12[1]);
-                  if(activePatternResult3a.$==0)
+                  tupledArg10=activePatternResult37.$0[1];
+                  activePatternResult38=_2["|Next|Empty|"](tupledArg10[0],tupledArg10[1]);
+                  if(activePatternResult38.$==0)
                    {
-                    if(activePatternResult3a.$0[0]===100)
+                    if(activePatternResult38.$0[0]===100)
                      {
-                      next20=activePatternResult3a.$0[1];
+                      next20=activePatternResult38.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult39.$0[0],
+                        $0:activePatternResult37.$0[0],
                         $1:6
                        },next20]
                       };
                      }
                     else
                      {
-                      activePatternResult3b=_2["|Number|_|"](input[0],input[1]);
-                      if(activePatternResult3b.$==1)
+                      activePatternResult39=_2["|Number|_|"](input[0],input[1]);
+                      if(activePatternResult39.$==1)
                        {
-                        next21=activePatternResult3b.$0[1];
+                        next21=activePatternResult39.$0[1];
                         return{
                          $:1,
                          $0:[{
                           $:0,
-                          $0:activePatternResult3b.$0[0],
+                          $0:activePatternResult39.$0[0],
                           $1:1
                          },next21]
                         };
@@ -21842,15 +21928,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                    }
                   else
                    {
-                    activePatternResult3c=_2["|Number|_|"](input[0],input[1]);
-                    if(activePatternResult3c.$==1)
+                    activePatternResult3a=_2["|Number|_|"](input[0],input[1]);
+                    if(activePatternResult3a.$==1)
                      {
-                      next22=activePatternResult3c.$0[1];
+                      next22=activePatternResult3a.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult3c.$0[0],
+                        $0:activePatternResult3a.$0[0],
                         $1:1
                        },next22]
                       };
@@ -21865,15 +21951,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult3d=_2["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult3d.$==1)
+                  activePatternResult3b=_2["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult3b.$==1)
                    {
-                    next23=activePatternResult3d.$0[1];
+                    next23=activePatternResult3b.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult3d.$0[0],
+                      $0:activePatternResult3b.$0[0],
                       $1:1
                      },next23]
                     };
@@ -21889,36 +21975,36 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult3e=_2["|Number|_|"](input[0],input[1]);
-              if(activePatternResult3e.$==1)
+              activePatternResult3c=_2["|Number|_|"](input[0],input[1]);
+              if(activePatternResult3c.$==1)
                {
-                tupledArg13=activePatternResult3e.$0[1];
-                activePatternResult3f=_2["|Next|Empty|"](tupledArg13[0],tupledArg13[1]);
-                if(activePatternResult3f.$==0)
+                tupledArg11=activePatternResult3c.$0[1];
+                activePatternResult3d=_2["|Next|Empty|"](tupledArg11[0],tupledArg11[1]);
+                if(activePatternResult3d.$==0)
                  {
-                  if(activePatternResult3f.$0[0]===100)
+                  if(activePatternResult3d.$0[0]===100)
                    {
-                    next24=activePatternResult3f.$0[1];
+                    next24=activePatternResult3d.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult3e.$0[0],
+                      $0:activePatternResult3c.$0[0],
                       $1:6
                      },next24]
                     };
                    }
                   else
                    {
-                    activePatternResult40=_2["|Number|_|"](input[0],input[1]);
-                    if(activePatternResult40.$==1)
+                    activePatternResult3e=_2["|Number|_|"](input[0],input[1]);
+                    if(activePatternResult3e.$==1)
                      {
-                      next25=activePatternResult40.$0[1];
+                      next25=activePatternResult3e.$0[1];
                       return{
                        $:1,
                        $0:[{
                         $:0,
-                        $0:activePatternResult40.$0[0],
+                        $0:activePatternResult3e.$0[0],
                         $1:1
                        },next25]
                       };
@@ -21933,15 +22019,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                  }
                 else
                  {
-                  activePatternResult41=_2["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult41.$==1)
+                  activePatternResult3f=_2["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult3f.$==1)
                    {
-                    next26=activePatternResult41.$0[1];
+                    next26=activePatternResult3f.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult41.$0[0],
+                      $0:activePatternResult3f.$0[0],
                       $1:1
                      },next26]
                     };
@@ -21956,15 +22042,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult42=_2["|Number|_|"](input[0],input[1]);
-                if(activePatternResult42.$==1)
+                activePatternResult40=_2["|Number|_|"](input[0],input[1]);
+                if(activePatternResult40.$==1)
                  {
-                  next27=activePatternResult42.$0[1];
+                  next27=activePatternResult40.$0[1];
                   return{
                    $:1,
                    $0:[{
                     $:0,
-                    $0:activePatternResult42.$0[0],
+                    $0:activePatternResult40.$0[0],
                     $1:1
                    },next27]
                   };
@@ -21980,36 +22066,36 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            }
           else
            {
-            activePatternResult43=_2["|Number|_|"](input[0],input[1]);
-            if(activePatternResult43.$==1)
+            activePatternResult41=_2["|Number|_|"](input[0],input[1]);
+            if(activePatternResult41.$==1)
              {
-              tupledArg14=activePatternResult43.$0[1];
-              activePatternResult44=_2["|Next|Empty|"](tupledArg14[0],tupledArg14[1]);
-              if(activePatternResult44.$==0)
+              tupledArg12=activePatternResult41.$0[1];
+              activePatternResult42=_2["|Next|Empty|"](tupledArg12[0],tupledArg12[1]);
+              if(activePatternResult42.$==0)
                {
-                if(activePatternResult44.$0[0]===100)
+                if(activePatternResult42.$0[0]===100)
                  {
-                  next28=activePatternResult44.$0[1];
+                  next28=activePatternResult42.$0[1];
                   return{
                    $:1,
                    $0:[{
                     $:0,
-                    $0:activePatternResult43.$0[0],
+                    $0:activePatternResult41.$0[0],
                     $1:6
                    },next28]
                   };
                  }
                 else
                  {
-                  activePatternResult45=_2["|Number|_|"](input[0],input[1]);
-                  if(activePatternResult45.$==1)
+                  activePatternResult43=_2["|Number|_|"](input[0],input[1]);
+                  if(activePatternResult43.$==1)
                    {
-                    next29=activePatternResult45.$0[1];
+                    next29=activePatternResult43.$0[1];
                     return{
                      $:1,
                      $0:[{
                       $:0,
-                      $0:activePatternResult45.$0[0],
+                      $0:activePatternResult43.$0[0],
                       $1:1
                      },next29]
                     };
@@ -22024,15 +22110,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
                }
               else
                {
-                activePatternResult46=_2["|Number|_|"](input[0],input[1]);
-                if(activePatternResult46.$==1)
+                activePatternResult44=_2["|Number|_|"](input[0],input[1]);
+                if(activePatternResult44.$==1)
                  {
-                  next2a=activePatternResult46.$0[1];
+                  next2a=activePatternResult44.$0[1];
                   return{
                    $:1,
                    $0:[{
                     $:0,
-                    $0:activePatternResult46.$0[0],
+                    $0:activePatternResult44.$0[0],
                     $1:1
                    },next2a]
                   };
@@ -22047,15 +22133,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult47=_2["|Number|_|"](input[0],input[1]);
-              if(activePatternResult47.$==1)
+              activePatternResult45=_2["|Number|_|"](input[0],input[1]);
+              if(activePatternResult45.$==1)
                {
-                next2b=activePatternResult47.$0[1];
+                next2b=activePatternResult45.$0[1];
                 return{
                  $:1,
                  $0:[{
                   $:0,
-                  $0:activePatternResult47.$0[0],
+                  $0:activePatternResult45.$0[0],
                   $1:1
                  },next2b]
                 };
@@ -22071,36 +22157,36 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
          }
         else
          {
-          activePatternResult48=_2["|Number|_|"](input[0],input[1]);
-          if(activePatternResult48.$==1)
+          activePatternResult46=_2["|Number|_|"](input[0],input[1]);
+          if(activePatternResult46.$==1)
            {
-            tupledArg15=activePatternResult48.$0[1];
-            activePatternResult49=_2["|Next|Empty|"](tupledArg15[0],tupledArg15[1]);
-            if(activePatternResult49.$==0)
+            tupledArg13=activePatternResult46.$0[1];
+            activePatternResult47=_2["|Next|Empty|"](tupledArg13[0],tupledArg13[1]);
+            if(activePatternResult47.$==0)
              {
-              if(activePatternResult49.$0[0]===100)
+              if(activePatternResult47.$0[0]===100)
                {
-                next2c=activePatternResult49.$0[1];
+                next2c=activePatternResult47.$0[1];
                 return{
                  $:1,
                  $0:[{
                   $:0,
-                  $0:activePatternResult48.$0[0],
+                  $0:activePatternResult46.$0[0],
                   $1:6
                  },next2c]
                 };
                }
               else
                {
-                activePatternResult4a=_2["|Number|_|"](input[0],input[1]);
-                if(activePatternResult4a.$==1)
+                activePatternResult48=_2["|Number|_|"](input[0],input[1]);
+                if(activePatternResult48.$==1)
                  {
-                  next2d=activePatternResult4a.$0[1];
+                  next2d=activePatternResult48.$0[1];
                   return{
                    $:1,
                    $0:[{
                     $:0,
-                    $0:activePatternResult4a.$0[0],
+                    $0:activePatternResult48.$0[0],
                     $1:1
                    },next2d]
                   };
@@ -22115,15 +22201,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
              }
             else
              {
-              activePatternResult4b=_2["|Number|_|"](input[0],input[1]);
-              if(activePatternResult4b.$==1)
+              activePatternResult49=_2["|Number|_|"](input[0],input[1]);
+              if(activePatternResult49.$==1)
                {
-                next2e=activePatternResult4b.$0[1];
+                next2e=activePatternResult49.$0[1];
                 return{
                  $:1,
                  $0:[{
                   $:0,
-                  $0:activePatternResult4b.$0[0],
+                  $0:activePatternResult49.$0[0],
                   $1:1
                  },next2e]
                 };
@@ -22138,15 +22224,15 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
            }
           else
            {
-            activePatternResult4c=_2["|Number|_|"](input[0],input[1]);
-            if(activePatternResult4c.$==1)
+            activePatternResult4a=_2["|Number|_|"](input[0],input[1]);
+            if(activePatternResult4a.$==1)
              {
-              next2f=activePatternResult4c.$0[1];
+              next2f=activePatternResult4a.$0[1];
               return{
                $:1,
                $0:[{
                 $:0,
-                $0:activePatternResult4c.$0[0],
+                $0:activePatternResult4a.$0[0],
                 $1:1
                },next2f]
               };
@@ -22171,22 +22257,23 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
       r.arithmeticOperators=FSharpSet.New(List.ofArray([43,45]));
       r.advantageDisadvantage=FSharpSet.New(List.ofArray([65,68,97,100]));
       alphanumeric=alpha.add(r.numeric);
-      r.memo=[FSharpMap.New1([])];
-      r["|CompoundExpression|_|@82"]=Lazy.Create(function()
+      r.ctx=ParserContext.New();
+      r.memoize=Packrat.memoize(r.ctx);
+      r["|CompoundExpression|_|@66"]=Lazy.Create(function()
       {
        return r["|CompoundExpression|_|"]();
       });
-      r["|CompoundExpressionTerm|_|@87"]=Lazy.Create(function()
+      r["|CompoundExpressionTerm|_|@71"]=Lazy.Create(function()
       {
        return r["|CompoundExpressionTerm|_|"]();
       });
-      r["|CheckTerm|_|@94"]=Lazy.Create(function()
+      r["|CheckTerm|_|@78"]=Lazy.Create(function()
       {
        return r["|CheckTerm|_|"]();
       });
-      r["|CompoundExpression|_|@82-1"]=Lazy.Force(r["|CompoundExpression|_|@82"]);
-      Lazy.Force(r["|CompoundExpressionTerm|_|@87"]);
-      Lazy.Force(r["|CheckTerm|_|@94"]);
+      r["|CompoundExpression|_|@66-1"]=Lazy.Force(r["|CompoundExpression|_|@66"]);
+      Lazy.Force(r["|CompoundExpressionTerm|_|@71"]);
+      Lazy.Force(r["|CheckTerm|_|@78"]);
       return r;
      }
     }),
@@ -22318,13 +22405,18 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
   Util=Runtime.Safe(mdw.Util);
   Random=Runtime.Safe(Global.WebSharper.Random);
   Seq1=Runtime.Safe(Global.Seq);
+  T=Runtime.Safe(List.T);
   Collections=Runtime.Safe(Global.WebSharper.Collections);
   MapModule=Runtime.Safe(Collections.MapModule);
   Unchecked=Runtime.Safe(Global.WebSharper.Unchecked);
+  FSharpMap=Runtime.Safe(Collections.FSharpMap);
+  FSharpSet=Runtime.Safe(Collections.FSharpSet);
+  BalancedTree=Runtime.Safe(Collections.BalancedTree);
+  Packrat=Runtime.Safe(mdw.Packrat);
+  Enumerator=Runtime.Safe(Global.WebSharper.Enumerator);
   Lazy=Runtime.Safe(Global.WebSharper.Lazy);
   parseInt=Runtime.Safe(Global.parseInt);
-  FSharpSet=Runtime.Safe(Collections.FSharpSet);
-  FSharpMap=Runtime.Safe(Collections.FSharpMap);
+  ParserContext=Runtime.Safe(Packrat.ParserContext);
   Parser=Runtime.Safe(mdw.Parser);
   Impl=Runtime.Safe(Parser.Impl);
   jQuery=Runtime.Safe(Global.jQuery);
@@ -22338,7 +22430,6 @@ var JSON;JSON||(JSON={}),function(){"use strict";function i(n){return n<10?"0"+n
   AttrProxy=Runtime.Safe(Client.AttrProxy);
   RollRecord=Runtime.Safe(Client1.RollRecord);
   alert=Runtime.Safe(Global.alert);
-  T=Runtime.Safe(List.T);
   Key=Runtime.Safe(Next.Key);
   ListModel=Runtime.Safe(Next.ListModel);
   return View=Runtime.Safe(Next.View);
