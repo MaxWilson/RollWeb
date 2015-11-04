@@ -36,8 +36,10 @@ let Rolling() =
 
 [<Fact>]
 let Average() =
+    let eq(expected, actual) = Assert.InRange(actual, expected - 0.0001, expected + 0.0001)
     Assert.Equal(3.5, Dice.Instance.Average(Single(Simple(1,6))))
     Assert.Equal(10.5, Dice.Instance.Average(Single(Simple(3,6))))
+    eq (4./216., Dice.Instance.Average(Check(Sum(Single(Simple(1,6)), Single(Simple(2,6))), [17, Single(Simple(1,1))], 0)))
 
 [<Theory>]
 [<InlineData("3d6", 10.5)>] // Basic roll

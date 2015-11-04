@@ -57,7 +57,7 @@ type Resolver(?random) =
         | Sum(lhs, rhs) -> 
             let sum = [ for (n0, c0) in enumerate lhs do
                             for (n1, c1) in enumerate rhs do
-                                yield (n0 + n1), (c0 + c1)
+                                yield (n0 + n1), (c0 * c1)
                       ]
                       |> sumTerms
             sum |> List.ofSeq
