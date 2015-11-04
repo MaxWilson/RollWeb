@@ -69,10 +69,10 @@ type Impl() =
         | CompoundExpressionTerm(lhs, next) -> Some(lhs, next)
         | _ -> None)
     and (|CompoundExpressionTerm|_|) = memoize "CompoundExpressionTerm"  (function
+        | CheckTerm(v, next) -> Some(v, next)
         | Next('(', CompoundExpression(lhs, Next(')', next))) -> Some(lhs, next)
         | Number(n, Next('.', CompoundExpression(v, next))) -> 
             Some(Repeat(n, v), next)
-        | CheckTerm(v, next) -> Some(v, next)
         | SimpleExpression(v, next) -> Some(Single(v), next)
         | _ -> None)
     and (|CheckTerm|_|) = 
@@ -116,7 +116,7 @@ type Impl() =
                             | 'D' | 'd' -> Disadv(n, d)
                             | _ -> Util.nomatch()
                 Some (roll, (s, i+1))
-            | Char advantageDisadvantage Empty ->
+            | Char advantageDisadvantage _ ->
                 let (s, i) = input
                 let roll = match s.[i] with
                             | 'A' | 'a' -> Adv(n, d)

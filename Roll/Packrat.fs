@@ -19,11 +19,30 @@ type Result<'a> =
     | Func of ((string * (Input -> ('a * Input) option) * Input) -> ('a * Input) option)
 type ParserContext<'a>() = 
     let mutable mem = Map.empty
+    let mutable funcs = Map.empty
     let mutable callStack = []
     member this.Memo(name : string, input : Input) : Result<'a> option =
-        Map.tryFind (name, input) mem
+        match Map.tryFind (name, input) funcs with
+        | Some(f) -> Some f
+        | None -> match Map.tryFind (name, input) mem with
+                    | Some(v) -> Some(Memo(v))
+                    | None -> None            
     member this.Memorize(name, input, value) =
-        mem <- Map.add (name, input) value mem
+        match value with
+        | Memo(v) ->
+            match Map.tryFind(name, input) mem with
+            | None 
+            | Some(None) ->
+                mem <- Map.add (name, input) v mem
+            | Some(Some(v0, input0)) ->
+                match v with
+                | Some(v1, input1) when input1 > input0 ->
+                    mem <- Map.add (name, input) v mem
+                | _ -> ()                    
+        | Func(f) ->
+            funcs <- Map.add (name, input) value funcs
+    member this.ClearFunc(name, input) =
+        funcs <- Map.remove (name, input) funcs
     member this.Reset() =
         mem <- Map.empty
     member this.Begin(name, input) =
@@ -54,7 +73,7 @@ let rec firstTime (ctx: ParserContext<'a>) (name, rule, input) =
                 // we have a left recursion!
                 let cycles = Seq.takeWhile (fst >> ((<>)name)) callStack.Tail
                 involved := Set.union (Set.ofSeq cycles) !involved
-            elif prevInvolved.IsSome then
+            if prevInvolved.IsSome then
                 prevInvolved.Value callStack)
     let seed = rule input
     // tidy up
@@ -66,7 +85,7 @@ let rec firstTime (ctx: ParserContext<'a>) (name, rule, input) =
         seed
 and grow (ctx: ParserContext<'a>) involved (name, rule, input, seed) =
     for (rule, startpos) in involved do
-        ctx.Memorize(rule, startpos, Func (evalOnce (ref true)))
+        ctx.Memorize(rule, startpos, Func (evalOnce ctx (ref true)))
     let rec loop prev =
         ctx.Memorize(name, input, Memo(prev))
         match rule input, prev with
@@ -79,14 +98,15 @@ and grow (ctx: ParserContext<'a>) involved (name, rule, input, seed) =
         | _ -> 
             // I'm not sure about this cleanup phase
             for (rule, startpos) in involved do
-                ctx.Memorize(rule, startpos, Func (firstTime ctx))
+                ctx.ClearFunc(rule, startpos)
             // Done. Clean up and return
             prev
     loop seed
-and evalOnce eval (name, rule, input)=
+and evalOnce (ctx: ParserContext<'a>) eval (name, rule, input)=
     if !eval then
         eval := false
         let retval = rule input
+        ctx.Memorize(name, input, Memo (retval))
         eval := true
         retval    
     else
