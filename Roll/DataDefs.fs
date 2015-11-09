@@ -16,3 +16,6 @@ type Compound =
 type Command =
 | Roll of Compound
 | Average of Compound
+
+type Audit<'Question, 'Answer> =
+| Audit of 'Question * 'Answer * (Audit<'Question, 'Answer> list)

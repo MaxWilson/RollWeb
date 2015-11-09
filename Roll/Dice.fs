@@ -80,39 +80,58 @@ type Resolver(?random) =
             | Disadv(d, size) -> 
                 [for _ in 1..d do yield 1 + min (r.Next(size)) (r.Next(size))]
                 |> Seq.sum
-        result, result.ToString() // result and explanation
+        result
     member this.Resolve cmd = 
         match cmd : Compound with
-        | Single(cmd) -> this.Resolve(cmd)
+        | Single(roll) -> 
+            let v = this.Resolve(roll)
+            Audit(cmd, v, List.empty)
         | Sum(lhs, rhs) -> 
-            let (lhs, lexplain), (rhs, rexplain) = this.Resolve(lhs), this.Resolve(rhs)
-            (lhs + rhs), sprintf "%s + %s" lexplain rexplain
+            let Audit(_, lhs, _) as lexplain, (Audit(_, rhs, _) as rexplain) = this.Resolve(lhs), this.Resolve(rhs)
+            Audit(cmd, lhs + rhs, [lexplain; rexplain])
         | MultByConstant(k, rhs) -> 
-            let result, explain = this.Resolve(rhs)
-            k * result, match k with -1 -> "-" + explain | _ -> sprintf "%d(%s)" k explain
+            let Audit(_, result, _) as explain = this.Resolve(rhs)
+            Audit(cmd, k * result, [explain])
         | Repeat(n, rhs) -> 
             let results = [for _ in 1..n do yield this.Resolve(rhs)]
-            let result = Seq.sum (Seq.map fst results)
-            result, sprintf "(%s)->%s" (System.String.Join(",", Seq.map snd results)) (result.ToString())
+            let result = Seq.sum (results |> Seq.map (function Audit(_, r, _) -> r))
+            Audit(cmd, result, results)
         | Check(roll, resultOptions, fallback) ->
-            let result, explain = this.Resolve(roll)
+            let Audit(_, result, _) as explain = this.Resolve(roll)
             resultOptions 
             |> Seq.tryPick (function 
                             | (threshold, roll) when result >= threshold ->
                                 this.Resolve(roll) |> Some
                             | _ -> None)
             |> function 
-                | Some((v, explainResult)) -> 
-                    v, sprintf "%s->%s" explain explainResult
+                | Some(Audit(_, v, _) as explainResult) -> 
+                    Audit(cmd, v, [explain; explainResult])
                 | None -> 
-                    fallback, sprintf "%s -> %s" explain (fallback.ToString()) 
-
+                    if fallback = 0 then
+                        Audit(cmd, fallback, [explain])
+                    else
+                        Audit(cmd, fallback, [explain; Audit(mdw.DataDefs.Single(Simple(fallback, 1)), fallback, List.empty)])
 
     member this.Resolve cmd =
         match cmd : Command with
         | Roll(spec) -> 
-            let (result, explain) = this.Resolve(spec)
-            (result.ToString(), explain)
+            let Audit(_, result, _) as explain = this.Resolve(spec)
+            let rec render = function
+            | Audit(_, v, []) -> v.ToString()
+            | Audit(Repeat(_), v, explanations) -> sprintf "(%s)" (System.String.Join(",", Seq.map render explanations))
+            | Audit(Sum(_), v, explanations) -> 
+                v.ToString()
+            | Audit(Check(_), v, explanations) -> 
+                match explanations with
+                | [roll; result] ->
+                    sprintf "%s->%s" (render roll) (render result)
+                | [roll] ->
+                    sprintf "%s->%d" (render roll) v
+                | _ -> Util.nomatch()
+            | Audit(MultByConstant(-1, _), v, explanations) ->
+                "-" + (render explanations.Head)
+            | _ -> Util.nomatch()
+            result.ToString(), render explain
         | Average(spec) -> 
             let result : float = this.Average(spec)
             // My ad-hoc attempt to make decimals come out "naturally", 5 or 4.35

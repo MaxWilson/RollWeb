@@ -8,7 +8,7 @@ open mdw.Packrat
 
 [<Fact>]
 let ``Test rolls``() =
-    Assert.Equal(8, Dice.Instance.Resolve(Simple(8,1)) |> fst)
+    Assert.Equal(8, Dice.Instance.Resolve(Simple(8,1)))
 
 [<Fact>]
 let ``Test rolls by property``() =
@@ -16,7 +16,7 @@ let ``Test rolls by property``() =
         lower <= x && x <= upper
     let isWithinBounds d size =
         (d > 0 && size > 0) ==>
-            lazy (between (d) (d*size) (Dice.Instance.Resolve(Simple(d, size)) |> fst))
+            lazy (between (d) (d*size) (Dice.Instance.Resolve(Simple(d, size))))
     Check.QuickThrowOnFailure(isWithinBounds)
     
 [<Fact>]
@@ -30,7 +30,7 @@ let Parsing() =
 let Rolling() =
     let withinBounds low high spec seed =
         let roller = Resolver(new System.Random(seed))
-        let result = roller.Resolve(spec : Compound) |> fst
+        let result = roller.Resolve(spec : Compound) |> function Audit(_, v, _) -> v
         low <= result && result <= high
     Check.QuickThrowOnFailure (withinBounds 3 18 (Single(Simple(3,6))))
 
@@ -67,8 +67,10 @@ let ``Sums should be left-associative``() =
     Assert.Equal(65., Parser.Parse "20d6-d4-d4" |> Dice.Instance.Average)
 
 [<Theory>]
-[<InlineData("3.2d4", "(X,X,X)->X")>]
-[<InlineData("3.4d6", "(X,X,X)->X")>]
+[<InlineData("3.2d4", "(X,X,X)")>]
+[<InlineData("3.4d6", "(X,X,X)")>]
+[<InlineData("(3.4d6):1?3d10", "(X,X,X)->X")>]
+[<InlineData("(d20a+d4+7):4?d10+d6+5", "X->X")>]
 let ``Examples of explanations that should be checkable``(spec, expected) =
     let spec = Parser.ParseCommand(spec)
     let result, explain = Dice.Instance.Resolve(spec)
@@ -80,6 +82,7 @@ let ``Examples of explanations that should be checkable``(spec, expected) =
 [<InlineData("avg.3d6", "10.50")>]
 [<InlineData("avg.3d6-4", "6.50")>]
 [<InlineData("avg.3d6-(d4-d4)", "10.50")>]
+[<InlineData("avg.20d6-(d4-d4)", "70")>]
 [<InlineData("avg.20d6-(d4-d4)", "70")>]
 [<InlineData("avg.20d6-(d4-d4)", "70")>]
 let ``Complete-ish list of example command specs``(input: string, expectedOutput: string) =
