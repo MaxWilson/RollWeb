@@ -77,7 +77,9 @@ type Impl() =
         | _ -> None)
     and (|CheckTerm|_|) = 
         let (|Predicate|_|) = function
-            | CompoundExpression(roll, Next(':', Number(target, Next('?', next)))) ->
+            | CompoundExpression(roll, Next('?', Number(target, Next(':', next)))) ->
+                Some(roll, target, next)
+            | CompoundExpression(roll, Next('?', Number(target, next))) ->
                 Some(roll, target, next)
             | Number(target, NextChar advantageDisadvantage (c, Next('?', next))) ->
                 let ctor = (if c = 'a' || c = 'A' then Adv else Disadv) >> Single
