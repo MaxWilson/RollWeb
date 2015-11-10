@@ -10,6 +10,7 @@ type Compound =
 | Single of Simple 
 | Sum of Compound * Compound
 | MultByConstant of int * Compound
+| DivByConstant of int * Compound
 | Repeat of int * Compound
 | Check of roll : Compound * resultSpecs : (int * Compound) list * fallbackResult : int
 

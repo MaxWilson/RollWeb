@@ -70,6 +70,7 @@ type Impl() =
         | _ -> None)
     and (|CompoundExpressionTerm|_|) = memoize "CompoundExpressionTerm"  (function
         | CheckTerm(v, next) -> Some(v, next)
+        | CompoundExpressionTerm(v, Next('/', Number(n, next))) -> Some(DivByConstant(n, v), next)
         | Next('(', CompoundExpression(lhs, Next(')', next))) -> Some(lhs, next)
         | Number(n, Next('.', CompoundExpression(v, next))) -> 
             Some(Repeat(n, v), next)
@@ -103,9 +104,22 @@ type Impl() =
                         Single(Disadv(n*2, d))
                     | Sum(lhs, rhs) -> Sum(double lhs, double rhs)
                     | MultByConstant(k, rhs) -> MultByConstant(k, double rhs)
+                    | DivByConstant(k, rhs) -> DivByConstant(k, double rhs)
                     | Check(_) -> Util.nomatch()
                     | Repeat(_) -> Util.nomatch()
-                Some(Check(roll, [20, double consequent; target, consequent], 0), next)
+                let rec maximize = function
+                    | Single(Simple(n, d)) ->
+                        n*d
+                    | Single(Adv(n, d)) ->
+                        n*d
+                    | Single(Disadv(n, d)) ->
+                        n*d
+                    | Sum(lhs, rhs) -> maximize lhs + maximize rhs
+                    | MultByConstant(k, rhs) -> k * maximize rhs
+                    | DivByConstant(k, rhs) -> maximize rhs / k
+                    | Repeat(k, rhs) -> k * maximize rhs                
+                    | Check(_) -> Util.nomatch()
+                Some(Check(roll, [maximize roll, double consequent; target, consequent], 0), next)
             | _ -> None
         )
     and (|SimpleExpression|_|) input = 

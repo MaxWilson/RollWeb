@@ -92,6 +92,9 @@ type Resolver(?random) =
         | MultByConstant(k, rhs) -> 
             let Audit(_, result, _) as explain = this.Resolve(rhs)
             Audit(cmd, k * result, [explain])
+        | DivByConstant(k, rhs) -> 
+            let Audit(_, result, _) as explain = this.Resolve(rhs)
+            Audit(cmd, result/k, [explain])
         | Repeat(n, rhs) -> 
             let results = [for _ in 1..n do yield this.Resolve(rhs)]
             let result = Seq.sum (results |> Seq.map (function Audit(_, r, _) -> r))
@@ -130,6 +133,8 @@ type Resolver(?random) =
                 | _ -> Util.nomatch()
             | Audit(MultByConstant(-1, _), v, explanations) ->
                 "-" + (render explanations.Head)
+            | Audit(DivByConstant(_), v, explanations) ->
+                sprintf "%d(%s)" v (render explanations.Head)
             | _ -> Util.nomatch()
             result.ToString(), render explain
         | Average(spec) -> 
@@ -152,6 +157,8 @@ type Resolver(?random) =
                 (float sum) / (float total)
         | Repeat(n, inner) -> (float n) * (this.Average(inner))
         | MultByConstant(k, rhs) -> (float k) * (this.Average(rhs))
+        | DivByConstant(k, rhs) -> 
+            sumBy rhs (fun n weight -> (n / k |> float) * weight) 
         | Sum(lhs, rhs) -> this.Average(lhs) + this.Average(rhs)
         | Check(roll, resultOptions, fallback) ->
             let resolve result = 
