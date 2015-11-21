@@ -66,10 +66,10 @@ type Impl() =
     and (|CompoundExpression|_|) = memoize "CompoundExpression" (function
         | CompoundExpression(lhs, Next('+', CompoundExpressionTerm(rhs, next))) -> Some(Sum(lhs, rhs), next)
         | CompoundExpression(lhs, Next('-', CompoundExpressionTerm(rhs, next))) -> Some(Sum(lhs, MultByConstant(-1, rhs)), next)
+        | CheckTerm(v, next) -> Some(v, next)
         | CompoundExpressionTerm(lhs, next) -> Some(lhs, next)
         | _ -> None)
     and (|CompoundExpressionTerm|_|) = memoize "CompoundExpressionTerm"  (function
-        | CheckTerm(v, next) -> Some(v, next)
         | CompoundExpressionTerm(v, Next('/', Number(n, next))) -> Some(DivByConstant(n, v), next)
         | Next('(', CompoundExpression(lhs, Next(')', next))) -> Some(lhs, next)
         | Number(n, Next('.', CompoundExpression(v, next))) -> 
@@ -108,17 +108,23 @@ type Impl() =
                     | Check(_) -> Util.nomatch()
                     | Repeat(_) -> Util.nomatch()
                 let rec maximize = function
-                    | Single(Simple(n, d)) ->
-                        n*d
-                    | Single(Adv(n, d)) ->
-                        n*d
+                    | Single(Simple(n, d))
+                    | Single(Adv(n, d))
                     | Single(Disadv(n, d)) ->
                         n*d
                     | Sum(lhs, rhs) -> maximize lhs + maximize rhs
-                    | MultByConstant(k, rhs) -> k * maximize rhs
+                    | MultByConstant(k, rhs) -> 
+                        if k > 0 then k * maximize rhs
+                        else k * minimize rhs
                     | DivByConstant(k, rhs) -> maximize rhs / k
                     | Repeat(k, rhs) -> k * maximize rhs                
                     | Check(_) -> Util.nomatch()
+                and minimize = function
+                    | Single(Simple(n, d))
+                    | Single(Adv(n, d))
+                    | Single(Disadv(n, d)) ->
+                        n
+                    | _ -> Util.nomatch()                    
                 Some(Check(roll, [maximize roll, double consequent; target, consequent], 0), next)
             | _ -> None
         )

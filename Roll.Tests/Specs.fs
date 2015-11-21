@@ -59,6 +59,8 @@ let Average() =
 [<InlineData("2.d3/2", 1.333)>] // Division, rounds down
 [<InlineData("2.d4/2", 2.)>] // Division, rounds down
 [<InlineData("(d20+20)?31:1d10", 3.025)>] // Doubling for crits applies on max roll
+[<InlineData("d20+20?31:1d10", 3.025)>] // Parens should be optional
+[<InlineData("(d2-d2)?1", 0.25)>]
 let ``Complete-ish list of example roll specs``(input: string, expectedAverage: float) =
     let spec = Parser.Parse(input)
     let round (x : float) = System.Math.Round(x, 3) // round to three places
