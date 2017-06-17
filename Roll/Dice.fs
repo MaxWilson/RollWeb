@@ -1,10 +1,8 @@
-﻿[<WebSharper.Core.Attributes.JavaScript>]
-module mdw.Dice 
+﻿module mdw.Dice 
 
 open DataDefs
 open System
 open System.Diagnostics.Contracts
-open WebSharper
 
 type Resolver(?random) =
     let r = defaultArg random (new Random())    

@@ -1,5 +1,4 @@
-﻿[<WebSharper.Core.Attributes.JavaScript>]
-module mdw.Parser 
+﻿module mdw.Parser 
 
 #nowarn "40" // recursive object references from memoization
 

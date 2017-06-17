@@ -1,5 +1,4 @@
-﻿[<WebSharper.Core.Attributes.JavaScript>]
-module mdw.Packrat
+﻿module mdw.Packrat
 open mdw.Util
 
 (* DEEP MAGIC BEGINS HERE
