@@ -1,8 +1,9 @@
-﻿module mdw.Parser 
+﻿module mdw.Parser
 
 #nowarn "40" // recursive object references from memoization
 
 open DataDefs
+open Packrat
 
 type Impl() =
     (* Throughout this file we use string * int as a data type for parse inputs,
@@ -16,16 +17,15 @@ type Impl() =
     let arithmeticOperators = Set<_>['+'; '-']
     let advantageDisadvantage = Set<_>['A'; 'D'; 'a'; 'd']
     let alphanumeric = alpha + numeric
-    let ctx = mdw.Packrat.ParserContext()
-    let memoize = mdw.Packrat.memoize ctx
+    let memoize name = mdw.Packrat.pack
 
     let (|Next|Empty|) = function
-        | (input : string), pos when pos < input.Length -> Next(input.[pos], (input, pos+1))
-        | _ -> Empty
+        | ({ input = input } : ParseContext as ctx), pos when pos < input.Length -> Next(input.[pos], (ctx, pos+1))
+        | v -> Empty
 
     let (|Char|_|) alphabet = function
         | Empty -> None
-        | s, i when Set.contains s.[i] alphabet -> Some(s, i+1)
+        | s, i when Set.contains s.input.[i] alphabet -> Some(s, i+1)
         | _ -> None
 
     let rec (|MaybeChars|) alphabet = function
@@ -33,12 +33,14 @@ type Impl() =
         | it -> it
 
     let rec (|Chars|_|) alphabet = function
-        | Char alphabet (MaybeChars alphabet it) -> Some it
+        | Char alphabet (MaybeChars alphabet (ctx, endpos)) as input ->
+          let _, startpos = input
+          Some (ctx.input.Substring(startpos, endpos - startpos), (ctx, endpos))
         | it -> None
 
     let (|NextChar|_|) alphabet = function
         | Empty -> None
-        | s, i when Set.contains s.[i] alphabet -> Some(s.[i], (s, i+1))
+        | s, i when Set.contains s.input.[i] alphabet -> Some(s.input.[i], (s, i+1))
         | _ -> None
 
     let sub (s: string, i0) (_, i1) =
@@ -50,7 +52,7 @@ type Impl() =
             | Next(x, rest) when x = List.head letters ->
                 match List.tail letters with
                 | [] -> Some rest
-                | letters -> 
+                | letters ->
                     match rest with
                     | NextChar letters rest -> Some rest
                     | _ -> None
@@ -60,7 +62,7 @@ type Impl() =
         | _ -> None
 
     let rec (|Number|_|) = function
-        | Chars numeric i1 as i0 -> (System.Int32.Parse(sub i0 i1), i1) |> Some
+        | Chars numeric (chars, rest) -> (System.Int32.Parse(chars), rest) |> Some
         | _ -> None
     and (|CompoundExpression|_|) = memoize "CompoundExpression" (function
         | CompoundExpression(lhs, Next('+', CompoundExpressionTerm(rhs, next))) -> Some(Sum(lhs, rhs), next)
@@ -71,11 +73,11 @@ type Impl() =
     and (|CompoundExpressionTerm|_|) = memoize "CompoundExpressionTerm"  (function
         | CompoundExpressionTerm(v, Next('/', Number(n, next))) -> Some(DivByConstant(n, v), next)
         | Next('(', CompoundExpression(lhs, Next(')', next))) -> Some(lhs, next)
-        | Number(n, Next('.', CompoundExpression(v, next))) -> 
+        | Number(n, Next('.', CompoundExpression(v, next))) ->
             Some(Repeat(n, v), next)
         | SimpleExpression(v, next) -> Some(Single(v), next)
         | _ -> None)
-    and (|CheckTerm|_|) = 
+    and (|CheckTerm|_|) =
         let (|Predicate|_|) = function
             | CompoundExpression(roll, Next('?', Number(target, Next(':', next)))) ->
                 Some(roll, target, next)
@@ -92,7 +94,7 @@ type Impl() =
                 Some(result, next)
             | next -> Some(Single(Simple(1, 1)), next)
         memoize "CheckTerm" (function
-            | Predicate(roll, target, ResultTerm(consequent, next)) -> 
+            | Predicate(roll, target, ResultTerm(consequent, next)) ->
                 let rec double = function
                     | Single(Simple(n, 1)) as constant -> constant
                     | Single(Simple(n, d)) ->
@@ -112,34 +114,34 @@ type Impl() =
                     | Single(Disadv(n, d)) ->
                         n*d
                     | Sum(lhs, rhs) -> maximize lhs + maximize rhs
-                    | MultByConstant(k, rhs) -> 
+                    | MultByConstant(k, rhs) ->
                         if k > 0 then k * maximize rhs
                         else k * minimize rhs
                     | DivByConstant(k, rhs) -> maximize rhs / k
-                    | Repeat(k, rhs) -> k * maximize rhs                
+                    | Repeat(k, rhs) -> k * maximize rhs
                     | Check(_) -> Util.nomatch()
                 and minimize = function
                     | Single(Simple(n, d))
                     | Single(Adv(n, d))
                     | Single(Disadv(n, d)) ->
                         n
-                    | _ -> Util.nomatch()                    
+                    | _ -> Util.nomatch()
                 Some(Check(roll, [maximize roll, double consequent; target, consequent], 0), next)
             | _ -> None
         )
-    and (|SimpleExpression|_|) input = 
-        let makeRoll n d input = 
+    and (|SimpleExpression|_|) input =
+        let makeRoll n d input =
             match input with
             | Char advantageDisadvantage (Char arithmeticOperators _) as rest ->
                 let (s, i) = input
-                let roll = match s.[i] with
+                let roll = match s.input.[i] with
                             | 'A' | 'a' -> Adv(n, d)
                             | 'D' | 'd' -> Disadv(n, d)
                             | _ -> Util.nomatch()
                 Some (roll, (s, i+1))
             | Char advantageDisadvantage _ ->
                 let (s, i) = input
-                let roll = match s.[i] with
+                let roll = match s.input.[i] with
                             | 'A' | 'a' -> Adv(n, d)
                             | 'D' | 'd' -> Disadv(n, d)
                             | _ -> Util.nomatch()
@@ -155,18 +157,17 @@ type Impl() =
         | NextWord "avg." (CompoundExpression(v, next)) -> Some (Average(v), next)
         | CompoundExpression(v, next) -> Some (Roll(v), next)
         | _ -> None
-        
+
     member this.parseCompound txt =
-        match (txt, 0) with
+        match ParseContext.Init txt with
         | CompoundExpression(cmd, Empty) -> cmd
         | _ -> failwithf "failed to parse '%s'" txt
 
     member this.parseCommand txt =
-        match (txt, 0) with
+        match ParseContext.Init txt with
         | CommandExpression(cmd, Empty) -> cmd
         | _ -> failwithf "failed to parse '%s'" txt
-    member this.Ctx = ctx
 
-let Parse txt = 
+let Parse txt =
     (Impl()).parseCompound txt
 let ParseCommand txt = (Impl()).parseCommand txt

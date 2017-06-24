@@ -6,149 +6,83 @@ The following memo function allows construction of left-recursive grammars using
 iterated algorithm. Don't mess with the code in this file unless you've read the computer
 science papers involved and thoroughly understand them, and also have unit tests for the change
 you want to make.
-
-Okay, it's somewhat less deep magic now, since I rewrote it in continuation-passing style.
 *)
 
-type Input = string * int
-type Result<'a> = 
-    // Memoized parse result: either an AST and the rest of the input, or failure
-    | Memo of ('a * Input) option 
-    // A transformer which takes (name, rule, input) and produces a parse result 
-    | Func of ((string * (Input -> ('a * Input) option) * Input) -> ('a * Input) option)
-type ParserContext<'a>() = 
-    let mutable mem = Map.empty
-    let mutable funcs = Map.empty
-    let mutable callStack = []
-    member this.Memo(name : string, input : Input) : Result<'a> option =
-        match Map.tryFind (name, input) funcs with
-        | Some(f) -> Some f
-        | None -> match Map.tryFind (name, input) mem with
-                    | Some(v) -> Some(Memo(v))
-                    | None -> None            
-    member this.Memorize(name, input, value) =
-        match value with
-        | Memo(v) ->
-            match Map.tryFind(name, input) mem with
-            | None 
-            | Some(None) ->
-                mem <- Map.add (name, input) v mem
-            | Some(Some(v0, input0)) ->
-                match v with
-                | Some(v1, input1) when input1 > input0 ->
-                    mem <- Map.add (name, input) v mem
-                | _ -> ()                    
-        | Func(f) ->
-            funcs <- Map.add (name, input) value funcs
-    member this.ClearFunc(name, input) =
-        funcs <- Map.remove (name, input) funcs
-    member this.Reset() =
-        mem <- Map.empty
-    member this.Begin(name, input) =
-        callStack <- (name, input) :: callStack
-    member this.Return(name, input, result) =
-        match callStack with
-        | (n,i)::tail when n = name && i = input ->
-            callStack <- tail
-        | _ ->
-            Util.nomatch() // should never happen if memoize is working correctly
-        result // return result for convenience
-    member this.CallStack = callStack
-    member val RecordInvolved = None with get, set
-    member this.Memory = mem
+type Id = int
+type Pos = int
+type ParseContext =
+  {
+    input: string
+    active: Set<Pos * Id> ref
+    settled: Map<(Pos * Id), (obj * Pos) option> ref
+  }
+  with
+  static member Init(input) = { input = input; active = ref Set.empty; settled = ref Map.empty }, 0
+type Input = ParseContext * Pos
+type Rule<'a> = (Input -> ('a * Input) option)
 
-let rec firstTime (ctx: ParserContext<'a>) (name, rule, input) =
-    // grow a seed, collecting all left recursions as involved
-    let involved = ref Set.empty
-    let leftRecursion = ref false
-    let prevInvolved = ctx.RecordInvolved
-    ctx.RecordInvolved <- 
-        Some(fun callStack ->
-            match callStack with
-            | (h,_)::t when h = name -> 
-                leftRecursion := true
-            | _ -> ()
-            if !leftRecursion then
-                // we have a left recursion!
-                let cycles = Seq.takeWhile (fst >> ((<>)name)) callStack.Tail
-                involved := Set.union (Set.ofSeq cycles) !involved
-            if prevInvolved.IsSome then
-                prevInvolved.Value callStack)
-    let seed = rule input
-    // tidy up
-    ctx.RecordInvolved <- prevInvolved
-    if !leftRecursion then
-        grow ctx !involved (name, rule, input, seed)
-    else
-        ctx.Memorize(name, input, Memo(seed))
-        seed
-and grow (ctx: ParserContext<'a>) involved (name, rule, input, seed) =
-    for (rule, startpos) in involved do
-        ctx.Memorize(rule, startpos, Func (evalOnce ctx (ref true)))
-    let rec loop prev =
-        ctx.Memorize(name, input, Memo(prev))
-        match rule input, prev with
-        | Some(v, next) as ans, None ->
-            // We grew! Keep growing
-            loop ans
-        | Some(v, ((_, i) as next)) as ans, Some(_, (_, prevNext)) when i > prevNext ->
-            // We grew! Keep growing
-            loop ans
-        | _ -> 
-            // I'm not sure about this cleanup phase
-            for (rule, startpos) in involved do
-                ctx.ClearFunc(rule, startpos)
-            // Done. Clean up and return
-            prev
-    loop seed
-and evalOnce (ctx: ParserContext<'a>) eval (name, rule, input)=
-    if !eval then
-        eval := false
-        let retval = rule input
-        ctx.Memorize(name, input, Memo (retval))
-        eval := true
-        retval    
-    else
-        None
-and lrAnswer (ctx: ParserContext<'a>)  (name, rule, input)=
-    // Since we're now done with seed-growing, memoize the current answer
-    // I'm not sure if this is actually the right thing to do... may not account well
-    // for multiple heads. But I don't have a solid repro in my mind for where this
-    // would cause problems.
-    let ans = rule input
-    ctx.Memorize(name, input, Memo(ans))
-    ans      
-and fail(name : string, rule: (Input -> ('a * Input) option), input : Input) =
-    None
+let nextId =
+  let mutable i = 0
+  fun() ->
+    i <- i + 1
+    i
 
-let getProcessor (ctx: ParserContext<'a>) (name, rule, input) =
-    match ctx.Memo(name, input) with
-    // Already computed and memoized an answer
-    | Some(Memo(v)) ->
-        Memo(v)
-    // Already have a continuation specified
-    | Some(Func(f)) ->
-        Func(f)
-    | None ->
-        // First time at this position. Either it's the first time for this production
-        // period, or the production is already on the call stack higher up, which
-        // means we're growing a seed.
-        let parentFrames = ctx.CallStack.Tail
-        if List.exists ((=) (name, input)) parentFrames then
-            ctx.RecordInvolved.Value(ctx.CallStack)
-            Func fail
+let pack (rule: Rule<'t>) : Input -> ('t * Input) option =
+  let id: Id = nextId()
+  let eval (input: Input) =
+    let ctx, (pos: Pos) = input
+    let active' = ctx.active.Value
+    ctx.active := ctx.active.Value.Remove(pos, id) // mark visited
+    match ctx.settled.Value.TryFind (pos, id) with
+    | Some(Some(v, endpos)) ->
+      Some(unbox v, ((ctx, endpos) : Input)) // cache says the biggest possible match is v, ending at endpos
+    | Some(None) ->
+      None // cache says it will fail
+    | None -> // nothing settled yet--we have to grow a match or failure
+      let settled = ctx.settled.Value // in left recursive case, holding on to an old reference lets us "forget" unsettled results
+      let active = ctx.active.Value
+      ctx.active := active.Add(pos, id)
+      ctx.settled := settled.Add((pos, id), None) // initialize intermediate set to failure to prevent infinite left-recursion
+      let evalResult = rule (ctx, pos)
+      let hadLeftRecursion = not <| ctx.active.Value.Contains((pos, id)) // todo: check and see if any heads grew in the same position
+      ctx.active := ctx.active.Value.Remove(pos, id) // Clean up after ourselves, though it shouldn't be necessary
+      let grow seed settled =
+        let rec grow seed settled =
+          // update the intermediate cache before re-evaluating
+          ctx.settled := settled
+          match seed, (rule (ctx, pos)) with // we just had our first success--try to grow!
+          | None, Some(v, (_, endpos)) ->
+            grow (Some (box v, endpos)) (settled |> Map.add (pos, id) (Some (box v, endpos)))
+          | Some(_, oldendpos), Some(v, (_, endpos) as rest) when endpos > oldendpos -> // we just grew, let's try growing again!
+            grow (Some (box v, endpos)) (settled |> Map.add (pos, id) (Some (box v, endpos)))
+          | Some(v, endpos), _ ->
+            Some(v, endpos)
+          | None, None ->
+            None
+        // we want to revert to the original "settled" before memoizing our results
+        match grow seed settled with
+          | Some(v, endpos) ->
+            ctx.settled := (settled |> Map.add (pos, id) (Some (v, endpos))) // remember the largest success
+            Some(unbox v, (ctx, endpos))
+          | None ->
+            ctx.settled := (settled |> Map.add (pos, id) None) // remember the failure
+            None
+      match evalResult with
+      | None ->
+        if hadLeftRecursion then
+          // since left recursion happened, we use our original "settled" as a start set, ignoring all the intermediate results already
+          // in ctx.settled, because using them could cause false negatives on parse recognition
+          grow None (settled |> Map.add (pos, id) None)
         else
-            Func (firstTime ctx)
-
-let memoize (ctx : ParserContext<'a>) =
-    // Depending on what we're doing right now, we could handle input in one of several ways
-            
-    let rec eval name rule input =
-        ctx.Begin(name, input)
-        let p = getProcessor ctx (name, rule, input)
-        match p with
-        | Memo(ans) -> 
-            ctx.Return(name, input, ans)
-        | Func(f) ->
-            ctx.Return(name, input, f(name, rule, input))
-    eval
+          // no left recursion, so we can take all the intermediate results in ctx.settled instead of undoing back to settled
+          ctx.settled := ctx.settled.Value |> Map.add (pos, id) None // remember the failure
+          None
+      | Some(v, ((ctx, outpos) as output)) ->
+        if hadLeftRecursion then
+          // since left recursion happened, we use our original "settled" as a start set, ignoring all the intermediate results already
+          // in ctx.settled, because using them could cause false negatives on parse recognition
+          grow (Some(box v, outpos)) (settled |> Map.add (pos, id) (Some (box v, outpos)))
+        else
+          ctx.settled := ctx.settled.Value |> Map.add (pos, id) (Some (box v, outpos)) // remember the success
+          Some(v, output)
+  eval // return eval function

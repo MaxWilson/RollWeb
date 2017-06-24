@@ -108,18 +108,17 @@ type Expr = Leaf of char | Interior of Expr * Expr
 [<Fact>]
 let ``Should be able to parse direct left-recursive left-associative grammers``() =
     let (|Next|Empty|) = function
-    | (input : string), pos when pos < input.Length -> Next(input.[pos], (input, pos+1))
+    | ctx : ParseContext, pos when pos < ctx.input.Length -> Next(ctx.input.[pos], (ctx, pos+1))
     | _ -> Empty
     let show = sprintf "%A"
-    let c = ParserContext()
-    let rec (|Xs|_|) = memoize c "Xs" (function
+    let rec (|Xs|_|) = pack (function
         | Xs(lhs, Next('+', Number(rhs, next))) -> Some(Interior(lhs, rhs), next)
         | Number(v, next) -> Some(v, next)
         | _ -> None)
-    and (|Number|_|) = memoize c "Number" (function
+    and (|Number|_|) = pack (function
         | Next(c, next) when System.Char.IsDigit(c) -> Some(Leaf c, next)
         | _ -> None)
-    match("1+2+3",0) with
+    match ParseContext.Init "1+2+3" with
     | Xs(v, Empty) ->
         // Result should be left-associative
         Assert.Equal(show <| Interior(Interior(Leaf('1'),Leaf('2')),Leaf('3')), show v)
@@ -129,27 +128,26 @@ let ``Should be able to parse direct left-recursive left-associative grammers``(
 [<Fact>]
 let ``Should be able to parse indirect left-recursive grammers``() =
     let (|Next|Empty|) = function
-    | (input : string), pos when pos < input.Length -> Next(input.[pos], (input, pos+1))
+    | ctx : ParseContext, pos when pos < ctx.input.Length -> Next(ctx.input.[pos], (ctx, pos+1))
     | _ -> Empty
 
-    let c = ParserContext()
     // define an intermediate production "E" to make recursion indirect
-    let rec (|Xs|_|) = memoize c "Xs" (function
+    let rec (|Xs|_|) = pack (function
         | E(lhs, Next('+', Number(rhs, next))) -> Some(Interior(lhs, rhs), next)
         | Next(c, next) when System.Char.IsDigit(c) -> Some(Leaf c, next)
         | _ -> None)
-    and (|E|_|) = memoize c "E" (function
+    and (|E|_|) = pack (function
         | Xs(v, next) -> Some(v, next)
         | _ -> None)
-    and (|Number|_|) = memoize c "Number" (function
+    and (|Number|_|) = pack (function
         | Next(c, next) when System.Char.IsDigit(c) -> Some(Leaf c, next)
         | _ -> None)
     // It's an Xs, and it's also an E
-    match("1+2+3",0) with
+    match(ParseContext.Init "1+2+3") with
     | Xs(v, Empty) ->
         Assert.Equal(Interior(Interior(Leaf('1'),Leaf('2')),Leaf('3')), v)
     | _ -> failwith "Could not parse"
-    match("1+2+3",0) with
+    match(ParseContext.Init "1+2+3") with
     | E(v, Empty) ->
         Assert.Equal(Interior(Interior(Leaf('1'),Leaf('2')),Leaf('3')), v)
     | _ -> failwith "Could not parse"
@@ -158,30 +156,30 @@ let ``Should be able to parse indirect left-recursive grammers``() =
 [<Fact>]
 let ``Should be able to parse more indirect left-recursive grammers``() =
     let (|Next|Empty|) = function
-    | (input : string), pos when pos < input.Length -> Next(input.[pos], (input, pos+1))
-    | _ -> Empty
+    | ({ input = input } : ParseContext as ctx), pos when pos < input.Length -> Next(input.[pos], (ctx, pos+1))
+    | v -> Empty
 
-    let c = ParserContext()
     // define an intermediate production "E" to make recursion indirect
-    let rec (|Term|_|) = memoize c "Xs" (function
+    let rec (|Term|_|) = pack (function
         | Term(lhs, Next('+', Term(rhs, next))) -> Some(Interior(lhs, rhs), next)
         | E(lhs, next) -> Some(lhs, next)
         | _ -> None)
-    and (|E|_|) = memoize c "E" (function
+    and (|E|_|) = pack (function
         | Term(v, next) -> Some(v, next)
         | Next(c, next) when System.Char.IsDigit(c) -> Some(Leaf c, next)
         | _ -> None)
-    and (|K|_|) = memoize c "Number" (function
-        | Term(lhs, Next('+', Term(rhs, Next('z', next)))) -> Some(Interior(Interior(lhs, rhs), Leaf 'z'), next)
+    and (|K|_|) = pack (function
+        | Term(lhs, Next('z', next)) -> Some(Interior(lhs, Leaf 'z'), next)
         | _ -> None)
-    and (|Root|_|) = memoize c "Number" (function
-        | E(lhs, next) -> Some(lhs, next)
-        | K(lhs, next) -> Some(lhs, next)
+    and (|Root|_|) = pack (function
+        | E(lhs, (Empty as endi)) -> Some(lhs, endi)
+        | K(lhs, (Empty as endi)) -> Some(lhs, endi)
         | _ -> None)
 
     // It's an Xs, and it's also an E
-    match("1+2z",0) with
-    | Root(v, Empty) ->
+    match(ParseContext.Init "1+2z") with
+    | Root(v, _) ->
+        Assert.Equal(sprintf "%A" (Interior(Interior(Leaf('1'),Leaf('2')),Leaf('z'))), sprintf "%A" v)
         Assert.Equal(Interior(Interior(Leaf('1'),Leaf('2')),Leaf('z')), v)
     | _ -> failwith "Could not parse"
 
@@ -189,23 +187,22 @@ let ``Should be able to parse more indirect left-recursive grammers``() =
 [<Fact>]
 let ``More complex indirect left-recursive grammers``() =
     let (|Next|Empty|) = function
-    | (input : string), pos when pos < input.Length -> Next(input.[pos], (input, pos+1))
+    |  ({ input = input } : ParseContext as ctx), pos when pos < input.Length -> Next(input.[pos], (ctx, pos+1))
     | _ -> Empty
 
-    let c = ParserContext()
     // define an intermediate production "E" to make recursion indirect
-    let rec (|CompoundExpression|_|) = memoize c "CompoundExpression" (function
+    let rec (|CompoundExpression|_|) = pack (function
         | E(v, Next('+', Next('x', next))) -> Some(v+1, next)
         | Next('x', next) -> Some(1, next)
         | _ -> None)
-    and (|E|_|) = memoize c "E" (function
+    and (|E|_|) = pack (function
         | CompoundExpression(v, next) -> Some(v, next)
         | _ -> None)
     // It's an Xs, and it's also an E
-    match("x+x",0) with
+    match(ParseContext.Init "x+x") with
     | CompoundExpression(v, Empty) -> Assert.Equal(2, v)
     | _ -> failwith "Could not parse"
-    match("x+x",0) with
+    match(ParseContext.Init "x+x") with
     | E(v, Empty) -> Assert.Equal(2, v)
     | _ -> failwith "Could not parse"
 

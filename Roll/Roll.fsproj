@@ -5,9 +5,6 @@
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{57a12fe3-9e19-4af7-8c28-90666569153d}</ProjectGuid>
-    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{F2A71F9B-5D33-465A-A702-920D77279786}</ProjectTypeGuids>
-    <WebSharperProject>Bundle</WebSharperProject>
-    <WebSharperBundleOutputDir>Content</WebSharperBundleOutputDir>
     <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort />
     <IISExpressAnonymousAuthentication />
