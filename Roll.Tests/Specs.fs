@@ -18,7 +18,7 @@ let ``Test rolls by property``() =
         (d > 0 && size > 0) ==>
             lazy (between (d) (d*size) (Dice.Instance.Resolve(Simple(d, size))))
     Check.QuickThrowOnFailure(isWithinBounds)
-    
+
 [<Fact>]
 let Parsing() =
     Assert.Equal(Single(Simple(3,6)), Parser.Parse "3d6")
@@ -110,7 +110,7 @@ let ``Should be able to parse direct left-recursive left-associative grammers``(
     let (|Next|Empty|) = function
     | (input : string), pos when pos < input.Length -> Next(input.[pos], (input, pos+1))
     | _ -> Empty
-    let show = sprintf "%A" 
+    let show = sprintf "%A"
     let c = ParserContext()
     let rec (|Xs|_|) = memoize c "Xs" (function
         | Xs(lhs, Next('+', Number(rhs, next))) -> Some(Interior(lhs, rhs), next)
@@ -120,7 +120,7 @@ let ``Should be able to parse direct left-recursive left-associative grammers``(
         | Next(c, next) when System.Char.IsDigit(c) -> Some(Leaf c, next)
         | _ -> None)
     match("1+2+3",0) with
-    | Xs(v, Empty) -> 
+    | Xs(v, Empty) ->
         // Result should be left-associative
         Assert.Equal(show <| Interior(Interior(Leaf('1'),Leaf('2')),Leaf('3')), show v)
     | _ -> failwith "Could not parse"
@@ -146,13 +146,45 @@ let ``Should be able to parse indirect left-recursive grammers``() =
         | _ -> None)
     // It's an Xs, and it's also an E
     match("1+2+3",0) with
-    | Xs(v, Empty) -> 
+    | Xs(v, Empty) ->
         Assert.Equal(Interior(Interior(Leaf('1'),Leaf('2')),Leaf('3')), v)
     | _ -> failwith "Could not parse"
     match("1+2+3",0) with
-    | E(v, Empty) -> 
+    | E(v, Empty) ->
         Assert.Equal(Interior(Interior(Leaf('1'),Leaf('2')),Leaf('3')), v)
     | _ -> failwith "Could not parse"
+
+#nowarn "0040" // Allow object recursion without warnings so we can write recursive memoized rules
+[<Fact>]
+let ``Should be able to parse more indirect left-recursive grammers``() =
+    let (|Next|Empty|) = function
+    | (input : string), pos when pos < input.Length -> Next(input.[pos], (input, pos+1))
+    | _ -> Empty
+
+    let c = ParserContext()
+    // define an intermediate production "E" to make recursion indirect
+    let rec (|Term|_|) = memoize c "Xs" (function
+        | Term(lhs, Next('+', Term(rhs, next))) -> Some(Interior(lhs, rhs), next)
+        | E(lhs, next) -> Some(lhs, next)
+        | _ -> None)
+    and (|E|_|) = memoize c "E" (function
+        | Term(v, next) -> Some(v, next)
+        | Next(c, next) when System.Char.IsDigit(c) -> Some(Leaf c, next)
+        | _ -> None)
+    and (|K|_|) = memoize c "Number" (function
+        | Term(lhs, Next('+', Term(rhs, Next('z', next)))) -> Some(Interior(Interior(lhs, rhs), Leaf 'z'), next)
+        | _ -> None)
+    and (|Root|_|) = memoize c "Number" (function
+        | E(lhs, next) -> Some(lhs, next)
+        | K(lhs, next) -> Some(lhs, next)
+        | _ -> None)
+
+    // It's an Xs, and it's also an E
+    match("1+2z",0) with
+    | Root(v, Empty) ->
+        Assert.Equal(Interior(Interior(Leaf('1'),Leaf('2')),Leaf('z')), v)
+    | _ -> failwith "Could not parse"
+
 
 [<Fact>]
 let ``More complex indirect left-recursive grammers``() =
